@@ -12,16 +12,6 @@
 		    'geo'
 		];
 
-		private	$condition;
-
-		private $_fields;
-		private $_from;
-		private $_size;
-		private $_sortFields;
-		private $_logicalOperator;
-		private $_ignoreCase = false;
-		private $_querySpec;
-
 		private $channels;
 		private $_curlTimeout;
 		private $_remoteData;
