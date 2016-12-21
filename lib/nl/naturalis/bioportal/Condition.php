@@ -15,7 +15,7 @@
             $this->setCondition($field, $operator, $value);
         }
 
-        public function _and ($field, $operator, $value) {
+        public function addAnd ($field, $operator, $value) {
             if (empty($this->_condition)) {
                 throw new Exception('Error: cannot add "and" statement to empty condition.');
             }
@@ -27,9 +27,10 @@
         				'value' => $this->_value
         			];
             }
+            return $this;
         }
 
- 	    public function _or ($field, $operator, $value) {
+ 	    public function addOr ($field, $operator, $value) {
             if (empty($this->_condition)) {
                 throw new Exception('Error: cannot add "or" statement to empty condition.');
             }
@@ -41,7 +42,8 @@
         				'value' => $this->_value
         			];
             }
-        }
+            return $this;
+ 	    }
 
         public function getCondition () {
             return json_encode($this->_condition);

@@ -1,9 +1,15 @@
 <?php
     namespace nl\naturalis\bioportal;
+    use nl\naturalis\bioportal\QuerySpec as QuerySpec;
+    use Exception;
 
     class Client
  	{
-		private $baseUrl;
+		private $_baseUrl;
+		private $_querySpec;
+		private $_channels;
+		private $_curlTimeout;
+		private $_remoteData;
 
 		public static $nbaClients = [
 			'taxon',
@@ -12,9 +18,6 @@
 		    'geo'
 		];
 
-		private $channels;
-		private $_curlTimeout;
-		private $_remoteData;
 
     	public function setBaseUrl ($a) {
 			$this->baseUrl = (string) $a;
@@ -118,98 +121,3 @@
 			return $this->_remoteData;
 		}
 	}
-
-
-
-
-
-
-
-
-	/*
-
-		$querySpec = array(
-		'conditions' => array(
-			array(
-				'field' => 'gatheringEvent.gatheringPersons.fullName',
-				'operator' => 'LIKE',
-				'value' => 'burg',
-				'and' => array(
-					array(
-						'field' => 'gatheringEvent.gatheringPersons.fullName',
-						'operator' => 'NOT_LIKE',
-						'value' => 'bakker'
-					)
-				)
-			),
-			array(
-				'field' => 'phaseOrStage',
-				'operator' => 'EQUALS_IC',
-				'value' => 'EGG'
-			)
-		),
-		'logicalOperator' => 'OR',
-		'sortFields' => array(
-			array(
-				'path' => 'unitID',
-				'ascending' => 'false'
-			)
-		),
-		'from' => 100,
-		'size' => 50
-	);
-
-
-
-
-
-
-
-
-
-
-
-		$querySpec = array(
-		'conditions' => array(
-			array(
-				'field' => 'gatheringEvent.country',
-				'operator' => 'EQUALS',
-				'value' => 'Deutschland',
-				'or' => array(
-					array(
-						'field' => 'gatheringEvent.country',
-						'operator' => 'EQUALS',
-						'value' => 'Germany'
-					)
-				),
-				'and' => array(
-					array(
-						'field' => 'gatheringEvent.dateTimeBegin',
-						'operator' => 'BETWEEN',
-						'value' => array(
-							'1700-01-01',
-							'1800-01-01'
-						)
-					)
-				)
-
-			)
-		),
-		'fields' => array(
-			'gatheringEvent',
-			'numberOfSpecimen'
-		),
-		//'logicalOperator' => 'OR',
-		'sortFields' => array(
-			array(
-				'path' => 'unitID',
-				'ascending' => 'true'
-			)
-		),
-		'from' => 100,
-		'size' => 50
-	);
-
-
-*/
-?>

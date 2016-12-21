@@ -22,6 +22,7 @@
                     'using Condition class.');
             }
             $this->_conditions[] = json_decode($condition->getCondition(), true);
+            return $this;
         }
 
         public function sortBy ($path = false, $direction = false) {
@@ -40,6 +41,7 @@
                 'path' => $path,
                 'ascending' => $this->setSortDirection($direction),
             ];
+            return $this;
         }
 
  	 	public function setFrom ($from = false) {
@@ -48,7 +50,8 @@
                 return false;
  	     	}
  	     	$this->_from = (int)$from;
-	    }
+            return $this;
+ 	 	}
 
  	    public function setSize ($size = false) {
  	     	if (!$size || !$this->isPositiveInteger($size)) {
@@ -56,7 +59,8 @@
                 return false;
  	     	}
  	     	$this->_size = (int)$size;
-	    }
+            return $this;
+ 	    }
 
         public function setLogicalOperator ($operator = false) {
             if (!in_array(strtoupper($operator), self::$logicalOperators)) {
@@ -64,6 +68,7 @@
                     implode(', ', self::$logicalOperators));
             }
             $this->_logicalOperator = strtoupper($operator);
+            return $this;
         }
 
         public function getCondition () {
@@ -108,7 +113,4 @@
                 $this->_querySpec['size'] = $this->_size;
             }
         }
-
-
-
  	}

@@ -4,20 +4,18 @@
 
     header('Content-Type: application/json');
 
-
     $c = new Condition('genus', 'LIKE', 'larus');
-    $c->_and('species', 'EQUALS', 'pipi');
-    $c->_and('species', 'EQUALS', 'papa');
-    $c->_or('species', 'LIKE', 'papi');
+    $c->addAnd('species', 'EQUALS', 'pipi')->addAnd('species', 'EQUALS', 'papa');
+    $c->addOr('species', 'LIKE', 'papi');
 
     $d = new Condition('family', 'LIKE', 'laridae');
 
     $query = new QuerySpec();
-    $query->sortBy('genus', 'desc');
-    $query->setFrom(100);
-    $query->setSize('10');
-    $query->addCondition($c);
-    $query->addCondition($d);
-    $query->setLogicalOperator('or');
+    $query->sortBy('genus', 'desc')
+        ->setFrom(100)
+        ->setSize('10')
+        ->addCondition($c)
+        ->addCondition($d)
+        ->setLogicalOperator('or');
 
     echo $query->getSpec(false);
