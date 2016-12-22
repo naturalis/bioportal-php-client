@@ -26,6 +26,8 @@
 
     // Initialize Client
     $client = new Client();
+    // Default ini settings (or even complete config!) can be modified if necessary
+    $client->setNbaUrl('http://145.136.242.170:8080/v2/');
     // Set service and pass on QuerySpec
     $client->taxon()->querySpec($query);
     // Print QuerySpec sent to NBA
