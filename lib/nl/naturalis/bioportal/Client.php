@@ -13,47 +13,89 @@
 		private $_channels;
 		private $_remoteData;
 
-		/*
-		 * Publicly accessible NBA clients
-		 */
 		public static $nbaClients = [
 			'taxon',
 			'multimedia',
 			'specimen',
 		];
 
+		/**
+		 * Constructor
+		 *
+		 * Sets ini values for $_nbaUrl and $_nbaTimeout;
+		 * implicitly sets $_config through either method
+		 *
+         * @return void
+		 */
 		public function __construct () {
             $this->_setNbaUrl();
             $this->_setNbaTimeout();
 		}
 
+		/**
+		 * Sets the client to taxon
+		 *
+         * @return Returns this instance
+		 */
 		public function taxon () {
 			$this->clients = [];
 			$this->clients[] = 'taxon';
 			return $this;
 		}
 
+		/**
+		 * Sets the client to specimen
+		 *
+         * @return Returns this instance
+		 */
 		public function specimen () {
 			$this->clients = [];
 			$this->clients[] = 'specimen';
 			return $this;
 		}
 
+		/**
+		 * Sets the client to multimedia
+		 *
+         * @return class This class (allowing chaining)
+		 */
 		public function multimedia () {
 			$this->clients = [];
 			$this->clients[] = 'multimedia';
 			return $this;
 		}
 
+		/**
+		 * Sets all three clients
+		 *
+		 * Sets taxon, specimen and multimedia clients, allowing distributed query;
+		 * does not verify query, so use with care!
+		 *
+         * @return class This class (allowing chaining)
+		 */
 		public function all () {
 			$this->clients = $this::$nbaClients;
 			return $this;
 		}
 
+		/**
+		 * Returns publicly available clients
+		 *
+         * @return class This class (allowing chaining)
+		 */
 		public function getAllClients () {
 			return (object) $this::$nbaClients;
 		}
 
+        /**
+         * Sets QuerySpec
+         *
+         * Imports QuerySpec object from QuerySpec class
+         *
+         * @param class $spec QuerySpec
+         *
+         * @return class This class (allowing chaining)
+         */
 		public function querySpec ($spec) {
 		    if (!$spec || !($spec instanceof QuerySpec)) {
                 throw new Exception('Error: invalid querySpec, should be created ' .
@@ -63,6 +105,20 @@
             return $this;
 		}
 
+        /**
+         * Queries the NBA
+         *
+         * 1. Sets the curl channels for one or more clients
+         * 2. Performs the NBA query
+         * 3. Returns NBA result
+         *
+         * Depending on the number of clients, the result is returned
+         * either as json or an array of json responses (in case multiple
+         * channels have been used).
+         *
+         * @return string|array NBA data as json or array with responses
+         * formatted as [client1 => json, client2 => json]
+         */
 		public function query () {
 			$this->setClientChannels();
 			$this->_query();
@@ -72,22 +128,35 @@
             return $this->_remoteData;
 		}
 
-		/*
+		/**
 		 * Shorthand function to override complete config and set variables
-		*/
+		 */
 		public function setConfig ($config = false) {
 		    $this->_setConfig($config);
 		}
 
- 		public function getConfig () {
+		/**
+		 * Returns current config
+         *
+         * @return array config
+		 */
+		public function getConfig () {
 		    return $this->_config;
 		}
 
+		/**
+		 * Set $_nbaUrl, overriding default value
+		 */
 		public function setNbaUrl ($url = false) {
 			$this->_setNbaUrl($url);
 		}
 
- 	 	public function getNbaUrl () {
+		/**
+		 * Returns current $_nbaUrl
+         *
+         * @return string $_nbaUrl
+		 */
+		public function getNbaUrl () {
 			return $this->_nbaUrl;
 		}
 
@@ -95,15 +164,26 @@
  	 	    $this->_setNbaTimeout($timeout);
 		}
 
- 		public function getNbaTimeout () {
+		/**
+		 * Returns current $_nbaTimeout
+         *
+         * @return string $_nbaTimeout
+		 */
+		public function getNbaTimeout () {
  	 	    return $this->_nbaTimeout;
 		}
 
+		/**
+		 * Returns current $_querySpec
+         *
+         * @return string $_querySpec
+		 */
 		public function getQuerySpec () {
 		    return $this->_querySpec;
 		}
 
 		private function setClientChannels () {
+			$this->_channels = [];
 			foreach ($this->clients as $client) {
 				$this->_channels[] =
 					[

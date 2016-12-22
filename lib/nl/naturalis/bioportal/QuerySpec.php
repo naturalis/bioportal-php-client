@@ -35,8 +35,8 @@
             }
             if (!is_bool($direction) &&
                 !array_key_exists(strtoupper($direction), self::$sortDirections)) {
-                throw new Exception('Error: sort direction should match one
-                    of the following: ' . implode(', ', array_keys(self::$sortDirections)));
+                throw new Exception('Error: sort direction should match one of the ' .
+                    'following: ' . implode(', ', array_keys(self::$sortDirections)));
             }
             $this->_sortFields[] = [
                 'path' => $path,
@@ -48,7 +48,8 @@
 
  	 	public function setFrom ($from = null) {
  	     	if (!$this->isInteger($from)) {
-                throw new Exception('Error: "from" should be an integer.');
+                throw new Exception('Error: from parameter "' . $from .
+                    '" is not an integer.');
                 return false;
  	     	}
  	     	$this->_from = (int)$from;
@@ -58,7 +59,8 @@
 
  	    public function setSize ($size = null) {
  	     	if (!$this->isInteger($size)) {
-                throw new Exception('Error: "size" should be an integer.');
+                throw new Exception('Error: size parameter "' . $size .
+                    '" is not an integer.');
                 return false;
  	     	}
  	     	$this->_size = (int)$size;
