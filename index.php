@@ -2,20 +2,33 @@
     namespace nl\naturalis\bioportal;
     require_once 'autoloader.php';
 
-    header('Content-Type: application/json');
+    // First condition
+    // Condition should be initialized with triplet, as per Java client
+    $c = new Condition('acceptedName.genusOrMonomial', 'LIKE', 'lar');
+    // Cannot replicate ->and and ->or methods of Java client
+    // as these are reserved terms; use ->addAnd and ->addOr instead
+    $c->addAnd('acceptedName.specificEpithet', 'LIKE', 'fus');
 
-    $c = new Condition('genus', 'LIKE', 'larus');
-    $c->addAnd('species', 'EQUALS', 'pipi')->addAnd('species', 'EQUALS', 'papa');
-    $c->addOr('species', 'LIKE', 'papi');
+    // Second condition
+    $d = new Condition('defaultClassification.kingdom', 'NOT_EQUALS', 'Animalia');
+    $d->addAnd('defaultClassification.kingdom', 'NOT_EQUALS', 'Fungi');
 
-    $d = new Condition('family', 'LIKE', 'laridae');
-
+    // Initialise QuerySpec
     $query = new QuerySpec();
-    $query->sortBy('genus', 'desc')
-        ->setFrom(100)
-        ->setSize('10')
+    // Append search criteria to QuerySpec; methods are identical to Java client
+    // Criteria can be chained as per example below
+    $query->sortBy('acceptedName.genusOrMonomial', true)
+        ->setFrom(0)
+        ->setSize('50')
         ->addCondition($c)
         ->addCondition($d)
         ->setLogicalOperator('or');
 
-    echo $query->getSpec(false);
+    // Initialize Client
+    $client = new Client();
+    // Set service and pass on QuerySpec
+    $client->taxon()->querySpec($query);
+    // Print QuerySpec sent to NBA
+    echo '<p><u>QuerySpec</u>:<br>' . $client->getQuerySpec() . '</p>';
+    // Print NBA result
+    echo '<p><u>NBA response</u>:<br>' . $client->query() . '</p>';

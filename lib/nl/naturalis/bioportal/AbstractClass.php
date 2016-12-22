@@ -1,7 +1,7 @@
 <?php
     namespace nl\naturalis\bioportal;
 
-    class AbstractQuery
+    class AbstractClass
     {
         public function __construct () {
         }
@@ -35,10 +35,17 @@
 		    'FALSE' => false,
 		];
 
-        protected function isPositiveInteger ($i) {
-            if (is_int($i) || ctype_digit($i) && (int)$i > 0) {
+        public function isInteger ($i) {
+            if (ctype_digit(strval($i))) {
                 return true;
             }
             return false;
+        }
+
+        /*
+         * Input: string_with_underscores, output: stringWithUnderscores
+         */
+        public function camelCase ($str) {
+            return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $str))));
         }
     }

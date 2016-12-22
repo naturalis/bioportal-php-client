@@ -1,9 +1,9 @@
 <?php
     namespace nl\naturalis\bioportal;
-    use nl\naturalis\bioportal\AbstractQuery as AbstractQuery;
+    use nl\naturalis\bioportal\AbstractClass as AbstractClass;
     use Exception;
 
-    class QuerySpec extends AbstractQuery
+    class QuerySpec extends AbstractClass
  	{
 		private $_querySpec;
  	    private	$_conditions;
@@ -17,11 +17,12 @@
         }
 
         public function addCondition ($condition = false) {
-            if (!$condition || !($condition instanceof Condition)) {
+            if (!($condition instanceof Condition)) {
                 throw new Exception('Error: invalid condition, should be created ' .
-                    'using Condition class.');
+                    'using the Condition class.');
             }
             $this->_conditions[] = json_decode($condition->getCondition(), true);
+            $this->_querySpec['conditions'] = $this->_conditions;
             return $this;
         }
 
@@ -41,24 +42,27 @@
                 'path' => $path,
                 'ascending' => $this->setSortDirection($direction),
             ];
+            $this->_querySpec['sortFields'] = $this->_sortFields;
             return $this;
         }
 
- 	 	public function setFrom ($from = false) {
- 	     	if (!$from || !$this->isPositiveInteger($from)) {
-                throw new Exception('Error: "from" should be a positive integer.');
+ 	 	public function setFrom ($from = null) {
+ 	     	if (!$this->isInteger($from)) {
+                throw new Exception('Error: "from" should be an integer.');
                 return false;
  	     	}
  	     	$this->_from = (int)$from;
+ 	     	$this->_querySpec['from'] = $this->_from;
             return $this;
  	 	}
 
- 	    public function setSize ($size = false) {
- 	     	if (!$size || !$this->isPositiveInteger($size)) {
-                throw new Exception('Error: "size" should be a positive integer.');
+ 	    public function setSize ($size = null) {
+ 	     	if (!$this->isInteger($size)) {
+                throw new Exception('Error: "size" should be an integer.');
                 return false;
  	     	}
  	     	$this->_size = (int)$size;
+ 	     	$this->_querySpec['size'] = $this->_size;
             return $this;
  	    }
 
@@ -68,6 +72,7 @@
                     implode(', ', self::$logicalOperators));
             }
             $this->_logicalOperator = strtoupper($operator);
+            $this->_querySpec['logicalOperator'] = $this->_logicalOperator;
             return $this;
         }
 
@@ -86,31 +91,12 @@
             return self::$sortDirections[strtoupper($direction)];
         }
 
-        public function getSpec ($encode = true) {
-            $this->setSpec();
+        public function getSpec ($encoded = true) {
             if (!empty($this->_querySpec)) {
+                ksort($this->_querySpec);
                 $d = json_encode($this->_querySpec);
-                return $encode ? urlencode($d) : $d;
+                return $encoded ? urlencode($d) : $d;
             }
             return false;
-        }
-
- 	    private function setSpec () {
- 	        $this->_querySpec = [];
-            if (!empty($this->_conditions)) {
-                $this->_querySpec['conditions'] = $this->_conditions;
-            }
-            if (!empty($this->_logicalOperator)) {
-                $this->_querySpec['logicalOperator'] = $this->_logicalOperator;
-            }
-            if (!empty($this->_sortFields)) {
-                $this->_querySpec['sortFields'] = $this->_sortFields;
-            }
-            if (is_int($this->_from)) {
-                $this->_querySpec['from'] = $this->_from;
-            }
-            if (is_int($this->_size)) {
-                $this->_querySpec['size'] = $this->_size;
-            }
         }
  	}

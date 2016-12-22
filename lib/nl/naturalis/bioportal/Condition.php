@@ -1,9 +1,9 @@
 <?php
     namespace nl\naturalis\bioportal;
-    use nl\naturalis\bioportal\AbstractQuery as AbstractQuery;
+    use nl\naturalis\bioportal\AbstractClass as AbstractClass;
     use Exception;
 
- 	class Condition extends AbstractQuery
+ 	class Condition extends AbstractClass
  	{
         private $_field;
         private $_operator;
