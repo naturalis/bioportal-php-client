@@ -24,7 +24,7 @@
         ->addCondition($d)
         ->setLogicalOperator('or');
 
-    // Initialize Client
+    // Initialise Client
     $client = new Client();
     // Default ini settings (or even complete config!) can be modified if necessary
     $client->setNbaUrl('http://145.136.242.170:8080/v2/');

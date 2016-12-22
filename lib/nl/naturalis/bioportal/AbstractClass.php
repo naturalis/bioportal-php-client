@@ -42,7 +42,7 @@
             return false;
         }
 
-        /*
+        /**
          * Input: string_with_underscores, output: stringWithUnderscores
          */
         public function camelCase ($str) {

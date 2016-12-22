@@ -266,14 +266,13 @@
             }
 		}
 
- 	    /*
+ 	    /**
          * Method to set a value using the appropriate method.
          * 1. $var nba_do_something must translate to _setNbaDoSomething() method
          * 2. _setNbaDoSomething() must return value that has been set
          */
         private function setConfigValue ($var, $val) {
             $method = '_set' . ucfirst($this->camelCase($var));
-            $variable = '_' . $this->camelCase($var);
             if (method_exists($this, $method)) {
                 $res = $this->{$method}($val);
             }
