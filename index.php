@@ -31,6 +31,6 @@
     // Set service and pass on QuerySpec
     $client->taxon()->querySpec($query);
     // Print QuerySpec sent to NBA
-    echo '<p><u>QuerySpec</u>:<br>' . $client->getQuerySpec() . '</p>';
+    echo "QuerySpec:\n" . $client->getQuerySpec() . "\n\n";
     // Print NBA result
-    echo '<p><u>NBA response</u>:<br>' . $client->query() . '</p>';
+    echo "NBA response:\n" . $client->query() . "\n\n";
