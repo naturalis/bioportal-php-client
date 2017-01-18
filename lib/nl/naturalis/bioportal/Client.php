@@ -1,7 +1,6 @@
 <?php
     namespace nl\naturalis\bioportal;
     use nl\naturalis\bioportal\QuerySpec as QuerySpec;
-    use Exception;
 
     final class Client extends AbstractClass
  	{
@@ -98,7 +97,7 @@
          */
 		public function querySpec ($spec) {
 		    if (!$spec || !($spec instanceof QuerySpec)) {
-                throw new Exception('Error: invalid querySpec, should be created ' .
+                throw new \Exception('Error: invalid querySpec, should be created ' .
                     'using the QuerySpec class.');
 		    }
             $this->_querySpec = $spec->getSpec();
@@ -250,7 +249,7 @@
 		private function _setConfig ($config = false) {
 		    $ini = dirname(__FILE__) . '/../../../../config/client.ini';
             if (!file_exists($ini)) {
-                throw new Exception('Error: client.ini is missing! ' .
+                throw new \Exception('Error: client.ini is missing! ' .
                     'Please create a copy of "config/client.ini.tpl".');
             }
             $this->_config = parse_ini_file($ini);
@@ -284,12 +283,12 @@
                 $this->_setConfig();
             }
 		    if (!isset($this->_config['nba_url'])) {
-                throw new Exception('Error: nba_url is not set in client.ini!');
+                throw new \Exception('Error: nba_url is not set in client.ini!');
             }
             $nbaUrl = $url ? $url : $this->_config['nba_url'];
             // Make sure url contains "http" and ends with a slash
             if (strpos($nbaUrl, 'http') === false) {
-                throw new Exception('Error: nba_url "' . $nbaUrl . '" is not a valid url!');
+                throw new \Exception('Error: nba_url "' . $nbaUrl . '" is not a valid url!');
                 return false;
             }
             $this->_nbaUrl = substr($nbaUrl, -1) != '/' ? $nbaUrl . '/' : $nbaUrl;
@@ -301,12 +300,12 @@
                 $this->_setConfig();
             }
 		    if (!isset($this->_config['nba_timeout'])) {
-                throw new Exception('Error: nba_timeout is not set in client.ini!');
+                throw new \Exception('Error: nba_timeout is not set in client.ini!');
             }
             $nbaTimeout = $timeout ? $timeout : $this->_config['nba_timeout'];
             // Only override default if $nbaTimeout is valid
             if (!$this->isInteger($nbaTimeout) || (int) $nbaTimeout < 0) {
-                throw new Exception('Error: nba_timeout "' . $nbaTimeout .
+                throw new \Exception('Error: nba_timeout "' . $nbaTimeout .
                     '" is not a valid integer!');
                 return false;
             }

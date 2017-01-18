@@ -18,7 +18,7 @@
 
         public function addCondition ($condition = false) {
             if (!($condition instanceof Condition)) {
-                throw new Exception('Error: invalid condition, should be created ' .
+                throw new \Exception('Error: invalid condition, should be created ' .
                     'using the Condition class.');
             }
             $this->_conditions[] = json_decode($condition->getCondition(), true);
@@ -28,14 +28,14 @@
 
         public function sortBy ($path = false, $direction = false) {
             if (!$path || !$direction) {
-                throw new Exception('Error: sort by statement incomplete! Statement ' .
+                throw new \Exception('Error: sort by statement incomplete! Statement ' .
                     'should be initialised as a duplet: "path.to.field", ' .
                     '"ASC/DESC" (or [ASC is] true/false).');
                 return false;
             }
             if (!is_bool($direction) &&
                 !array_key_exists(strtoupper($direction), self::$sortDirections)) {
-                throw new Exception('Error: sort direction should match one of the ' .
+                throw new \Exception('Error: sort direction should match one of the ' .
                     'following: ' . implode(', ', array_keys(self::$sortDirections)));
             }
             $this->_sortFields[] = [
@@ -48,7 +48,7 @@
 
  	 	public function setFrom ($from = null) {
  	     	if (!$this->isInteger($from)) {
-                throw new Exception('Error: from parameter "' . $from .
+                throw new \Exception('Error: from parameter "' . $from .
                     '" is not an integer.');
                 return false;
  	     	}
@@ -59,7 +59,7 @@
 
  	    public function setSize ($size = null) {
  	     	if (!$this->isInteger($size)) {
-                throw new Exception('Error: size parameter "' . $size .
+                throw new \Exception('Error: size parameter "' . $size .
                     '" is not an integer.');
                 return false;
  	     	}
@@ -70,7 +70,7 @@
 
         public function setLogicalOperator ($operator = false) {
             if (!in_array(strtoupper($operator), self::$logicalOperators)) {
-                throw new Exception('Error: logical operator should match ' .
+                throw new \Exception('Error: logical operator should match ' .
                     implode(', ', self::$logicalOperators));
             }
             $this->_logicalOperator = strtoupper($operator);

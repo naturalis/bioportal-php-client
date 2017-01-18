@@ -17,7 +17,7 @@
 
         public function addAnd ($field, $operator, $value) {
             if (empty($this->_condition)) {
-                throw new Exception('Error: cannot add "and" statement to empty condition.');
+                throw new \Exception('Error: cannot add "and" statement to empty condition.');
             }
             if ($this->bootstrapCondition($field, $operator, $value)) {
                 $this->_condition['and'][] =
@@ -32,7 +32,7 @@
 
  	    public function addOr ($field, $operator, $value) {
             if (empty($this->_condition)) {
-                throw new Exception('Error: cannot add "or" statement to empty condition.');
+                throw new \Exception('Error: cannot add "or" statement to empty condition.');
             }
             if ($this->bootstrapCondition($field, $operator, $value)) {
                 $this->_condition['or'][] =
@@ -63,7 +63,7 @@
 
         private function bootstrapCondition ($field, $operator, $value) {
             if (!$field || !$operator || !$value) {
-                throw new Exception('Error: condition incomplete! Condition should be ' .
+                throw new \Exception('Error: condition incomplete! Condition should be ' .
                     'initialised as a triplet: "path.to.field", "operator", "value".');
                 return false;
             }
@@ -75,7 +75,7 @@
 
         private function setField ($field) {
             if (empty($field)) {
-                throw new Exception('Error: condition field is not set.');
+                throw new \Exception('Error: condition field is not set.');
                 return false;
             }
             $this->_field = $field;
@@ -83,11 +83,11 @@
 
  	    private function setOperator ($operator) {
             if (empty($operator)) {
-                throw new Exception('Error: condition operator is not set.');
+                throw new \Exception('Error: condition operator is not set.');
                 return false;
             }
             if (!in_array(strtoupper($operator), self::$operators)) {
-                throw new Exception('Error: condition operator should match one
+                throw new \Exception('Error: condition operator should match one
                     of the following: ' . implode(', ', self::$operators));
                 return false;
             }
@@ -96,7 +96,7 @@
 
  	 	private function setValue ($value) {
             if (!$value || $value == '') {
-                throw new Exception('Error: condition value is not set.');
+                throw new \Exception('Error: condition value is not set.');
                 return false;
             }
             $this->_value = $value;
