@@ -181,6 +181,22 @@
 		    return $this->_querySpec;
 		}
 
+		public function getMapping () {
+			$this->_channels = [];
+			foreach ($this->clients as $client) {
+				$this->_channels[] =
+					[
+						'client' => $client,
+						'url' => $this->_nbaUrl . $client . '/metadata/getMapping',
+					];
+			}
+            $this->_query();
+            if (count($this->_channels) == 1) {
+                return $this->_remoteData[$this->clients[0]];
+            }
+            return $this->_remoteData;
+		}
+
 		private function setClientChannels () {
 			$this->_channels = [];
 			foreach ($this->clients as $client) {
@@ -211,12 +227,14 @@
 			for ($i = 0; $i < count($this->_channels); $i++) {
 				$ch[$i] = curl_init();
 				curl_setopt($ch[$i], CURLOPT_URL, $this->_channels[$i]['url']);
-				curl_setopt($ch[$i], CURLOPT_POST, true);
-				curl_setopt($ch[$i], CURLOPT_POSTFIELDS, $this->_channels[$i]['postfields']);
-				curl_setopt($ch[$i], CURLOPT_HTTPHEADER, array('Expect:'));
-				curl_setopt($ch[$i], CURLOPT_RETURNTRANSFER, true);
-				curl_setopt($ch[$i], CURLOPT_HEADER, false);
-				if ($this->_nbaTimeout) {
+        		curl_setopt($ch[$i], CURLOPT_HTTPHEADER, array('Expect:'));
+                curl_setopt($ch[$i], CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch[$i], CURLOPT_HEADER, false);
+			    if (isset($this->_channels[$i]['postfields'])) {
+                    curl_setopt($ch[$i], CURLOPT_POST, true);
+                    curl_setopt($ch[$i], CURLOPT_POSTFIELDS, $this->_channels[$i]['postfields']);
+                }
+                if ($this->_nbaTimeout) {
 					curl_setopt($ch[$i], CURLOPT_TIMEOUT, $this->_nbaTimeout);
 				}
 				curl_multi_add_handle($mh, $ch[$i]);
