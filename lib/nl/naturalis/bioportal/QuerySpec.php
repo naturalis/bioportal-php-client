@@ -1,7 +1,6 @@
 <?php
     namespace nl\naturalis\bioportal;
     use nl\naturalis\bioportal\AbstractClass as AbstractClass;
-    use Exception;
 
     final class QuerySpec extends AbstractClass
  	{
