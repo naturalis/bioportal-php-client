@@ -21,6 +21,8 @@
             'NOT_EQUALS_IC',
             'NOT_IN',
             'NOT_LIKE',
+		    'MATCHES',
+		    'NOT_MATCHES',
 		];
 
 		public static $logicalOperators = [
