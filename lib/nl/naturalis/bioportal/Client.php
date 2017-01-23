@@ -177,8 +177,8 @@
          *
          * @return string $_querySpec
 		 */
-		public function getQuerySpec () {
-		    return $this->_querySpec;
+		public function getQuerySpec ($encoded = false) {
+		    return !$encoded ? urldecode($this->_querySpec) : $this->_querySpec;
 		}
 
 		public function getMapping () {
