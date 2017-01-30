@@ -9,6 +9,7 @@
 		private $_from;
 		private $_size;
 		private $_sortFields;
+		private $_fields;
 		private $_logicalOperator;
 
  	    public function __construct() {
@@ -77,11 +78,24 @@
             return $this;
         }
 
-        public function getCondition () {
+        public function setFields ($fields = null) {
+            if (!is_array($fields)) {
+                throw new \Exception('Error: fields should be a non-empty array');
+            }
+            $this->_fields = $fields;
+            $this->_querySpec['fields'] = $fields;
+            return $this;
+        }
+
+ 	    public function getFields () {
+            return json_encode($this->_fields);
+        }
+
+ 	    public function getCondition () {
             return json_encode($this->_condition);
         }
 
- 	    public function getSortFields () {
+        public function getSortFields () {
             return json_encode($this->_sortFields);
         }
 
