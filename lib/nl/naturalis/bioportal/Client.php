@@ -16,6 +16,7 @@
 			'taxon',
 			'multimedia',
 			'specimen',
+		    'geo',
 		];
 
 		/**
@@ -53,7 +54,7 @@
 			return $this;
 		}
 
-		/**
+ 			/**
 		 * Sets the client to multimedia
 		 *
          * @return class This class (allowing chaining)
@@ -64,16 +65,27 @@
 			return $this;
 		}
 
+ 		/**
+		 * Sets the client to geo
+		 *
+         * @return class This class (allowing chaining)
+		 */
+		public function geo () {
+			$this->clients = [];
+			$this->clients[] = 'geo';
+			return $this;
+		}
+
 		/**
 		 * Sets all three clients
 		 *
-		 * Sets taxon, specimen and multimedia clients, allowing distributed query;
-		 * does not verify query, so use with care!
+		 * Sets taxon, specimen and multimedia clients (so omits geo!),
+		 * allowing distributed query; does not verify query, so use with care!
 		 *
          * @return class This class (allowing chaining)
 		 */
 		public function all () {
-			$this->clients = $this::$nbaClients;
+			$this->clients = array_diff($this::$nbaClients, array('geo'));
 			return $this;
 		}
 
@@ -121,7 +133,7 @@
 		public function query () {
 			$this->setClientChannels();
 			$this->_query();
-            if (count($this->_channels) == 1) {
+			if (count($this->_channels) == 1) {
                 return $this->_remoteData[$this->clients[0]];
             }
             return $this->_remoteData;
@@ -197,14 +209,40 @@
             return $this->_remoteData;
 		}
 
+
+		/*
+		 * Convenience method to retrieve geo areas. The output is comparable to
+		 * getDistinctValuesPerGroup() in the java client. This method additionally
+		 * includes both the id and Dutch name, which are absent from the
+		 * getDistinctValuesPerGroup() output.
+		 */
+		public function getGeoAreas () {
+		    $query = new QuerySpec();
+            $query->setSize(2000)
+                  ->setFields(['sourceSystemId', 'areaType', 'locality', 'countryNL']);
+			$data = json_decode($this->geo()->querySpec($query)->query(), true);
+			// Enhance data
+            foreach ($data['resultSet'] as $i => $row) {
+                $result[$row['areaType']][$i]['id'] = $row['id'];
+                $result[$row['areaType']][$i]['locality_en'] = $row['locality'];
+                $result[$row['areaType']][$i]['locality_nl'] =
+                    !empty($row['countryNL']) && $row['countryNL'] != '\N' ?
+                        $row['countryNL'] : $row['locality'];
+            }
+            return isset($result) ? json_encode($result) : false;
+		}
+
+        /*
+         * Use GET
+         */
 		private function setClientChannels () {
 			$this->_channels = [];
 			foreach ($this->clients as $client) {
 				$this->_channels[] =
 					[
 						'client' => $client,
-						'url' => $this->_nbaUrl . $client . '/query/',
-						'postfields' => '_querySpec=' . $this->_querySpec
+						'url' => $this->_nbaUrl . $client . '/query/' .
+                            '?_querySpec=' . $this->_querySpec
 					];
 			}
 			return $this->_channels;
