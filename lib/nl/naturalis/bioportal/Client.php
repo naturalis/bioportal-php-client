@@ -199,7 +199,8 @@
 				$this->_channels[] =
 					[
 						'client' => $client,
-						'url' => $this->_nbaUrl . $client . '/metadata/getMapping',
+						'url' => $this->_nbaUrl . $client .
+					        '/metadata/getMapping',
 					];
 			}
             $this->_query();
@@ -219,17 +220,36 @@
 		public function getGeoAreas () {
 		    $query = new QuerySpec();
             $query->setSize(2000)
-                  ->setFields(['sourceSystemId', 'areaType', 'locality', 'countryNL']);
+                  ->setFields(['sourceSystemId', 'areaType',
+                     'locality', 'countryNL']);
 			$data = json_decode($this->geo()->querySpec($query)->query(), true);
 			// Enhance data
             foreach ($data['resultSet'] as $i => $row) {
                 $result[$row['areaType']][$i]['id'] = $row['id'];
-                $result[$row['areaType']][$i]['locality_en'] = $row['locality'];
+                $result[$row['areaType']][$i]['locality_en'] =
+                    $row['locality'];
                 $result[$row['areaType']][$i]['locality_nl'] =
                     !empty($row['countryNL']) && $row['countryNL'] != '\N' ?
                         $row['countryNL'] : $row['locality'];
             }
             return isset($result) ? json_encode($result) : false;
+		}
+
+		public function getDistinctValues ($field) {
+			$this->_channels = [];
+			foreach ($this->clients as $client) {
+				$this->_channels[] =
+					[
+						'client' => $client,
+						'url' => $this->_nbaUrl . $client .
+                            '/getDistinctValues/' . $field,
+					];
+			}
+            $this->_query();
+            if (count($this->_channels) == 1) {
+                return $this->_remoteData[$this->clients[0]];
+            }
+            return $this->_remoteData;
 		}
 
         /*
@@ -270,7 +290,8 @@
                 curl_setopt($ch[$i], CURLOPT_HEADER, false);
 			    if (isset($this->_channels[$i]['postfields'])) {
                     curl_setopt($ch[$i], CURLOPT_POST, true);
-                    curl_setopt($ch[$i], CURLOPT_POSTFIELDS, $this->_channels[$i]['postfields']);
+                    curl_setopt($ch[$i], CURLOPT_POSTFIELDS,
+                        $this->_channels[$i]['postfields']);
                 }
                 if ($this->_nbaTimeout) {
 					curl_setopt($ch[$i], CURLOPT_TIMEOUT, $this->_nbaTimeout);
@@ -289,7 +310,8 @@
 				} while ($mrc == CURLM_CALL_MULTI_PERFORM);
 			}
 			for ($i = 0; $i < count($this->_channels); $i++) {
-			    $key = isset($this->_channels[$i]['client']) ? $this->_channels[$i]['client'] : $i;
+			    $key = isset($this->_channels[$i]['client']) ?
+                    $this->_channels[$i]['client'] : $i;
 				$this->_remoteData[$key] = curl_multi_getcontent($ch[$i]);
 				curl_multi_remove_handle($mh, $ch[$i]);
 			}
