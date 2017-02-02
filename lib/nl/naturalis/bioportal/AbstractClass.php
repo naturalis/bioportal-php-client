@@ -50,4 +50,29 @@
         public function camelCase ($str) {
             return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $str))));
         }
+
+    	 /**
+		 * Takes either an array or (comma-separated) string;
+		 * trims spaces and returns object with string and whether input
+		 * was single or multivalue
+		 */
+		 protected function _csvInput ($data) {
+            $multivalue = true;
+            if (!is_array($data)) {
+                $p = array_map('trim', explode(',', $data));
+                if (count($p) == 1) {
+                    $ids[] = trim($data);
+                    $multivalue = false;
+                } else {
+                    $ids = $p;
+                }
+            } else {
+                $ids = array_map('trim', $data);
+            }
+            return (object) [
+                'multivalue' => $multivalue,
+                'input' => implode(',', $ids)
+            ];
+		}
+
     }

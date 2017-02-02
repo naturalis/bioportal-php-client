@@ -212,15 +212,21 @@
             return $this->_remoteData;
 		}
 
-		public function find ($id) {
+		public function find ($id = false) {
 			if (empty($this->clients)) {
                 throw new \Exception('Error: no client(s) set.');
 		    }
+			if (!$id) {
+                throw new \Exception('Error: no id(s) provided for find method.');
+		    }
+		    $r = $this->_csvInput($id);
+            $method = $r->multivalue ? 'findByIds' : 'find';
+
 			foreach ($this->clients as $client) {
 				$this->_channels[] =
 					[
 						'client' => $client,
-						'url' => $this->_nbaUrl . $client . '/find/' . $id,
+						'url' => $this->_nbaUrl . $client . '/' . $method . '/' . $r->input,
 					];
 			}
             $this->_query();
@@ -412,4 +418,5 @@
             $this->_nbaTimeout = $nbaTimeout;
             return $this->_nbaTimeout;
 		}
+
  	}
