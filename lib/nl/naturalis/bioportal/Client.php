@@ -194,13 +194,33 @@
 		}
 
 		public function getMapping () {
-			$this->_channels = [];
+		    if (empty($this->clients)) {
+                throw new \Exception('Error: no client(s) set.');
+		    }
 			foreach ($this->clients as $client) {
 				$this->_channels[] =
 					[
 						'client' => $client,
 						'url' => $this->_nbaUrl . $client .
 					        '/metadata/getMapping',
+					];
+			}
+            $this->_query();
+            if (count($this->_channels) == 1) {
+                return $this->_remoteData[$this->clients[0]];
+            }
+            return $this->_remoteData;
+		}
+
+		public function find ($id) {
+			if (empty($this->clients)) {
+                throw new \Exception('Error: no client(s) set.');
+		    }
+			foreach ($this->clients as $client) {
+				$this->_channels[] =
+					[
+						'client' => $client,
+						'url' => $this->_nbaUrl . $client . '/find/' . $id,
 					];
 			}
             $this->_query();
@@ -236,8 +256,10 @@
 		}
 
 		public function getDistinctValues ($field) {
-			$this->_channels = [];
-			foreach ($this->clients as $client) {
+			if (empty($this->clients)) {
+                throw new \Exception('Error: no client(s) set.');
+		    }
+		    foreach ($this->clients as $client) {
 				$this->_channels[] =
 					[
 						'client' => $client,
