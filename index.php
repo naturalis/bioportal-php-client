@@ -1,6 +1,11 @@
 <?php
     namespace nl\naturalis\bioportal;
-    require_once 'autoloader.php';
+    require_once 'lib/nl/naturalis/bioportal/Autoloader.php';
+
+    // Initialise Client
+    $client = new Client();
+    // Default ini settings (or even complete config!) can be modified if necessary
+    $client->setNbaUrl('http://145.136.242.164:8080/v2/');
 
     // First condition
     // Condition should be initialized with triplet, as per Java client
@@ -24,10 +29,6 @@
         ->addCondition($d)
         ->setLogicalOperator('or');
 
-    // Initialise Client
-    $client = new Client();
-    // Default ini settings (or even complete config!) can be modified if necessary
-    $client->setNbaUrl('http://145.136.242.170:8080/v2/');
     // Set service and pass on QuerySpec
     $client->taxon()->querySpec($query);
     // Print QuerySpec sent to NBA

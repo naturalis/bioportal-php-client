@@ -131,7 +131,7 @@
          * formatted as [client1 => json, client2 => json]
          */
 		public function query () {
-			$this->setClientChannels();
+		    $this->_setClientChannels();
 			$this->_query();
 			if (count($this->_channels) == 1) {
                 return $this->_remoteData[$this->clients[0]];
@@ -181,7 +181,7 @@
          * @return string $_nbaTimeout
 		 */
 		public function getNbaTimeout () {
- 	 	    return $this->_nbaTimeout;
+ 	 	    return (string) $this->_nbaTimeout;
 		}
 
 		/**
@@ -261,9 +261,13 @@
             return isset($result) ? json_encode($result) : false;
 		}
 
-		public function getDistinctValues ($field) {
+		public function getDistinctValues ($field = false) {
 			if (empty($this->clients)) {
                 throw new \Exception('Error: no client(s) set.');
+		    }
+			if (!$field) {
+                throw new \Exception('Error: no field provided for ' .
+                    'getDistinctValues method.');
 		    }
 		    foreach ($this->clients as $client) {
 				$this->_channels[] =
@@ -280,11 +284,54 @@
             return $this->_remoteData;
 		}
 
+		/**
+		 * Accepts an array of querySpec objects
+		 *
+		 * @param unknown $queries
+		 */
+		public function batchQuery ($querySpecs = []) {
+		    if (empty($this->clients)) {
+                throw new \Exception('Error: no batch client set.');
+		    }
+			if (count($this->clients) > 1) {
+                throw new \Exception('Error: batch accepts a single client only.');
+		    }
+		    $this->_reset();
+		    foreach ($querySpecs as $key => $querySpec) {
+                if (!$querySpec instanceof QuerySpec) {
+                    throw new \Exception('Error: batch array should contain valid ' .
+                        'querySpec objects.');
+    		    }
+				$this->_channels[$key] =
+					[
+						'url' => $this->_nbaUrl . $this->clients[0] . '/query/' .
+                            '?_querySpec=' . $querySpec->getSpec()
+					];
+            }
+            $this->_query();
+            return $this->_remoteData;
+		}
+
+		private function _reset () {
+		    $reset = ['_remoteData', '_querySpec', '_channels'];
+		    foreach ($this as $k => $v) {
+		        if (in_array($k, $reset)) {
+		            $this->$k = null;
+		        }
+		    }
+		}
+
         /*
          * Use GET
          */
-		private function setClientChannels () {
-			$this->_channels = [];
+		private function _setClientChannels () {
+		    if (empty($this->clients)) {
+		        throw new \Exception('Error: client(s) not set!');
+		    }
+			if (!$this->_querySpec) {
+                throw new \Exception('Error: querySpec not set!');
+		    }
+		    $this->_channels = [];
 			foreach ($this->clients as $client) {
 				$this->_channels[] =
 					[
@@ -296,35 +343,24 @@
 			return $this->_channels;
 		}
 
-		// Assumes queryData has been set as array values
-		private function setBatchChannels ($d = []) {
-            foreach ((array) $d as $k => $v) {
-                $this->_channels[] =
-    				[
-						'url' => $this->nbaUrl . $this->clients[0] . '/query/',
-						'postfields' => $v
-    				];
-            }
-		}
-
 		private function _query () {
-			$this->_remoteData = [];
+		    $this->_remoteData = [];
 			$mh = curl_multi_init();
-			for ($i = 0; $i < count($this->_channels); $i++) {
-				$ch[$i] = curl_init();
-				curl_setopt($ch[$i], CURLOPT_URL, $this->_channels[$i]['url']);
-        		curl_setopt($ch[$i], CURLOPT_HTTPHEADER, array('Expect:'));
-                curl_setopt($ch[$i], CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch[$i], CURLOPT_HEADER, false);
-			    if (isset($this->_channels[$i]['postfields'])) {
-                    curl_setopt($ch[$i], CURLOPT_POST, true);
-                    curl_setopt($ch[$i], CURLOPT_POSTFIELDS,
-                        $this->_channels[$i]['postfields']);
+			foreach ($this->_channels as $key => $channel) {
+				$ch[$key] = curl_init();
+				curl_setopt($ch[$key], CURLOPT_URL, $this->_channels[$key]['url']);
+        		curl_setopt($ch[$key], CURLOPT_HTTPHEADER, array('Expect:'));
+                curl_setopt($ch[$key], CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch[$key], CURLOPT_HEADER, false);
+			    if (isset($this->_channels[$key]['postfields'])) {
+                    curl_setopt($ch[$key], CURLOPT_POST, true);
+                    curl_setopt($ch[$key], CURLOPT_POSTFIELDS,
+                        $this->_channels[$key]['postfields']);
                 }
                 if ($this->_nbaTimeout) {
-					curl_setopt($ch[$i], CURLOPT_TIMEOUT, $this->_nbaTimeout);
+					curl_setopt($ch[$key], CURLOPT_TIMEOUT, $this->_nbaTimeout);
 				}
-				curl_multi_add_handle($mh, $ch[$i]);
+				curl_multi_add_handle($mh, $ch[$key]);
 			}
 			do {
 				$mrc = curl_multi_exec($mh, $active);
@@ -337,11 +373,11 @@
 					$mrc = curl_multi_exec($mh, $active);
 				} while ($mrc == CURLM_CALL_MULTI_PERFORM);
 			}
-			for ($i = 0; $i < count($this->_channels); $i++) {
-			    $key = isset($this->_channels[$i]['client']) ?
-                    $this->_channels[$i]['client'] : $i;
-				$this->_remoteData[$key] = curl_multi_getcontent($ch[$i]);
-				curl_multi_remove_handle($mh, $ch[$i]);
+			foreach ($this->_channels as $key => $channel) {
+			    $label = isset($this->_channels[$key]['client']) ?
+                    $this->_channels[$key]['client'] : $key;
+				$this->_remoteData[$label] = curl_multi_getcontent($ch[$key]);
+				curl_multi_remove_handle($mh, $ch[$key]);
 			}
 			curl_multi_close($mh);
 			return $this->_remoteData;
@@ -362,8 +398,8 @@
             // If $config is provided by user, change settings
             if ($config) {
                 foreach ((array) $config as $k => $v) {
-                    // setConfigValue() checks if method and variable exist
-                    $val = $this->setConfigValue($k, $v);
+                    // _setConfigValue() checks if method and variable exist
+                    $val = $this->_setConfigValue($k, $v);
                     if ($val) {
                         $this->_config[$k] = $val;
                     }
@@ -376,7 +412,7 @@
          * 1. $var nba_do_something must translate to _setNbaDoSomething() method
          * 2. _setNbaDoSomething() must return value that has been set
          */
-        private function setConfigValue ($var, $val) {
+        private function _setConfigValue ($var, $val) {
             $method = '_set' . ucfirst($this->camelCase($var));
             if (method_exists($this, $method)) {
                 $res = $this->{$method}($val);
