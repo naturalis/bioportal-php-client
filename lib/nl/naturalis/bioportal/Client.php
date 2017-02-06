@@ -130,7 +130,7 @@
          * @return string|array NBA data as json or array with responses
          * formatted as [client1 => json, client2 => json]
          */
-		public function query ($debug = false) {
+		public function query () {
 		    $this->_setClientChannels();
 			$this->_query($debug);
 			if (count($this->_channels) == 1) {
@@ -289,7 +289,7 @@
 		 *
 		 * @param unknown $queries
 		 */
-		public function batchQuery ($querySpecs = [], $debug = false) {
+		public function batchQuery ($querySpecs = []) {
 		    if (empty($this->clients)) {
                 throw new \Exception('Error: no batch client set.');
 		    }
@@ -343,7 +343,7 @@
 			return $this->_channels;
 		}
 
-		private function _query ($debug = false) {
+		private function _query () {
 		    $this->_remoteData = [];
 			$mh = curl_multi_init();
 			foreach ($this->_channels as $key => $channel) {
@@ -352,13 +352,6 @@
         		curl_setopt($ch[$key], CURLOPT_HTTPHEADER, array('Expect:'));
                 curl_setopt($ch[$key], CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch[$key], CURLOPT_HEADER, false);
-
-                // Debug: write curl errors to php log
-                if ($debug) {
-                    curl_setopt($ch[$key], CURLOPT_VERBOSE, true);
-                    $verbose = fopen('php://temp', 'w+');
-                    curl_setopt($ch[$key], CURLOPT_STDERR, $verbose);
-                }
 
 			    if (isset($this->_channels[$key]['postfields'])) {
                     curl_setopt($ch[$key], CURLOPT_POST, true);
@@ -388,13 +381,6 @@
 				curl_multi_remove_handle($mh, $ch[$key]);
 			}
 			curl_multi_close($mh);
-
-			// Append error log if anything has been logged
-            if ($debug && !empty($verbose)) {
-                rewind($verbose);
-                $this->_remoteData['error'] = stream_get_contents($verbose);
-            }
-
 			return $this->_remoteData;
 		}
 

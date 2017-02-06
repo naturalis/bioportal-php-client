@@ -37,7 +37,7 @@
             echo $area . ': ' . $data->totalSize . " specimen(s)\n";
         }    }
     echo "\n\n";
-    if (isset($result['error'])) {
-        echo 'ERROR reported: ' . $result['error'];
+    if (isset($result['debug'])) {
+        echo "Debug info:\n" . $result['debug'];
     }
     echo "\n\n";
