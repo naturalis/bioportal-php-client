@@ -132,7 +132,7 @@
          */
 		public function query () {
 		    $this->_setClientChannels();
-			$this->_query($debug);
+			$this->_query();
 			if (count($this->_channels) == 1) {
                 return $this->_remoteData[$this->clients[0]];
             }
@@ -296,6 +296,13 @@
 			if (count($this->clients) > 1) {
                 throw new \Exception('Error: batch accepts a single client only.');
 		    }
+		    // Warn for batch size limit if test runs successfully
+		    // This is merely an indication -- successs not guaranteed!
+		    if ($this->_maxBatchQuerySize() &&
+                count($querySpecs) > $this->_maxBatchQuerySize()) {
+                throw new \Exception('Error: batch size too large, maximum exceeds '
+                    . $this->_maxBatchQuerySize() . '.');
+		    }
 		    $this->_reset();
 		    foreach ($querySpecs as $key => $querySpec) {
                 if (!$querySpec instanceof QuerySpec) {
@@ -308,7 +315,7 @@
                             '?_querySpec=' . $querySpec->getSpec()
 					];
             }
-            $this->_query($debug);
+            $this->_query();
             return $this->_remoteData;
 		}
 
@@ -454,6 +461,17 @@
             }
             $this->_nbaTimeout = $nbaTimeout;
             return $this->_nbaTimeout;
+		}
+
+		/*
+		 * May test batch max size if extension is enabled
+		 */
+		 private function _maxBatchQuerySize () {
+            $info = posix_getrlimit();
+            if (isset($info['soft openfiles'])) {
+                return $info['soft openfiles'];
+            }
+            return false;
 		}
 
  	}

@@ -24,8 +24,8 @@
         $batch[$country->locality_en] = $query->setSize(10)->addCondition($c);
     }
 
-    // Do the batch query; debug ON (true flag)
-    $result = $client->specimen()->batchQuery($batch, true);
+    // Do the batch query
+    $result = $client->specimen()->batchQuery($batch);
 
     // Print the request time
     echo 'Query took ' . round((microtime(true) - $start), 2) . " seconds\n";
@@ -35,9 +35,15 @@
         $data = json_decode($json);
         if (isset($data->totalSize)) {
             echo $area . ': ' . $data->totalSize . " specimen(s)\n";
-        }    }
+        } else {
+            $errors[$area] = $json;
+        }
+    }
     echo "\n\n";
-    if (isset($result['debug'])) {
-        echo "Debug info:\n" . $result['debug'];
+    if (isset($errors)) {
+        echo "Errors:\n";
+        foreach ($errors as $area => $json) {
+            echo $area . ': ' . "$json\n";
+        }
     }
     echo "\n\n";
