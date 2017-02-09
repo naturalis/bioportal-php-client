@@ -47,6 +47,7 @@
             foreach ($fields as $sortBy) {
                 $this->sortBy($sortBy[0], $sortBy[1]);
             }
+            return $this;
         }
 
  	 	public function setFrom ($from = null) {
