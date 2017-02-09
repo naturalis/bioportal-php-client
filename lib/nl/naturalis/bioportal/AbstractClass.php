@@ -31,10 +31,8 @@
 		];
 
 		public static $sortDirections = [
-		    'ASC' => true,
-		    'DESC' => false,
-		    'TRUE' => true,
-		    'FALSE' => false,
+		    'ASC',
+		    'DESC',
 		];
 
         public function isInteger ($i) {

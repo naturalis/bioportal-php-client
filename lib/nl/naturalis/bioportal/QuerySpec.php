@@ -29,18 +29,15 @@
         public function sortBy ($path = false, $direction = false) {
             if (!$path || !$direction) {
                 throw new \Exception('Error: sort by statement incomplete! Statement ' .
-                    'should be initialised as a duplet: "path.to.field", ' .
-                    '"ASC/DESC" (or [ASC is] true/false).');
-                return false;
+                    'should be initialised as a duplet: "path.to.field", "ASC/DESC".');
             }
-            if (!is_bool($direction) &&
-                !array_key_exists(strtoupper($direction), self::$sortDirections)) {
+            if (!in_array(strtoupper($direction), self::$sortDirections)) {
                 throw new \Exception('Error: sort direction should match one of the ' .
-                    'following: ' . implode(', ', array_keys(self::$sortDirections)));
+                    'following: ' . implode(', ', self::$sortDirections));
             }
             $this->_sortFields[] = [
                 'path' => $path,
-                'ascending' => $this->setSortDirection($direction),
+                'sortOrder' => strtoupper($direction),
             ];
             $this->_querySpec['sortFields'] = $this->_sortFields;
             return $this;
@@ -97,19 +94,12 @@
             return json_encode($this->_fields);
         }
 
- 	    public function getCondition () {
-            return json_encode($this->_condition);
+ 	    public function getConditions () {
+            return json_encode($this->_conditions);
         }
 
         public function getSortFields () {
             return json_encode($this->_sortFields);
-        }
-
-        private function setSortDirection ($direction) {
-            if (is_bool($direction)) {
-                return $direction;
-            }
-            return self::$sortDirections[strtoupper($direction)];
         }
 
         public function getSpec ($encoded = true) {
@@ -120,4 +110,5 @@
             }
             return false;
         }
+
  	}
