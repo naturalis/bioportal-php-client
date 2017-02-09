@@ -95,7 +95,15 @@
             return json_encode($this->_fields);
         }
 
- 	    public function getConditions () {
+ 	        public function getSize () {
+            return json_encode($this->_from);
+        }
+
+ 	    public function getLogicalOperator () {
+            return json_encode($this->_logicalOperator);
+        }
+
+        public function getConditions () {
             return json_encode($this->_conditions);
         }
 
