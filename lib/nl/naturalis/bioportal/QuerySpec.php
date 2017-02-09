@@ -46,6 +46,12 @@
             return $this;
         }
 
+        public function setSortFields ($fields = []) {
+            foreach ($fields as $sortBy) {
+                $this->sortBy($sortBy[0], $sortBy[1]);
+            }
+        }
+
  	 	public function setFrom ($from = null) {
  	     	if (!$this->isInteger($from)) {
                 throw new \Exception('Error: from parameter "' . $from .

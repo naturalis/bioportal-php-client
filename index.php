@@ -22,12 +22,19 @@
     $query = new QuerySpec();
     // Append search criteria to QuerySpec; methods are identical to Java client
     // Criteria can be chained as per example below
-    $query->sortBy('acceptedName.genusOrMonomial', true)
+    $query
         ->setFrom(0)
-        ->setSize('50')
+        ->setSize('50') // valid strings are automatically cast to integers
         ->addCondition($c)
         ->addCondition($d)
-        ->setLogicalOperator('or');
+        ->setLogicalOperator('or')
+        ->sortBy('acceptedName.genusOrMonomial', 'asc');
+        /* Or add multiple criteria directly using setSortFields
+        ->setSortFields([
+            ['acceptedName.genusOrMonomial', 'asc'],
+            ['acceptedName.specificEpithet', 'asc'],
+        ])
+        */
 
     // Set service and pass on QuerySpec
     $client->taxon()->querySpec($query);
