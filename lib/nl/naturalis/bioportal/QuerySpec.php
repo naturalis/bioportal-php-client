@@ -95,7 +95,7 @@
             return json_encode($this->_fields);
         }
 
- 	        public function getSize () {
+ 	    public function getSize () {
             return json_encode($this->_from);
         }
 
