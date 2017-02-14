@@ -109,8 +109,8 @@
          */
 		public function querySpec ($spec) {
 		    if (!$spec || !($spec instanceof QuerySpec)) {
-                throw new \Exception('Error: invalid querySpec, should be created ' .
-                    'using the QuerySpec class.');
+                throw new \InvalidArgumentException('Error: invalid querySpec, ' .
+                	'should be created using the QuerySpec class.');
 		    }
             $this->_querySpec = $spec->getSpec();
             return $this;
@@ -195,7 +195,7 @@
 
 		public function getMapping () {
 		    if (empty($this->clients)) {
-                throw new \Exception('Error: no client(s) set.');
+                throw new \RuntimeException('Error: no client(s) set.');
 		    }
 			foreach ($this->clients as $client) {
 				$this->_channels[] =
@@ -214,13 +214,14 @@
 
 		public function find ($id = false) {
 			if (empty($this->clients)) {
-                throw new \Exception('Error: no client(s) set.');
+                throw new \RuntimeException('Error: no client(s) set.');
 		    }
 			if (!$id) {
-                throw new \Exception('Error: no id(s) provided for find method.');
+                throw new \InvalidArgumentException('Error: no id(s) ' . 
+                	' provided for find method.');
 		    }
-		    $r = $this->_csvInput($id);
-            $method = $r->multivalue ? 'findByIds' : 'find';
+		    $r = $this->commaSeparate($id);
+            $method = strpos($r, ',') === false ? 'find' : 'findByIds';
 
 			foreach ($this->clients as $client) {
 				$this->_channels[] =
@@ -246,8 +247,7 @@
 		public function getGeoAreas () {
 		    $query = new QuerySpec();
             $query->setSize(2000)
-                  ->setFields(['sourceSystemId', 'areaType',
-                     'locality', 'countryNL']);
+                  ->setFields(['sourceSystemId', 'areaType', 'locality', 'countryNL']);
 			$data = json_decode($this->geo()->querySpec($query)->query(), true);
 			// Enhance data
             foreach ($data['resultSet'] as $i => $row) {
@@ -263,11 +263,11 @@
 
 		public function getDistinctValues ($field = false) {
 			if (empty($this->clients)) {
-                throw new \Exception('Error: no client(s) set.');
+                throw new \RuntimeException('Error: no client(s) set.');
 		    }
 			if (!$field) {
-                throw new \Exception('Error: no field provided for ' .
-                    'getDistinctValues method.');
+                throw new \InvalidArgumentException('Error: no field provided for ' .
+                    'getDistinctValues.');
 		    }
 		    foreach ($this->clients as $client) {
 				$this->_channels[] =
@@ -291,23 +291,23 @@
 		 */
 		public function batchQuery ($querySpecs = []) {
 		    if (empty($this->clients)) {
-                throw new \Exception('Error: no batch client set.');
+                throw new \RuntimeException('Error: no batch client set.');
 		    }
 			if (count($this->clients) > 1) {
-                throw new \Exception('Error: batch accepts a single client only.');
+                throw new \RuntimeException('Error: batch accepts a single client only.');
 		    }
 		    // Warn for batch size limit if test runs successfully
 		    // This is merely an indication -- successs not guaranteed!
 		    if ($this->_maxBatchQuerySize() &&
                 count($querySpecs) > $this->_maxBatchQuerySize()) {
-                throw new \Exception('Error: batch size too large, maximum exceeds '
+                throw new \RangeException('Error: batch size too large, maximum exceeds '
                     . $this->_maxBatchQuerySize() . '.');
 		    }
 		    $this->_reset();
 		    foreach ($querySpecs as $key => $querySpec) {
                 if (!$querySpec instanceof QuerySpec) {
-                    throw new \Exception('Error: batch array should contain valid ' .
-                        'querySpec objects.');
+                    throw new \InvalidArgumentException('Error: ' . '
+                    	batch array should contain valid querySpec objects.');
     		    }
 				$this->_channels[$key] =
 					[
@@ -333,10 +333,10 @@
          */
 		private function _setClientChannels () {
 		    if (empty($this->clients)) {
-		        throw new \Exception('Error: client(s) not set!');
+		        throw new \RuntimeException('Error: client(s) not set!');
 		    }
 			if (!$this->_querySpec) {
-                throw new \Exception('Error: querySpec not set!');
+                throw new \RuntimeException('Error: querySpec not set!');
 		    }
 		    $this->_channels = [];
 			foreach ($this->clients as $client) {
@@ -399,7 +399,7 @@
 		private function _setConfig ($config = false) {
 		    $ini = dirname(__FILE__) . '/../../../../config/client.ini';
             if (!file_exists($ini)) {
-                throw new \Exception('Error: client.ini is missing! ' .
+                throw new \RuntimeException('Error: client.ini is missing! ' .
                     'Please create a copy of "config/client.ini.tpl".');
             }
             $this->_config = parse_ini_file($ini);
@@ -433,12 +433,13 @@
                 $this->_setConfig();
             }
 		    if (!isset($this->_config['nba_url'])) {
-                throw new \Exception('Error: nba_url is not set in client.ini!');
+                throw new \RuntimeException('Error: nba_url is not set in client.ini!');
             }
             $nbaUrl = $url ? $url : $this->_config['nba_url'];
             // Make sure url contains "http" and ends with a slash
             if (strpos($nbaUrl, 'http') === false) {
-                throw new \Exception('Error: nba_url "' . $nbaUrl . '" is not a valid url!');
+                throw new \InvalidArgumentException('Error: nba_url "' . $nbaUrl . 
+                	'" is not a valid url!');
                 return false;
             }
             $this->_nbaUrl = substr($nbaUrl, -1) != '/' ? $nbaUrl . '/' : $nbaUrl;
@@ -450,12 +451,12 @@
                 $this->_setConfig();
             }
 		    if (!isset($this->_config['nba_timeout'])) {
-                throw new \Exception('Error: nba_timeout is not set in client.ini!');
+                throw new \RuntimeException('Error: nba_timeout is not set in client.ini!');
             }
             $nbaTimeout = $timeout ? $timeout : $this->_config['nba_timeout'];
             // Only override default if $nbaTimeout is valid
             if (!$this->isInteger($nbaTimeout) || (int) $nbaTimeout < 0) {
-                throw new \Exception('Error: nba_timeout "' . $nbaTimeout .
+                throw new \InvalidArgumentException('Error: nba_timeout "' . $nbaTimeout .
                     '" is not a valid integer!');
                 return false;
             }

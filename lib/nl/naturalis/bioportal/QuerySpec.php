@@ -18,8 +18,8 @@
 
         public function addCondition ($condition = false) {
             if (!($condition instanceof Condition)) {
-                throw new \Exception('Error: invalid condition, should be created ' .
-                    'using the Condition class.');
+                throw new \InvalidArgumentException('Error: invalid condition, ' .
+                	'should be created using the Condition class.');
             }
             $this->_conditions[] = json_decode($condition->getCondition(), true);
             $this->_querySpec['conditions'] = $this->_conditions;
@@ -28,11 +28,13 @@
 
         public function sortBy ($path = false, $direction = false) {
             if (!$path || !$direction) {
-                throw new \Exception('Error: sort by statement incomplete! Statement ' .
+                throw new \InvalidArgumentException('Error: ' .
+                	'sort by statement incomplete! Statement ' .
                     'should be initialised as a duplet: "path.to.field", "ASC/DESC".');
             }
             if (!in_array(strtoupper($direction), self::$sortDirections)) {
-                throw new \Exception('Error: sort direction should match one of the ' .
+                throw new \UnexpectedValueException('Error: ' .
+                	'sort direction should match one of the ' .
                     'following: ' . implode(', ', self::$sortDirections));
             }
             $this->_sortFields[] = [
@@ -52,8 +54,8 @@
 
  	 	public function setFrom ($from = null) {
  	     	if (!$this->isInteger($from)) {
-                throw new \Exception('Error: from parameter "' . $from .
-                    '" is not an integer.');
+                throw new \InvalidArgumentException('Error: from parameter "' . 
+                	$from . '" is not an integer.');
                 return false;
  	     	}
  	     	$this->_from = (int)$from;
@@ -63,8 +65,8 @@
 
  	    public function setSize ($size = null) {
  	     	if (!$this->isInteger($size)) {
-                throw new \Exception('Error: size parameter "' . $size .
-                    '" is not an integer.');
+                throw new \InvalidArgumentException('Error: size parameter "' . 
+                	$size . '" is not an integer.');
                 return false;
  	     	}
  	     	$this->_size = (int)$size;
@@ -74,7 +76,8 @@
 
         public function setLogicalOperator ($operator = false) {
             if (!in_array(strtoupper($operator), self::$logicalOperators)) {
-                throw new \Exception('Error: logical operator should match ' .
+                throw new \UnexpectedValueException('Error: ' .
+                	'logical operator should match ' .
                     implode(', ', self::$logicalOperators));
             }
             $this->_logicalOperator = strtoupper($operator);
@@ -84,7 +87,8 @@
 
         public function setFields ($fields = null) {
             if (!is_array($fields)) {
-                throw new \Exception('Error: fields should be a non-empty array');
+                throw new \InvalidArgumentException('Error: ' .
+                	'fields should be a non-empty array');
             }
             $this->_fields = $fields;
             $this->_querySpec['fields'] = $fields;

@@ -51,26 +51,20 @@
 
     	 /**
 		 * Takes either an array or (comma-separated) string;
-		 * trims spaces and returns object with string and whether input
-		 * was single or multivalue
+		 * trims spaces and returns object with string
 		 */
-		 protected function _csvInput ($data) {
-            $multivalue = true;
+		 public function commaSeparate ($data = '') {
             if (!is_array($data)) {
                 $p = array_map('trim', explode(',', $data));
                 if (count($p) == 1) {
                     $ids[] = trim($data);
-                    $multivalue = false;
                 } else {
                     $ids = $p;
                 }
             } else {
                 $ids = array_map('trim', $data);
             }
-            return (object) [
-                'multivalue' => $multivalue,
-                'input' => implode(',', $ids)
-            ];
+            return implode(',', $ids);
 		}
 
     }
