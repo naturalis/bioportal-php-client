@@ -1,5 +1,6 @@
 <?php
     namespace nl\naturalis\bioportal;
+    use nl\naturalis\bioportal\Condition as Condition;
     use nl\naturalis\bioportal\AbstractClass as AbstractClass;
 
     final class QuerySpec extends AbstractClass
@@ -29,8 +30,8 @@
         public function sortBy ($path = false, $direction = false) {
             if (!$path || !$direction) {
                 throw new \InvalidArgumentException('Error: ' .
-                	'sort by statement incomplete! Statement ' .
-                    'should be initialised as a duplet: "path.to.field", "ASC/DESC".');
+                	'sort by statement incomplete! Statement should be ' .
+                    'initialised as a duplet: "path.to.field", "ASC/DESC".');
             }
             if (!in_array(strtoupper($direction), self::$sortDirections)) {
                 throw new \UnexpectedValueException('Error: ' .
@@ -95,12 +96,16 @@
             return $this;
         }
 
- 	    public function getFields () {
-            return json_encode($this->_fields);
+        public function getFields () {
+        	return json_encode($this->_fields);
         }
-
- 	    public function getSize () {
-            return json_encode($this->_from);
+        
+        public function getFrom () {
+        	return json_encode($this->_from);
+        }
+        
+        public function getSize () {
+            return json_encode($this->_size);
         }
 
  	    public function getLogicalOperator () {
