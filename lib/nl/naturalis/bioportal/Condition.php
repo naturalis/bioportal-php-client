@@ -11,22 +11,19 @@
 
         public function __construct ($field = false, $operator = false, $value = null) {
             parent::__construct();
-            if ($this->_bootstrapCondition($field, $operator, $value)) {
-            	$this->_condition = $this->_setCondition();
-            }
+            $this->_bootstrapCondition($field, $operator, $value);
+            $this->_condition = $this->_setCondition();
         }
 
         public function addAnd ($field, $operator, $value = null) {
-            if ($this->_bootstrapCondition($field, $operator, $value)) {
-                $this->_condition['and'][] = $this->_setCondition();
-            }
+        	$this->_bootstrapCondition($field, $operator, $value);
+            $this->_condition['and'][] = $this->_setCondition();
             return $this;
         }
 
  	    public function addOr ($field, $operator, $value = null) {
-            if ($this->_bootstrapCondition($field, $operator, $value)) {
-                $this->_condition['or'][] = $this->_setCondition();
-            }
+            $this->_bootstrapCondition($field, $operator, $value);
+            $this->_condition['or'][] = $this->_setCondition();
             return $this;
  	    }
 
