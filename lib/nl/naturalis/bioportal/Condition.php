@@ -9,39 +9,23 @@
         private $_value;
         private $_condition;
 
-        public function __construct ($field = false, $operator = false, $value = false) {
+        public function __construct ($field = false, $operator = false, $value = null) {
             parent::__construct();
-            $this->setCondition($field, $operator, $value);
+            if ($this->_bootstrapCondition($field, $operator, $value)) {
+            	$this->_condition = $this->_setCondition();
+            }
         }
 
-        public function addAnd ($field, $operator, $value) {
-            if (empty($this->_condition)) {
-                throw new \RuntimeException('Error: ' . 
-                	'cannot add "and" statement to empty condition.');
-            }
-            if ($this->bootstrapCondition($field, $operator, $value)) {
-                $this->_condition['and'][] =
-                    [
-        				'field' => $this->_field,
-        				'operator' => $this->_operator,
-        				'value' => $this->_value
-        			];
+        public function addAnd ($field, $operator, $value = null) {
+            if ($this->_bootstrapCondition($field, $operator, $value)) {
+                $this->_condition['and'][] = $this->_setCondition();
             }
             return $this;
         }
 
- 	    public function addOr ($field, $operator, $value) {
-            if (empty($this->_condition)) {
-                throw new \RuntimeException('Error: ' . 
-                	'cannot add "or" statement to empty condition.');
-            }
-            if ($this->bootstrapCondition($field, $operator, $value)) {
-                $this->_condition['or'][] =
-                    [
-        				'field' => $this->_field,
-        				'operator' => $this->_operator,
-        				'value' => $this->_value
-        			];
+ 	    public function addOr ($field, $operator, $value = null) {
+            if ($this->_bootstrapCondition($field, $operator, $value)) {
+                $this->_condition['or'][] = $this->_setCondition();
             }
             return $this;
  	    }
@@ -50,32 +34,41 @@
             return json_encode($this->_condition);
         }
 
-        private function setCondition ($field, $operator, $value) {
-            if ($this->bootstrapCondition($field, $operator, $value)) {
-                $this->_condition =
-                    [
-        				'field' => $this->_field,
-        				'operator' => $this->_operator,
-        				'value' => $this->_value
-        			];
-            }
-
-        }
-
-        private function bootstrapCondition ($field, $operator, $value) {
-            if (!$field || !$operator || !$value) {
+        private function _bootstrapCondition ($field, $operator, $value) {
+            if (!$field || !$operator) {
                 throw new \InvalidArgumentException('Error: condition incomplete! ' .
                 	'Condition should be initialised as a triplet: ' .
-                	'"path.to.field", "operator", "value".');
-                return false;
+                	'"path.to.field", "operator", "value". An empty/not-empty query ' .
+                	' should be formatted as a duplet without a value: "path.to.field", ' .
+                	'"EQUALS/NOT_EQUALS"');
             }
-            $this->setField($field);
-            $this->setOperator($operator);
-            $this->setValue($value);
+            // When passing null as value, operator must match EQUALS/NOT_EQUALS
+            if ($field && $operator && is_null($value) && 
+            	!in_array(strtoupper($operator), ['EQUALS', 'NOT_EQUALS'])) {
+             	throw new \InvalidArgumentException('Error: condition incorrectly ' . 
+            		'formatted. An empty/not-empty query should be formatted ' .
+            		'as a duplet without a value: "path.to.field", "EQUALS/NOT_EQUALS"');
+            }
+            $this->_setField($field);
+            $this->_setOperator($operator);
+            $this->_setValue($value);
             return true;
         }
 
-        private function setField ($field) {
+        /*
+         * Formats condition array; specifically excludes value if null, to allow
+         * empty/not-empty queries. Should only be called after _bootstrapCondition().
+         */
+        private function _setCondition () {
+        	$c['field'] = $this->_field;
+        	$c['operator'] = $this->_operator;
+        	if (!is_null($this->_value)) {
+        		$c['value'] = $this->_value;
+        	}
+        	return $c;
+        }
+        
+        private function _setField ($field) {
             if (empty($field)) {
                 throw new \InvalidArgumentException('Error: condition field is not set.');
                 return false;
@@ -83,7 +76,7 @@
             $this->_field = $field;
         }
 
- 	    private function setOperator ($operator) {
+ 	    private function _setOperator ($operator) {
             if (empty($operator)) {
                 throw new \InvalidArgumentException('Error: condition operator is not set.');
                 return false;
@@ -97,9 +90,12 @@
             $this->_operator = strtoupper($operator);
         }
 
- 	 	private function setValue ($value) {
-            if (!$value || $value == '') {
-                throw new \InvalidArgumentException('Error: condition value is not set.');
+ 	 	/*
+ 	 	 * Value can be null but not an empty string
+ 	 	 */
+ 	 	private function _setValue ($value) {
+            if (empty($value) && !is_null($value)) {
+                throw new \InvalidArgumentException('Error: condition value is empty.');
                 return false;
             }
             $this->_value = $value;
