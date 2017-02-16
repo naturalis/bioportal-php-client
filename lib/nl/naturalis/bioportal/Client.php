@@ -181,7 +181,7 @@
          * @return string $_nbaTimeout
 		 */
 		public function getNbaTimeout () {
- 	 	    return (string) $this->_nbaTimeout;
+ 	 	    return $this->_nbaTimeout;
 		}
 
 		/**
@@ -222,12 +222,11 @@
 		    }
 		    $r = $this->commaSeparate($id);
             $method = strpos($r, ',') === false ? 'find' : 'findByIds';
-
 			foreach ($this->clients as $client) {
 				$this->_channels[] =
 					[
 						'client' => $client,
-						'url' => $this->_nbaUrl . $client . '/' . $method . '/' . $r->input,
+						'url' => $this->_nbaUrl . $client . '/' . $method . '/' . $r,
 					];
 			}
             $this->_query();
@@ -252,9 +251,9 @@
 			// Enhance data
             foreach ($data['resultSet'] as $i => $row) {
                 $result[$row['areaType']][$i]['id'] = $row['id'];
-                $result[$row['areaType']][$i]['locality_en'] =
+                $result[$row['areaType']][$i]['locality']['en'] =
                     $row['locality'];
-                $result[$row['areaType']][$i]['locality_nl'] =
+                $result[$row['areaType']][$i]['locality']['nl'] =
                     !empty($row['countryNL']) && $row['countryNL'] != '\N' ?
                         $row['countryNL'] : $row['locality'];
             }
