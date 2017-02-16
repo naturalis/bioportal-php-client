@@ -6,37 +6,37 @@ class ConditionTest extends \PHPUnit_Framework_TestCase
 {
 	public function testCorrectlyConstructedCondition ()
 	{
-		$result = '{"field":"acceptedName.genusOrMonomial",' .
+		$expected = '{"field":"acceptedName.genusOrMonomial",' .
 			'"operator":"EQUALS_IC","value":"larus"}';
 		$condition = new Condition('acceptedName.genusOrMonomial', 'EQUALS_IC', 'larus');
-		$this->assertEquals($result, $condition->getCondition());
+		$this->assertEquals($expected, $condition->getCondition());
 	}
 	
 	public function testCorrectlyConstructedAddAndCondition ()
 	{
-		$result = '{"field":"acceptedName.genusOrMonomial","operator":"EQUALS_IC",' .
+		$expected = '{"field":"acceptedName.genusOrMonomial","operator":"EQUALS_IC",' .
 				'"value":"larus","and":[{"field":"acceptedName.specificEpithet",' .
 				'"operator":"MATCHES","value":"fuscus"}]}';
 		$condition = new Condition('acceptedName.genusOrMonomial', 'EQUALS_IC', 'larus');
 		$condition->addAnd('acceptedName.specificEpithet', 'MATCHES', 'fuscus');
-		$this->assertEquals($result, $condition->getCondition());
+		$this->assertEquals($expected, $condition->getCondition());
 	}
 	
 	public function testCorrectlyConstructedAddOrCondition ()
 	{
-		$result = '{"field":"acceptedName.genusOrMonomial","operator":"EQUALS_IC",' .
+		$expected = '{"field":"acceptedName.genusOrMonomial","operator":"EQUALS_IC",' .
 				'"value":"larus","or":[{"field":"acceptedName.specificEpithet",' .
 				'"operator":"MATCHES","value":"fuscus"}]}';
 		$condition = new Condition('acceptedName.genusOrMonomial', 'EQUALS_IC', 'larus');
 		$condition->addOr('acceptedName.specificEpithet', 'MATCHES', 'fuscus');
-		$this->assertEquals($result, $condition->getCondition());
+		$this->assertEquals($expected, $condition->getCondition());
 	}
 	
 	public function testConditionWithCorrectlyConstructedEmptyValue ()
 	{
-		$result = '{"field":"acceptedName.genusOrMonomial","operator":"NOT_EQUALS"}';
+		$expected = '{"field":"acceptedName.genusOrMonomial","operator":"NOT_EQUALS"}';
 		$condition = new Condition('acceptedName.genusOrMonomial', 'NOT_EQUALS');
-		$this->assertEquals($result, $condition->getCondition());
+		$this->assertEquals($expected, $condition->getCondition());
 	}
 	
 	public function testConditionWithoutConstructor ()

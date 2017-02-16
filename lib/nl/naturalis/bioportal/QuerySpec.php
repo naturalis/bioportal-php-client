@@ -27,11 +27,12 @@
             return $this;
         }
 
-        public function sortBy ($path = false, $direction = false) {
-            if (!$path || !$direction) {
+        public function sortBy ($path = false, $direction = 'ASC') {
+            if (!$path || !is_string($path)) {
                 throw new \InvalidArgumentException('Error: ' .
-                	'sort by statement incomplete! Statement should be ' .
-                    'initialised as a duplet: "path.to.field", "ASC/DESC".');
+                	'sort by statement incomplete! Statement should contain the path ' .
+                	'to the field to sort on (default sort order is ASC), ' . 
+                	'or a duplet: path.to.field, ASC/DESC".');
             }
             if (!in_array(strtoupper($direction), self::$sortDirections)) {
                 throw new \UnexpectedValueException('Error: ' .
@@ -47,28 +48,27 @@
         }
 
         public function setSortFields ($fields = []) {
+        	$this->_sortFields = [];
             foreach ($fields as $sortBy) {
-                $this->sortBy($sortBy[0], $sortBy[1]);
+                $this->sortBy($sortBy[0], isset($sortBy[1]) ? $sortBy[1] : 'ASC');
             }
             return $this;
         }
 
- 	 	public function setFrom ($from = null) {
+ 	 	public function setFrom ($from = false) {
  	     	if (!$this->isInteger($from)) {
                 throw new \InvalidArgumentException('Error: from parameter "' . 
                 	$from . '" is not an integer.');
-                return false;
  	     	}
  	     	$this->_from = (int)$from;
  	     	$this->_querySpec['from'] = $this->_from;
             return $this;
  	 	}
 
- 	    public function setSize ($size = null) {
+ 	    public function setSize ($size = false) {
  	     	if (!$this->isInteger($size)) {
                 throw new \InvalidArgumentException('Error: size parameter "' . 
                 	$size . '" is not an integer.');
-                return false;
  	     	}
  	     	$this->_size = (int)$size;
  	     	$this->_querySpec['size'] = $this->_size;
@@ -86,13 +86,13 @@
             return $this;
         }
 
-        public function setFields ($fields = null) {
-            if (!is_array($fields)) {
+        public function setFields ($fields = []) {
+            if (!is_array($fields) || empty($fields)) {
                 throw new \InvalidArgumentException('Error: ' .
                 	'fields should be a non-empty array');
             }
             $this->_fields = $fields;
-            $this->_querySpec['fields'] = $fields;
+            $this->_querySpec['fields'] = $this->_fields;
             return $this;
         }
 
