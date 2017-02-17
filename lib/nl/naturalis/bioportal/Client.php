@@ -6,11 +6,13 @@
  	{
 		private $_nbaUrl;
 		private $_nbaTimeout = 5;
+		private $_maxBatchSize = 1000;
 		private $_config;
 
 		private $_querySpec;
 		private $_channels;
 		private $_remoteData;
+		private $_clients;
 
 		public static $nbaClients = [
 			'taxon',
@@ -28,8 +30,19 @@
          * @return void
 		 */
 		public function __construct () {
-            $this->_setNbaUrl();
+			parent::__construct();
+			$this->_setNbaUrl();
             $this->_setNbaTimeout();
+		}
+		
+		/*
+		 * Catch common mistake where client is called without brackets
+		 */
+		public function __get ($value) {
+			if (!property_exists($this, $value) && in_array($value, $this::$nbaClients)) {
+				throw new \BadMethodCallException(ucfirst($value) . ' client should be ' .
+					"called using ->{$value}()->, not ->{$value}->.");
+			}
 		}
 
 		/**
@@ -38,8 +51,8 @@
          * @return Returns this instance
 		 */
 		public function taxon () {
-			$this->clients = [];
-			$this->clients[] = 'taxon';
+			$this->_clients = [];
+			$this->_clients[] = 'taxon';
 			return $this;
 		}
 
@@ -49,19 +62,19 @@
          * @return Returns this instance
 		 */
 		public function specimen () {
-			$this->clients = [];
-			$this->clients[] = 'specimen';
+			$this->_clients = [];
+			$this->_clients[] = 'specimen';
 			return $this;
 		}
 
- 			/**
+ 		/**
 		 * Sets the client to multimedia
 		 *
          * @return class This class (allowing chaining)
 		 */
 		public function multimedia () {
-			$this->clients = [];
-			$this->clients[] = 'multimedia';
+			$this->_clients = [];
+			$this->_clients[] = 'multimedia';
 			return $this;
 		}
 
@@ -71,8 +84,8 @@
          * @return class This class (allowing chaining)
 		 */
 		public function geo () {
-			$this->clients = [];
-			$this->clients[] = 'geo';
+			$this->_clients = [];
+			$this->_clients[] = 'geo';
 			return $this;
 		}
 
@@ -85,20 +98,24 @@
          * @return class This class (allowing chaining)
 		 */
 		public function all () {
-			$this->clients = array_diff($this::$nbaClients, array('geo'));
+			$this->_clients = array_diff($this::$nbaClients, array('geo'));
 			return $this;
 		}
 
 		/**
 		 * Returns publicly available clients
 		 *
-         * @return class This class (allowing chaining)
+         * @return json All available classes in the client
 		 */
 		public function getAllClients () {
-			return (object) $this::$nbaClients;
+			return json_encode($this::$nbaClients);
 		}
 
-        /**
+		public function getClients () {
+			return json_encode($this->_clients);
+		}
+		
+		/**
          * Sets QuerySpec
          *
          * Imports QuerySpec object from QuerySpec class
@@ -134,7 +151,7 @@
 		    $this->_setClientChannels();
 			$this->_query();
 			if (count($this->_channels) == 1) {
-                return $this->_remoteData[$this->clients[0]];
+                return $this->_remoteData[$this->_clients[0]];
             }
             return $this->_remoteData;
 		}
@@ -194,10 +211,8 @@
 		}
 
 		public function getMapping () {
-		    if (empty($this->clients)) {
-                throw new \RuntimeException('Error: no client(s) set.');
-		    }
-			foreach ($this->clients as $client) {
+		    $this->_bootstrapClient();
+			foreach ($this->_clients as $client) {
 				$this->_channels[] =
 					[
 						'client' => $client,
@@ -207,22 +222,20 @@
 			}
             $this->_query();
             if (count($this->_channels) == 1) {
-                return $this->_remoteData[$this->clients[0]];
+                return $this->_remoteData[$this->_clients[0]];
             }
             return $this->_remoteData;
 		}
 
 		public function find ($id = false) {
-			if (empty($this->clients)) {
-                throw new \RuntimeException('Error: no client(s) set.');
-		    }
+			$this->_bootstrapClient();
 			if (!$id) {
                 throw new \InvalidArgumentException('Error: no id(s) ' . 
-                	' provided for find method.');
+                	'provided for find method.');
 		    }
 		    $r = $this->commaSeparate($id);
             $method = strpos($r, ',') === false ? 'find' : 'findByIds';
-			foreach ($this->clients as $client) {
+			foreach ($this->_clients as $client) {
 				$this->_channels[] =
 					[
 						'client' => $client,
@@ -231,7 +244,7 @@
 			}
             $this->_query();
             if (count($this->_channels) == 1) {
-                return $this->_remoteData[$this->clients[0]];
+                return $this->_remoteData[$this->_clients[0]];
             }
             return $this->_remoteData;
 		}
@@ -261,14 +274,12 @@
 		}
 
 		public function getDistinctValues ($field = false) {
-			if (empty($this->clients)) {
-                throw new \RuntimeException('Error: no client(s) set.');
-		    }
+			$this->_bootstrapClient();
 			if (!$field) {
                 throw new \InvalidArgumentException('Error: no field provided for ' .
                     'getDistinctValues.');
 		    }
-		    foreach ($this->clients as $client) {
+		    foreach ($this->_clients as $client) {
 				$this->_channels[] =
 					[
 						'client' => $client,
@@ -278,7 +289,7 @@
 			}
             $this->_query();
             if (count($this->_channels) == 1) {
-                return $this->_remoteData[$this->clients[0]];
+                return $this->_remoteData[$this->_clients[0]];
             }
             return $this->_remoteData;
 		}
@@ -289,18 +300,15 @@
 		 * @param unknown $queries
 		 */
 		public function batchQuery ($querySpecs = []) {
-		    if (empty($this->clients)) {
-                throw new \RuntimeException('Error: no batch client set.');
-		    }
-			if (count($this->clients) > 1) {
+			$this->_bootstrapClient();
+			if (count($this->_clients) > 1) {
                 throw new \RuntimeException('Error: batch accepts a single client only.');
 		    }
 		    // Warn for batch size limit if test runs successfully
 		    // This is merely an indication -- successs not guaranteed!
-		    if ($this->_maxBatchQuerySize() &&
-                count($querySpecs) > $this->_maxBatchQuerySize()) {
+		    if (count($querySpecs) > $this->getMaxBatchSize()) {
                 throw new \RangeException('Error: batch size too large, maximum exceeds '
-                    . $this->_maxBatchQuerySize() . '.');
+                    . $this->getMaxBatchSize() . '.');
 		    }
 		    $this->_reset();
 		    foreach ($querySpecs as $key => $querySpec) {
@@ -310,35 +318,46 @@
     		    }
 				$this->_channels[$key] =
 					[
-						'url' => $this->_nbaUrl . $this->clients[0] . '/query/' .
+						'url' => $this->_nbaUrl . $this->_clients[0] . '/query/' .
                             '?_querySpec=' . $querySpec->getSpec()
 					];
             }
             $this->_query();
             return $this->_remoteData;
 		}
-
+		
+		/*
+		 * Maximum of simulataneous requests
+		 */
+		public function getMaxBatchSize () {
+			return $this->_maxBatchSize;
+		}
+		
 		private function _reset () {
 		    $reset = ['_remoteData', '_querySpec', '_channels'];
 		    foreach ($this as $k => $v) {
 		        if (in_array($k, $reset)) {
-		            $this->$k = null;
+		            $this->{$k} = null;
 		        }
 		    }
 		}
 
-        /*
+		private function _bootstrapClient () {
+			if (empty($this->_clients)) {
+				throw new \RuntimeException('Error: client(s) not set!');
+			}
+			return true;
+		}
+		
+		/*
          * Use GET
          */
 		private function _setClientChannels () {
-		    if (empty($this->clients)) {
-		        throw new \RuntimeException('Error: client(s) not set!');
-		    }
 			if (!$this->_querySpec) {
                 throw new \RuntimeException('Error: querySpec not set!');
 		    }
 		    $this->_channels = [];
-			foreach ($this->clients as $client) {
+			foreach ($this->_clients as $client) {
 				$this->_channels[] =
 					[
 						'client' => $client,
@@ -435,11 +454,10 @@
                 throw new \RuntimeException('Error: nba_url is not set in client.ini!');
             }
             $nbaUrl = $url ? $url : $this->_config['nba_url'];
-            // Make sure url contains "http" and ends with a slash
-            if (strpos($nbaUrl, 'http') === false) {
+            // Make sure url is valid and ends with a slash
+            if (filter_var($nbaUrl, FILTER_VALIDATE_URL) === false) {
                 throw new \InvalidArgumentException('Error: nba_url "' . $nbaUrl . 
                 	'" is not a valid url!');
-                return false;
             }
             $this->_nbaUrl = substr($nbaUrl, -1) != '/' ? $nbaUrl . '/' : $nbaUrl;
             return $this->_nbaUrl;
@@ -457,21 +475,9 @@
             if (!$this->isInteger($nbaTimeout) || (int) $nbaTimeout < 0) {
                 throw new \InvalidArgumentException('Error: nba_timeout "' . $nbaTimeout .
                     '" is not a valid integer!');
-                return false;
             }
             $this->_nbaTimeout = $nbaTimeout;
             return $this->_nbaTimeout;
-		}
-
-		/*
-		 * May test batch max size if extension is enabled
-		 */
-		 private function _maxBatchQuerySize () {
-            $info = posix_getrlimit();
-            if (isset($info['soft openfiles'])) {
-                return $info['soft openfiles'];
-            }
-            return false;
 		}
 
  	}
