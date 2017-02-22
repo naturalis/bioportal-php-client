@@ -47,10 +47,48 @@
  	    	return $this;
  	    }
 
-        public function getCondition () {
-            return json_encode($this->_condition);
+ 	    public function getCondition () {
+ 	    	if (isset($this->_condition)) {
+ 	    		return json_encode($this->_condition);
+ 	    	}
+ 	    	return false;
+ 	    }
+ 	    
+ 	    public function getAnd () {
+ 	    	if (isset($this->_condition['and'])) {
+ 	    		return json_encode($this->_condition['and']);
+ 	    	}
+ 	    	return false;
+ 	    }
+ 	    
+ 	    public function getOr () {
+ 	    	if (isset($this->_condition['or'])) {
+ 	    		return json_encode($this->_condition['or']);
+ 	    	}
+ 	    	return false;
+ 	    }
+ 	    
+ 	    public function getField () {
+        	if (isset($this->_condition['field'])) {
+        		return json_encode($this->_condition['field']);
+        	}
+        	return false;
         }
-
+        
+        public function getOperator () {
+        	if (isset($this->_condition['operator'])) {
+        		return json_encode($this->_condition['operator']);
+        	}
+        	return false;
+        }
+        
+        public function getValue () {
+        	if (isset($this->_condition['value'])) {
+        		return json_encode($this->_condition['value']);
+        	}
+        	return false;
+        }
+        
         private function _bootstrapCondition ($field, $operator, $value) {
             if (!$field || !$operator) {
                 throw new \InvalidArgumentException('Error: condition incomplete! ' .
