@@ -12,7 +12,7 @@ class ConditionTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals($expected, $condition->getCondition());
 	}
 	
-	public function testCorrectlyConstructedAddAndCondition ()
+	public function testCorrectlyConstructedAddAndConditionWithThreeParameters ()
 	{
 		$expected = '{"field":"acceptedName.genusOrMonomial","operator":"EQUALS_IC",' .
 				'"value":"larus","and":[{"field":"acceptedName.specificEpithet",' .
@@ -22,7 +22,29 @@ class ConditionTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals($expected, $condition->getCondition());
 	}
 	
-	public function testCorrectlyConstructedAddOrCondition ()
+	public function testCorrectlyConstructedAddAndConditionWithCondition ()
+	{
+		$expected = '{"field":"acceptedName.genusOrMonomial","operator":"EQUALS_IC",' .
+				'"value":"larus","and":[{"field":"acceptedName.specificEpithet",' .
+				'"operator":"MATCHES","value":"fuscus"}]}';
+		$condition = new Condition('acceptedName.genusOrMonomial', 'EQUALS_IC', 'larus');
+		$condition2 = new Condition('acceptedName.specificEpithet', 'MATCHES', 'fuscus');
+		$condition->addAnd($condition2);
+		$this->assertEquals($expected, $condition->getCondition());
+	}
+	
+	public function testCorrectlyConstructedAddAndConditionWithIncorrectConditionAsArray ()
+	{
+		$condition = new Condition('acceptedName.genusOrMonomial', 'EQUALS_IC', 'larus');
+		$condition2 = ['acceptedName.specificEpithet', 'MATCHES', 'fuscus'];
+		$e = new \stdClass();
+		try {
+			$condition->addAnd($condition2);
+		} catch (\Exception $e) {}
+		$this->assertEquals('InvalidArgumentException', get_class($e));
+	}	
+	
+	public function testCorrectlyConstructedAddOrConditionWithThreeParameters ()
 	{
 		$expected = '{"field":"acceptedName.genusOrMonomial","operator":"EQUALS_IC",' .
 				'"value":"larus","or":[{"field":"acceptedName.specificEpithet",' .
@@ -30,6 +52,28 @@ class ConditionTest extends \PHPUnit_Framework_TestCase
 		$condition = new Condition('acceptedName.genusOrMonomial', 'EQUALS_IC', 'larus');
 		$condition->addOr('acceptedName.specificEpithet', 'MATCHES', 'fuscus');
 		$this->assertEquals($expected, $condition->getCondition());
+	}
+	
+	public function testCorrectlyConstructedAddOrConditionWithCondition ()
+	{
+		$expected = '{"field":"acceptedName.genusOrMonomial","operator":"EQUALS_IC",' .
+				'"value":"larus","or":[{"field":"acceptedName.specificEpithet",' .
+				'"operator":"MATCHES","value":"fuscus"}]}';
+		$condition = new Condition('acceptedName.genusOrMonomial', 'EQUALS_IC', 'larus');
+		$condition2 = new Condition('acceptedName.specificEpithet', 'MATCHES', 'fuscus');
+		$condition->addOr($condition2);
+		$this->assertEquals($expected, $condition->getCondition());
+	}
+	
+	public function testCorrectlyConstructedAddOrConditionWithIncorrectConditionAsArray ()
+	{
+		$condition = new Condition('acceptedName.genusOrMonomial', 'EQUALS_IC', 'larus');
+		$condition2 = ['acceptedName.specificEpithet', 'MATCHES', 'fuscus'];
+		$e = new \stdClass();
+		try {
+			$condition->addOr($condition2);
+		} catch (\Exception $e) {}
+		$this->assertEquals('InvalidArgumentException', get_class($e));
 	}
 	
 	public function testConditionWithCorrectlyConstructedEmptyValue ()

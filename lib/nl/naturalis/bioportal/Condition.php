@@ -15,16 +15,36 @@
             $this->_condition = $this->_setCondition();
         }
 
-        public function addAnd ($field, $operator, $value = null) {
-        	$this->_bootstrapCondition($field, $operator, $value);
-            $this->_condition['and'][] = $this->_setCondition();
-            return $this;
+        public function addAnd ($fieldOrCondition, $operator = false, $value = null) {
+        	// Allow setting a previously constructed Condition, cf Java client
+        	if (is_object($fieldOrCondition)) {
+        		if (!($fieldOrCondition instanceof Condition)) {
+        			throw new \InvalidArgumentException('Error: invalid condition.');
+        		}
+        		$this->_condition['and'][] = 
+        			json_decode($fieldOrCondition->getCondition(), true);
+        	// Setting an AND condition the regular way
+        	} else {
+	        	$this->_bootstrapCondition($fieldOrCondition, $operator, $value);
+	            $this->_condition['and'][] = $this->_setCondition();
+        	}
+        	return $this;
         }
 
- 	    public function addOr ($field, $operator, $value = null) {
-            $this->_bootstrapCondition($field, $operator, $value);
-            $this->_condition['or'][] = $this->_setCondition();
-            return $this;
+ 	    public function addOr ($fieldOrCondition, $operator = false, $value = null) {
+ 	    	// Allow setting a previously constructed Condition, cf Java client
+ 	    	if (is_object($fieldOrCondition)) {
+ 	    		if (!($fieldOrCondition instanceof Condition)) {
+ 	    			throw new \InvalidArgumentException('Error: invalid condition.');
+ 	    		}
+ 	    		$this->_condition['or'][] = 
+ 	    			json_decode($fieldOrCondition->getCondition(), true);
+ 	    	// Setting an OR condition the regular way
+ 	    	} else {
+ 	    	 	$this->_bootstrapCondition($fieldOrCondition, $operator, $value);
+            	$this->_condition['or'][] = $this->_setCondition();
+ 	    	}
+ 	    	return $this;
  	    }
 
         public function getCondition () {
