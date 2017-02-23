@@ -214,12 +214,12 @@
         }
         
         private function _setCondition () {
-        	// Save and/or subqueries before resetting condition
+        	// Save and/or statements before resetting condition
         	$and = isset($this->_condition['and']) ? $this->_condition['and'] : false;
         	$or = isset($this->_condition['or']) ? $this->_condition['or'] : false;
         	// Reset condition to current statement
         	$this->_condition = $this->_setStatement();
-        	// Reappend and/or subqueries if necessary
+        	// Reappend and/or statements if necessary
         	if ($and) { 
         		$this->_condition['and'] = $and; 
         	}
