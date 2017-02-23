@@ -229,7 +229,7 @@ class QuerySpecTest extends \PHPUnit_Framework_TestCase
 			'"operator":"EQUALS_IC","value":"larus","or":[{"field":"acceptedName.genusOrMonomial",' . 
 			'"operator":"LIKE","value":"larus"}]}],"from":5,"logicalOperator":"AND","size":25}';
 		$c = new Condition('defaultClassification.genus', 'EQUALS_IC', 'larus');
-		$c->addOr('acceptedName.genusOrMonomial', 'LIKE', 'larus');		
+		$c->setOr('acceptedName.genusOrMonomial', 'LIKE', 'larus');		
 		$d = new Condition('sourceSystem.name', 'EQUALS', 'Naturalis - Nederlands Soortenregister');
 		$query = new QuerySpec();
 		$query

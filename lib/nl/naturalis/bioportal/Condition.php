@@ -25,7 +25,7 @@
             $this->_setCondition();
         }
 
-        public function addAnd ($fieldOrCondition, $operator = false, $value = null) {
+        public function setAnd ($fieldOrCondition, $operator = false, $value = null) {
         	// Allow setting a previously constructed Condition, cf Java client
         	if (is_object($fieldOrCondition)) {
         		if (!($fieldOrCondition instanceof Condition)) {
@@ -41,7 +41,7 @@
         	return $this;
         }
 
- 	    public function addOr ($fieldOrCondition, $operator = false, $value = null) {
+ 	    public function setOr ($fieldOrCondition, $operator = false, $value = null) {
  	    	// Allow setting a previously constructed Condition, cf Java client
  	    	if (is_object($fieldOrCondition)) {
  	    		if (!($fieldOrCondition instanceof Condition)) {

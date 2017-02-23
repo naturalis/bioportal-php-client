@@ -11,12 +11,12 @@
     // Condition should be initialized with triplet, as per Java client
     $c = new Condition('acceptedName.genusOrMonomial', 'LIKE', 'lar');
     // Cannot replicate ->and and ->or methods of Java client
-    // as these are reserved terms; use ->addAnd and ->addOr instead
-    $c->addAnd('acceptedName.specificEpithet', 'LIKE', 'fus');
+    // as these are reserved terms; use ->setAnd and ->setOr instead
+    $c->setAnd('acceptedName.specificEpithet', 'LIKE', 'fus');
 
     // Second condition
     $d = new Condition('defaultClassification.kingdom', 'NOT_EQUALS', 'Animalia');
-    $d->addAnd('defaultClassification.kingdom', 'NOT_EQUALS', 'Fungi');
+    $d->setAnd('defaultClassification.kingdom', 'NOT_EQUALS', 'Fungi');
 
     // Initialise QuerySpec
     $query = new QuerySpec();
