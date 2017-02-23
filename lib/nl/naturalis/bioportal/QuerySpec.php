@@ -12,6 +12,7 @@
 		private $_sortFields;
 		private $_fields;
 		private $_logicalOperator;
+		private $_constantScore = false;
 
  	    public function __construct() {
             parent::__construct();
@@ -95,7 +96,17 @@
             $this->_querySpec['fields'] = $this->_fields;
             return $this;
         }
-
+        
+        public function setConstantScore ($constant = true) {
+        	if (!is_bool($constant)) {
+        		throw new \InvalidArgumentException('Error: condition constant ' .
+        				'score parameter should be TRUE (default)/FALSE.');
+        	}
+        	$this->_constantScore = $constant;
+        	$this->_querySpec['constantScore'] = $this->_constantScore;
+         	return $this;
+        }
+        
         public function getFields () {
         	return json_encode($this->_fields);
         }
@@ -118,6 +129,10 @@
 
         public function getSortFields () {
             return json_encode($this->_sortFields);
+        }
+        
+        public function isConstantScore () {
+        	return $this->_constantScore;
         }
 
         public function getSpec ($encoded = true) {

@@ -15,7 +15,7 @@
         private $_value;
         private $_not;
         private $_boost;
-        private $_constantScore;
+        private $_constantScore = false;
         private $_statement = [];
         private $_condition = [];
 

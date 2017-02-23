@@ -241,5 +241,12 @@ class QuerySpecTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals($expected, $query->getSpec(false));
 	}
 	
+	public function testSetConstantScore () {
+		$expected = true;
+		$query = new QuerySpec();
+		$query->setConstantScore();
+		$this->assertEquals($expected, $query->isConstantScore());
+	}
+	
 	
 }
