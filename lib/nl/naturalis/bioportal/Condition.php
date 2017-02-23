@@ -1,6 +1,6 @@
 <?php
     namespace nl\naturalis\bioportal;
-    use nl\naturalis\bioportal\AbstractClass as AbstractClass;
+    use nl\naturalis\bioportal\Common as Common;
     
     /*
      * A condition is built from one or multiple statements. In its simplest form,
@@ -8,7 +8,7 @@
      * and/or statements. Each statement is evaluated before it is appended to the condition.
      */
 
- 	final class Condition extends AbstractClass
+ 	final class Condition extends Common
  	{
         private $_field;
         private $_operator;

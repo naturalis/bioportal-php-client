@@ -2,7 +2,7 @@
     namespace nl\naturalis\bioportal;
     use nl\naturalis\bioportal\QuerySpec as QuerySpec;
 
-    final class Client extends AbstractClass
+    final class Client extends Common
  	{
 		private $_nbaUrl;
 		private $_nbaTimeout = 5;
@@ -210,14 +210,17 @@
 		    return !$encoded ? urldecode($this->_querySpec) : $this->_querySpec;
 		}
 
-		public function getMapping () {
+		public function getPaths ($sorted = false) {
 		    $this->_bootstrapClient();
 			foreach ($this->_clients as $client) {
+				$url = $this->_nbaUrl . $client . '/metadata/getPaths';
+				if ($sorted) {
+					$url .= '?sorted=true';
+				}
 				$this->_channels[] =
 					[
 						'client' => $client,
-						'url' => $this->_nbaUrl . $client .
-					        '/metadata/getMapping',
+						'url' => $url,
 					];
 			}
             $this->_query();
@@ -226,6 +229,28 @@
             }
             return $this->_remoteData;
 		}
+		
+		
+		public function getAllowedOperators ($fields = false) {
+			$this->_bootstrapClient();
+			foreach ($this->_clients as $client) {
+				$url = $this->_nbaUrl . $client . '/metadata/getAllowedOperators';
+				if ($fields) {
+					$url .= '?fields=' . $this->commaSeparate($fields);
+				}
+				$this->_channels[] =
+					[
+						'client' => $client,
+						'url' => $url,
+					];
+			}
+			$this->_query();
+			if (count($this->_channels) == 1) {
+				return $this->_remoteData[$this->_clients[0]];
+			}
+			return $this->_remoteData;
+		}
+		
 
 		public function find ($id = false) {
 			$this->_bootstrapClient();
@@ -344,7 +369,7 @@
 
 		private function _bootstrapClient () {
 			if (empty($this->_clients)) {
-				throw new \RuntimeException('Error: client(s) not set!');
+				throw new \RuntimeException('Error: client(s) not set.');
 			}
 			return true;
 		}
@@ -354,7 +379,7 @@
          */
 		private function _setClientChannels () {
 			if (!$this->_querySpec) {
-                throw new \RuntimeException('Error: querySpec not set!');
+                throw new \RuntimeException('Error: querySpec empty or not set.');
 		    }
 		    $this->_channels = [];
 			foreach ($this->_clients as $client) {

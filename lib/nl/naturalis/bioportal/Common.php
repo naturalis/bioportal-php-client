@@ -1,7 +1,7 @@
 <?php
     namespace nl\naturalis\bioportal;
 
-    class AbstractClass
+    class Common
     {
         public function __construct () {
         }

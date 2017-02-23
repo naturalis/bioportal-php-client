@@ -1,9 +1,9 @@
 <?php
     namespace nl\naturalis\bioportal;
     use nl\naturalis\bioportal\Condition as Condition;
-    use nl\naturalis\bioportal\AbstractClass as AbstractClass;
+    use nl\naturalis\bioportal\Common as Common;
 
-    final class QuerySpec extends AbstractClass
+    final class QuerySpec extends Common
  	{
 		private $_querySpec;
  	    private	$_conditions;

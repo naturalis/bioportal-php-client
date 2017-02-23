@@ -1,7 +1,7 @@
 <?php
     /* This example script uses a batch query to stress test the NBA. */
     namespace nl\naturalis\bioportal;
-    require_once '../lib/nl/naturalis/bioportal/AbstractClass.php';
+    require_once '../lib/nl/naturalis/bioportal/Common.php';
     require_once '../lib/nl/naturalis/bioportal/Client.php';
     require_once '../lib/nl/naturalis/bioportal/Condition.php';
     require_once '../lib/nl/naturalis/bioportal/QuerySpec.php';
