@@ -129,7 +129,7 @@
                 throw new \InvalidArgumentException('Error: invalid querySpec, ' .
                 	'should be created using the QuerySpec class.');
 		    }
-            $this->_querySpec = $spec->getSpec();
+            $this->_querySpec = $spec->getQuerySpec();
             return $this;
 		}
 
@@ -344,7 +344,7 @@
 				$this->_channels[$key] =
 					[
 						'url' => $this->_nbaUrl . $this->_clients[0] . '/query/' .
-                            '?_querySpec=' . $querySpec->getSpec()
+                            '?_querySpec=' . $querySpec->getQuerySpec()
 					];
             }
             $this->_query();

@@ -135,7 +135,7 @@
         	return $this->_constantScore;
         }
 
-        public function getSpec ($encoded = true) {
+        public function getQuerySpec ($encoded = true) {
             if (!empty($this->_querySpec)) {
                 ksort($this->_querySpec);
                 $d = json_encode($this->_querySpec);

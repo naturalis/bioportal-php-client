@@ -238,7 +238,7 @@ class QuerySpecTest extends \PHPUnit_Framework_TestCase
 			->setLogicalOperator('and')
 			->addCondition($d)
 			->addCondition($c);
-		$this->assertEquals($expected, $query->getSpec(false));
+		$this->assertEquals($expected, $query->getQuerySpec(false));
 	}
 	
 	public function testSetConstantScore () {
