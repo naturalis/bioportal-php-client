@@ -210,31 +210,10 @@
 		    return !$encoded ? urldecode($this->_querySpec) : $this->_querySpec;
 		}
 
-		public function getPaths ($sorted = false) {
-		    $this->_bootstrapClient();
-			foreach ($this->_clients as $client) {
-				$url = $this->_nbaUrl . $client . '/metadata/getPaths';
-				if ($sorted) {
-					$url .= '?sorted=true';
-				}
-				$this->_channels[] =
-					[
-						'client' => $client,
-						'url' => $url,
-					];
-			}
-            $this->_query();
-            if (count($this->_channels) == 1) {
-                return $this->_remoteData[$this->_clients[0]];
-            }
-            return $this->_remoteData;
-		}
-		
-		
-		public function getAllowedOperators ($fields = false) {
+		public function getFieldInfo ($fields = false) {
 			$this->_bootstrapClient();
 			foreach ($this->_clients as $client) {
-				$url = $this->_nbaUrl . $client . '/metadata/getAllowedOperators';
+				$url = $this->_nbaUrl . $client . '/metadata/getFieldInfo';
 				if ($fields) {
 					$url .= '?fields=' . $this->commaSeparate($fields);
 				}
@@ -250,7 +229,6 @@
 			}
 			return $this->_remoteData;
 		}
-		
 
 		public function find ($id = false) {
 			$this->_bootstrapClient();
@@ -267,12 +245,41 @@
 						'url' => $this->_nbaUrl . $client . '/' . $method . '/' . $r,
 					];
 			}
-            $this->_query();
+			$this->_query();
             if (count($this->_channels) == 1) {
                 return $this->_remoteData[$this->_clients[0]];
             }
             return $this->_remoteData;
 		}
+		
+		
+		public function findByUnitId ($id = false) {
+			$this->_bootstrapClient();
+			if (!$id) {
+				throw new \InvalidArgumentException('Error: no id(s) ' .
+						'provided for find method.');
+			}
+			$r = $this->commaSeparate($id);
+			$query = new QuerySpec();
+			$query
+				->addCondition(new Condition('unitID', 'IN', explode(',', $r)))
+				->setConstantScore();
+			foreach ($this->_clients as $client) {
+				$this->_channels[] =
+					[
+						'client' => $client,
+						'url' => $this->_nbaUrl . $client . '/query/' .
+                            '?_querySpec=' . $query->getQuerySpec()
+					];
+			}
+			$this->_query();
+			if (count($this->_channels) == 1) {
+				return $this->_remoteData[$this->_clients[0]];
+			}
+			return $this->_remoteData;
+		}
+		
+		
 
 
 		/*
