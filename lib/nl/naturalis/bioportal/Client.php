@@ -160,9 +160,7 @@
 						'?_querySpec=' . $this->_querySpec
 				];
 			}
-			$this->_query();
-			return count($this->_channels) == 1 ?
-				$this->_remoteData[$this->_clients[0]] : $this->_remoteData;
+			return $this->_queryAndReturnRemoteData();
 		}
 
 		/**
@@ -218,9 +216,11 @@
 		public function getQuerySpec ($encoded = false) {
 		    return !$encoded ? urldecode($this->_querySpec) : $this->_querySpec;
 		}
+		
+		
 
 		public function getFieldInfo ($fields = false) {
-			$this->_bootstrapClient();
+			$this->_bootstrap();
 			foreach ($this->_clients as $client) {
 				$url = $this->_nbaUrl . $client . '/metadata/getFieldInfo/';
 				if ($fields) {
@@ -232,15 +232,13 @@
 						'url' => $url,
 					];
 			}
-			$this->_query();
-			return count($this->_channels) == 1 ?
-				$this->_remoteData[$this->_clients[0]] : $this->_remoteData;
+			return $this->_queryAndReturnRemoteData();
 		}
 		
 		
 
 		public function find ($id = false) {
-			$this->_bootstrapClient();
+			$this->_bootstrap();
 			if (!$id) {
                 throw new \InvalidArgumentException('Error: no id(s) ' . 
                 	'provided for find method.');
@@ -254,9 +252,7 @@
 						'url' => $this->_nbaUrl . $client . '/' . $method . '/' . $r,
 					];
 			}
-			$this->_query();
-			return count($this->_channels) == 1 ?
-				$this->_remoteData[$this->_clients[0]] : $this->_remoteData;
+			return $this->_queryAndReturnRemoteData();
 		}
 		
 		
@@ -274,7 +270,7 @@
 			// Only works for specimens; return exception if called for other  service
 			if (!empty($this->_clients) && !in_array('specimen', $this->_clients)) {
 				throw new \RuntimeException('Error: exists/findByUnitId method ' .
-					'can only be used to retrieve specimens.');
+					'can only be used to query specimens.');
 			}
 			$query = new QuerySpec();
 			$query
@@ -320,13 +316,15 @@
 		/*
 		 * Convenience method to retrieve geo areas. The output is comparable to
 		 * getDistinctValuesPerGroup() in the java client. This method additionally
-		 * includes both the id and Dutch name, which are absent from the
+		 * inserts both the id and Dutch name, which are absent from the
 		 * getDistinctValuesPerGroup() output.
 		 */
 		public function getGeoAreas () {
 		    $query = new QuerySpec();
-            $query->setSize(2000)
-                  ->setFields(['sourceSystemId', 'areaType', 'locality', 'countryNL']);
+            $query
+            	->setSize(2000)
+                ->setFields(['sourceSystemId', 'areaType', 'locality', 'countryNL'])
+                ->setConstantScore();
 			$data = json_decode($this->geo()->querySpec($query)->query(), true);
 			// Enhance data
             foreach ($data['resultSet'] as $i => $row) {
@@ -346,7 +344,7 @@
 		 * $client->multimedia()->querySpec($query)->getDistinctValues('creator');
 		 */
 		public function getDistinctValues ($field = false) {
-			$this->_bootstrapClient();
+			$this->_bootstrap();
 			if (!$field) {
                 throw new \InvalidArgumentException('Error: no field provided for ' .
                     'getDistinctValues.');
@@ -362,9 +360,7 @@
 						'url' => $url,
 					];
 			}
-            $this->_query();
-            return count($this->_channels) == 1 ?
-            	$this->_remoteData[$this->_clients[0]] : $this->_remoteData;
+            return $this->_queryAndReturnRemoteData();
         }
         
         
@@ -374,7 +370,7 @@
          * $client->multimedia()->querySpec($query)->count('creator');
          */
         public function count () {
-        	$this->_bootstrapClient();
+        	$this->_bootstrap();
          	foreach ($this->_clients as $client) {
          		$url = $this->_nbaUrl . $client . '/count/';
          		if ($this->_querySpec) {
@@ -386,9 +382,7 @@
         				'url' => $url,
         			];
         	}
-        	$this->_query();
-        	return count($this->_channels) == 1 ?
-        		$this->_remoteData[$this->_clients[0]] : $this->_remoteData;
+        	return $this->_queryAndReturnRemoteData();
         }
         
         
@@ -400,7 +394,7 @@
 		 * @param unknown $queries
 		 */
 		public function batchQuery ($querySpecs = []) {
-			$this->_bootstrapClient();
+			$this->_bootstrap();
 			if (count($this->_clients) > 1) {
                 throw new \RuntimeException('Error: batch accepts a single client only.');
 		    }
@@ -422,12 +416,11 @@
                             '?_querySpec=' . $querySpec->getQuerySpec()
 					];
             }
-            $this->_query();
-            return $this->_remoteData;
+            return $this->_queryAndReturnRemoteData();
 		}
 		
 		/*
-		 * Maximum of simulataneous requests
+		 * Maximum of simultaneous requests
 		 */
 		public function getMaxBatchSize () {
 			return $this->_maxBatchSize;
@@ -442,11 +435,24 @@
 		    }
 		}
 
-		private function _bootstrapClient () {
+		private function _bootstrap () {
 			if (empty($this->_clients)) {
 				throw new \RuntimeException('Error: client(s) not set.');
 			}
 			return true;
+		}
+		
+		/* 
+		 * Shorthand method to query and return the remote data either directly
+		 * if a single client has been used, or an array of client => result 
+		 * if multiple clients have been used.
+		 */
+		private function _queryAndReturnRemoteData () {
+			$this->_query();
+			if (count($this->_channels) == 1) {
+				return $this->_remoteData[$this->_clients[0]];
+			}
+			return $this->_remoteData;
 		}
 		
 		private function _query () {
