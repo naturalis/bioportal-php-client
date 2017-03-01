@@ -18,6 +18,7 @@
 			'taxon',
 			'multimedia',
 			'specimen',
+			'names',
 		    'geo',
 		];
 
@@ -66,6 +67,12 @@
 			$this->_clients[] = 'specimen';
 			return $this;
 		}
+		
+		public function names () {
+			$this->_clients = [];
+			$this->_clients[] = 'names';
+			return $this;
+		}
 
  		/**
 		 * Sets the client to multimedia
@@ -90,15 +97,15 @@
 		}
 
 		/**
-		 * Sets all three clients
+		 * Sets all clients
 		 *
-		 * Sets taxon, specimen and multimedia clients (so omits geo!),
+		 * Sets taxon, specimen, names , multimedia and geo clients,
 		 * allowing distributed query; does not verify query, so use with care!
 		 *
          * @return class This class (allowing chaining)
 		 */
 		public function all () {
-			$this->_clients = array_diff($this::$nbaClients, array('geo'));
+			$this->_clients = $this::$nbaClients;
 			return $this;
 		}
 
