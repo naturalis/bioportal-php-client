@@ -148,12 +148,21 @@
          * formatted as [client1 => json, client2 => json]
          */
 		public function query () {
-		    $this->_setClientChannels();
+			if (!$this->_querySpec) {
+				throw new \RuntimeException('Error: querySpec empty or not set.');
+			}
+			$this->_channels = [];
+			foreach ($this->_clients as $client) {
+				$this->_channels[] =
+				[
+						'client' => $client,
+						'url' => $this->_nbaUrl . $client . '/query/' .
+						'?_querySpec=' . $this->_querySpec
+				];
+			}
 			$this->_query();
-			if (count($this->_channels) == 1) {
-                return $this->_remoteData[$this->_clients[0]];
-            }
-            return $this->_remoteData;
+			return count($this->_channels) == 1 ?
+				$this->_remoteData[$this->_clients[0]] : $this->_remoteData;
 		}
 
 		/**
@@ -213,7 +222,7 @@
 		public function getFieldInfo ($fields = false) {
 			$this->_bootstrapClient();
 			foreach ($this->_clients as $client) {
-				$url = $this->_nbaUrl . $client . '/metadata/getFieldInfo';
+				$url = $this->_nbaUrl . $client . '/metadata/getFieldInfo/';
 				if ($fields) {
 					$url .= '?fields=' . $this->commaSeparate($fields);
 				}
@@ -224,11 +233,11 @@
 					];
 			}
 			$this->_query();
-			if (count($this->_channels) == 1) {
-				return $this->_remoteData[$this->_clients[0]];
-			}
-			return $this->_remoteData;
+			return count($this->_channels) == 1 ?
+				$this->_remoteData[$this->_clients[0]] : $this->_remoteData;
 		}
+		
+		
 
 		public function find ($id = false) {
 			$this->_bootstrapClient();
@@ -246,42 +255,68 @@
 					];
 			}
 			$this->_query();
-            if (count($this->_channels) == 1) {
-                return $this->_remoteData[$this->_clients[0]];
-            }
-            return $this->_remoteData;
+			return count($this->_channels) == 1 ?
+				$this->_remoteData[$this->_clients[0]] : $this->_remoteData;
 		}
 		
 		
-		public function findByUnitId ($id = false) {
-			$this->_bootstrapClient();
-			if (!$id) {
-				throw new \InvalidArgumentException('Error: no id(s) ' .
-						'provided for find method.');
+		/*
+		 * Unlike find, this returns array with specimen data or empty array.
+		 * Can be called with or without calling ->specimen(). Cannot be used
+		 * with other services!
+		 */
+		
+		public function findByUnitId ($unitId = false) {
+			if (!$unitId) {
+				throw new \InvalidArgumentException('Error: no UnitID ' .
+					'provided for exists/findByUnitId method.');
 			}
-			$r = $this->commaSeparate($id);
+			// Only works for specimens; return exception if called for other  service
+			if (!empty($this->_clients) && !in_array('specimen', $this->_clients)) {
+				throw new \RuntimeException('Error: exists/findByUnitId method ' .
+					'can only be used to retrieve specimens.');
+			}
 			$query = new QuerySpec();
 			$query
-				->addCondition(new Condition('unitID', 'IN', explode(',', $r)))
+				->addCondition(new Condition('unitID', 'EQUALS_IC', $unitId))
 				->setConstantScore();
-			foreach ($this->_clients as $client) {
-				$this->_channels[] =
-					[
-						'client' => $client,
-						'url' => $this->_nbaUrl . $client . '/query/' .
-                            '?_querySpec=' . $query->getQuerySpec()
-					];
-			}
+			$this->_channels = [];
+			$this->_channels[] = 
+				[
+					'url' => $this->_nbaUrl . 'specimen/query/?_querySpec=' . 
+						$query->getQuerySpec()
+				];
 			$this->_query();
-			if (count($this->_channels) == 1) {
-				return $this->_remoteData[$this->_clients[0]];
-			}
-			return $this->_remoteData;
+			$data = json_decode($this->_remoteData[0]);
+			return isset($data->resultSet[0]->item) ? 
+				json_encode([$data->resultSet[0]->item]) : json_encode([]);
+		}
+	
+
+
+
+		/* Returns whether or not the specified string is a valid UnitID
+		 * (i.e. is the UnitID of at least one specimen record). */
+		public function exists ($unitId = false) {
+			return !empty(json_decode($this->findByUnitId($unitId))) ;
 		}
 		
 		
-
-
+		
+		/*
+		 * Returns all "special collections" defined within the specimen dataset.
+		 * Can be called with or without calling ->specimen().
+		 */
+		public function getNamedCollections () {
+			$this->_channels = [];
+			$this->_channels[] = ['url' => $this->_nbaUrl . 'specimen/getNamedCollections'];
+			$this->_query();
+			return $this->_remoteData[0];
+		}
+		
+		
+		
+		
 		/*
 		 * Convenience method to retrieve geo areas. The output is comparable to
 		 * getDistinctValuesPerGroup() in the java client. This method additionally
@@ -305,6 +340,11 @@
             return isset($result) ? json_encode($result) : false;
 		}
 
+		/*
+		 * Can be used with or without setting a querySpec. 
+		 * QuerySpec must be set before calling getDistinctValues, e.g.:
+		 * $client->multimedia()->querySpec($query)->getDistinctValues('creator');
+		 */
 		public function getDistinctValues ($field = false) {
 			$this->_bootstrapClient();
 			if (!$field) {
@@ -312,19 +352,47 @@
                     'getDistinctValues.');
 		    }
 		    foreach ($this->_clients as $client) {
+		    	$url = $this->_nbaUrl . $client . '/getDistinctValues/' . $field;
+		    	if ($this->_querySpec) {
+		    		$url .= '?_querySpec=' . $this->_querySpec;
+		    	}
 				$this->_channels[] =
 					[
 						'client' => $client,
-						'url' => $this->_nbaUrl . $client .
-                            '/getDistinctValues/' . $field,
+						'url' => $url,
 					];
 			}
             $this->_query();
-            if (count($this->_channels) == 1) {
-                return $this->_remoteData[$this->_clients[0]];
-            }
-            return $this->_remoteData;
-		}
+            return count($this->_channels) == 1 ?
+            	$this->_remoteData[$this->_clients[0]] : $this->_remoteData;
+        }
+        
+        
+        /*
+         * Can be used with or without setting a querySpec.
+         * QuerySpec must be set before calling getDistinctValues, e.g.:
+         * $client->multimedia()->querySpec($query)->count('creator');
+         */
+        public function count () {
+        	$this->_bootstrapClient();
+         	foreach ($this->_clients as $client) {
+         		$url = $this->_nbaUrl . $client . '/count/';
+         		if ($this->_querySpec) {
+         			$url .= '?_querySpec=' . $this->_querySpec;
+         		}
+         		$this->_channels[] =
+        			[
+        				'client' => $client,
+        				'url' => $url,
+        			];
+        	}
+        	$this->_query();
+        	return count($this->_channels) == 1 ?
+        		$this->_remoteData[$this->_clients[0]] : $this->_remoteData;
+        }
+        
+        
+        
 
 		/**
 		 * Accepts an array of querySpec objects
@@ -345,8 +413,8 @@
 		    $this->_reset();
 		    foreach ($querySpecs as $key => $querySpec) {
                 if (!$querySpec instanceof QuerySpec) {
-                    throw new \InvalidArgumentException('Error: ' . '
-                    	batch array should contain valid querySpec objects.');
+                    throw new \InvalidArgumentException('Error: ' . 
+                    	'batch array should contain valid querySpec objects.');
     		    }
 				$this->_channels[$key] =
 					[
@@ -381,25 +449,6 @@
 			return true;
 		}
 		
-		/*
-         * Use GET
-         */
-		private function _setClientChannels () {
-			if (!$this->_querySpec) {
-                throw new \RuntimeException('Error: querySpec empty or not set.');
-		    }
-		    $this->_channels = [];
-			foreach ($this->_clients as $client) {
-				$this->_channels[] =
-					[
-						'client' => $client,
-						'url' => $this->_nbaUrl . $client . '/query/' .
-                            '?_querySpec=' . $this->_querySpec
-					];
-			}
-			return $this->_channels;
-		}
-
 		private function _query () {
 		    $this->_remoteData = [];
 			$mh = curl_multi_init();
