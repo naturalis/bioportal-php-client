@@ -21,7 +21,7 @@
 
         public function __construct ($field = false, $operator = false, $value = null) {
             parent::__construct();
-            $this->_bootstrapCondition($field, $operator, $value);
+            $this->_bootstrap($field, $operator, $value);
             $this->_setCondition();
         }
 
@@ -35,7 +35,7 @@
         			json_decode($fieldOrCondition->getCondition(), true);
         	// Setting an AND condition the regular way
         	} else {
-	        	$this->_bootstrapCondition($fieldOrCondition, $operator, $value);
+	        	$this->_bootstrap($fieldOrCondition, $operator, $value);
 	            $this->_condition['and'][] = $this->_setStatement();
         	}
         	return $this;
@@ -51,7 +51,7 @@
  	    			json_decode($fieldOrCondition->getCondition(), true);
  	    	// Setting an OR condition the regular way
  	    	} else {
- 	    	 	$this->_bootstrapCondition($fieldOrCondition, $operator, $value);
+ 	    	 	$this->_bootstrap($fieldOrCondition, $operator, $value);
             	$this->_condition['or'][] = $this->_setStatement();
  	    	}
  	    	return $this;
@@ -170,7 +170,7 @@
         	return $this->_constantScore;
         }
         
-        private function _bootstrapCondition ($field, $operator, $value) {
+        private function _bootstrap ($field, $operator, $value) {
             if (!$field || !$operator) {
                 throw new \InvalidArgumentException('Error: condition incomplete! ' .
                 	'Condition should be initialised as a triplet: ' .
@@ -193,12 +193,14 @@
 
         /*
          * Formats condition array; specifically excludes value if null, to allow
-         * empty/not-empty queries. Should only be called after _bootstrapCondition().
+         * empty/not-empty queries. Should only be called after _bootstrap().
          */
         private function _setStatement () {
         	$this->_statement['field'] = $this->_field;
         	$this->_statement['operator'] = $this->_operator;
-        	if (!is_null($this->_value)) {
+        	if (is_null($this->_value)) {
+        		unset($this->_statement['value']);
+        	} else {
         		$this->_statement['value'] = $this->_value;
         	}
         	// Append secondary parameters if set; 
