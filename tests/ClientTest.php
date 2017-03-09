@@ -80,6 +80,23 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals('InvalidArgumentException', get_class($e));
 	}
 	
+	public function testNamesServiceExclusiveCriteriaAreUsedForOtherService () {
+		$c = new Condition('specimens.identifications.scientificName.genusOrMonomial', 'EQUALS_IC', 'larus');
+		$query = new QuerySpec();
+		$query
+			->addCondition($c)
+			->setSpecimensSize(10);
+		$e = new \stdClass();
+		try {
+			$client = new Client();
+			$client
+				->taxon()
+				->querySpec($query)
+				->query();
+		} catch (\Exception $e) {}
+		$this->assertEquals('RuntimeException', get_class($e));
+	}
+	
 	/*
 	 * Batch query
 	 */

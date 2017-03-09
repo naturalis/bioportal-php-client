@@ -99,13 +99,13 @@
 		/**
 		 * Sets all clients
 		 *
-		 * Sets taxon, specimen, names , multimedia and geo clients,
-		 * allowing distributed query; does not verify query, so use with care!
+		 * Sets taxon, specimen, names and multimedia clients, allowing distributed query.
+		 * Does not verify query, so use with care!
 		 *
          * @return class This class (allowing chaining)
 		 */
 		public function all () {
-			$this->_clients = $this::$nbaClients;
+			$this->_clients = array_diff($this::$nbaClients, array('geo'));
 			return $this;
 		}
 
@@ -131,12 +131,12 @@
          *
          * @return class This class (allowing chaining)
          */
-		public function querySpec ($spec) {
-		    if (!$spec || !($spec instanceof QuerySpec)) {
+		public function querySpec ($querySpec) {
+		    if (!$querySpec || !($querySpec instanceof QuerySpec)) {
                 throw new \InvalidArgumentException('Error: invalid querySpec, ' .
                 	'should be created using the QuerySpec class.');
 		    }
-            $this->_querySpec = $spec->getQuerySpec();
+            $this->_querySpec = $querySpec;
             return $this;
 		}
 
@@ -155,16 +155,17 @@
          * formatted as [client1 => json, client2 => json]
          */
 		public function query () {
-			if (!$this->_querySpec) {
+			$this->_bootstrap();
+			if (!$this->_querySpec || empty($this->_querySpec->getQuerySpec())) {
 				throw new \RuntimeException('Error: querySpec empty or not set.');
 			}
 			$this->_channels = [];
 			foreach ($this->_clients as $client) {
 				$this->_channels[] =
 				[
-						'client' => $client,
-						'url' => $this->_nbaUrl . $client . '/query/' .
-						'?_querySpec=' . $this->_querySpec
+					'client' => $client,
+					'url' => $this->_nbaUrl . $client . '/query/' .
+					'?_querySpec=' . $this->_querySpec->getQuerySpec()
 				];
 			}
 			return $this->_queryAndReturnRemoteData();
@@ -221,7 +222,8 @@
          * @return string $_querySpec
 		 */
 		public function getQuerySpec ($encoded = false) {
-		    return !$encoded ? urldecode($this->_querySpec) : $this->_querySpec;
+		    return !$encoded ? urldecode($this->_querySpec->getQuerySpec()) : 
+		    	$this->_querySpec->getQuerySpec();
 		}
 		
 		
@@ -359,7 +361,7 @@
 		    foreach ($this->_clients as $client) {
 		    	$url = $this->_nbaUrl . $client . '/getDistinctValues/' . $field;
 		    	if ($this->_querySpec) {
-		    		$url .= '?_querySpec=' . $this->_querySpec;
+		    		$url .= '?_querySpec=' . $this->_querySpec->getQuerySpec();
 		    	}
 				$this->_channels[] =
 					[
@@ -381,7 +383,7 @@
          	foreach ($this->_clients as $client) {
          		$url = $this->_nbaUrl . $client . '/count/';
          		if ($this->_querySpec) {
-         			$url .= '?_querySpec=' . $this->_querySpec;
+         			$url .= '?_querySpec=' . $this->_querySpec->getQuerySpec();
          		}
          		$this->_channels[] =
         			[
@@ -443,8 +445,20 @@
 		}
 
 		private function _bootstrap () {
+			// Cannot proceed if no client has been set
 			if (empty($this->_clients)) {
 				throw new \RuntimeException('Error: client(s) not set.');
+			}
+			// Test if names service querySpec extension has not been used
+			// for other service; this would generate an NBA exception.
+			if (!empty($this->_querySpec) && $this->_querySpec->usesSpecimensCriteria()) {
+				foreach ($this->_clients as $client) {
+					if ($client != 'names') {
+						throw new \RuntimeException('Error: querySpec includes criteria ' .
+							'that are exclusive to names service, yet ' . $client . 
+							' service is queried.');
+					}
+				}
 			}
 			return true;
 		}
