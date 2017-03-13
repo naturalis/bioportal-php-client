@@ -35,8 +35,8 @@ use Symfony\Component\Finder\Iterator\SizeRangeFilterIterator;
 		/**
 		 * Constructor
 		 *
-		 * Sets ini values for $_nbaUrl and $_nbaTimeout;
-		 * implicitly sets $_config through either method.
+		 * Sets ini values for $_nbaUrl, $_nbaTimeout and $_maxBatchSize;
+		 * implicitly reads config.ini and set $_config through either method.
 		 *
          * @return void
 		 */
@@ -44,6 +44,7 @@ use Symfony\Component\Finder\Iterator\SizeRangeFilterIterator;
 			parent::__construct();
 			$this->setNbaUrl();
             $this->setNbaTimeout();
+            $this->setMaxbatchSize();
 		}
 		
 		/**
