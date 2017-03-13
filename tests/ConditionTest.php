@@ -100,21 +100,21 @@ class ConditionTest extends \PHPUnit_Framework_TestCase
 	}
 	
 	public function testConditionSetValue () {
-		$expected = json_encode('argentatus');
+		$expected = 'argentatus';
 		$condition = new Condition('acceptedName.specificEpithet', 'MATCHES', 'fuscus');
 		$condition->setValue('argentatus');
 		$this->assertEquals($expected, $condition->getValue());
 	}
 	
 	public function testConditionSetField () {
-		$expected = json_encode('acceptedName.genusOrMonomial');
+		$expected = 'acceptedName.genusOrMonomial';
 		$condition = new Condition('acceptedName.specificEpithet', 'MATCHES', 'larus');
 		$condition->setField('acceptedName.genusOrMonomial');
 		$this->assertEquals($expected, $condition->getField());
 	}
 	
 	public function testConditionSetOperator () {
-		$expected = json_encode('EQUALS');
+		$expected = 'EQUALS';
 		$condition = new Condition('acceptedName.specificEpithet', 'MATCHES', 'fuscus');
 		$condition->setOperator('EQUALS');
 		$this->assertEquals($expected, $condition->getOperator());
