@@ -510,13 +510,6 @@ use Symfony\Component\Finder\Iterator\SizeRangeFilterIterator;
 			$this->_querySpec->getQuerySpec();
 		}
 		
-		/*
-		 * Maximum of simultaneous requests
-		 */
-		public function getMaxBatchSize () {
-			return $this->_maxBatchSize;
-		}
-
 		/**
 		 * Gets current configuration
          *
@@ -569,7 +562,7 @@ use Symfony\Component\Finder\Iterator\SizeRangeFilterIterator;
 		 * 
 		 * 1. Reads client.ini and sets $_config if this hasn't been set prior
 		 * 2. Validates timeout (accepts string if this can be cast to proper integer)
-		 * 3. Overrides client.ini setting, appending slash if missing
+		 * 3. Overrides client.ini setting
 		 * 
 		 * @param int|string $timeout
 		 * @throws \RuntimeException In case client.ini does not contain this setting
@@ -601,6 +594,47 @@ use Symfony\Component\Finder\Iterator\SizeRangeFilterIterator;
 		public function getNbaTimeout () {
  	 	    return $this->_nbaTimeout;
 		}
+		
+		/**
+		 * Sets $_maxBatchQuery configuration setting, overriding setting in client.ini
+		 *
+		 * 1. Reads client.ini and sets $_config if this hasn't been set prior
+		 * 2. Validates size (accepts string if this can be cast to proper integer)
+		 * 3. Overrides client.ini setting
+		 *
+		 * @param int|string $size
+		 * @throws \RuntimeException In case client.ini does not contain this setting
+		 * @throws \InvalidArgumentException In case $size is invalid
+		 * @return \nl\naturalis\bioportal\Client
+		 */
+		public function setMaxBatchSize ($size = false) {
+			if (empty($this->_config)) {
+				$this->_setConfig();
+			}
+			if (!isset($this->_config['max_batch_size'])) {
+				throw new \RuntimeException('Error: max_batch_size is not set in client.ini!');
+			}
+			$maxBatchSize = $size ? $size : $this->_config['max_batch_size'];
+			// Only override default if $nbaTimeout is valid
+			if (!$this->isInteger($maxBatchSize) || (int) $maxBatchSize < 0) {
+				throw new \InvalidArgumentException('Error: max_batch_size "' . $maxBatchSize .
+					'" is not a valid integer!');
+			}
+			$this->_maxBatchSize = $maxBatchSize;
+			return $this;
+		}
+
+		/**
+		 * Gets $_maxBatchSize configuration setting
+		 *
+		 * @return int $_maxBatchSize
+		 */
+		public function getMaxBatchSize () {
+			return $this->_maxBatchSize;
+		}
+		
+		
+		
 
 		/*
 		 * Checks if clients have been set and if names service specific parameters
