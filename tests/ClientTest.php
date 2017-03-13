@@ -10,7 +10,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	 * Clients
 	 */
 	public function testSetTaxonClient () {
-		$expected = json_encode(['taxon']);
+		$expected = ['taxon'];
 		$client = new Client();
 		$client->taxon();
 		$this->assertEquals($expected, $client->getClients());

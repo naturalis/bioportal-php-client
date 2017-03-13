@@ -1,7 +1,10 @@
 <?php
     namespace nl\naturalis\bioportal;
     use nl\naturalis\bioportal\QuerySpec as QuerySpec;
-
+use JMS\Serializer\Tests\Fixtures\GetSetObject;
+use phpDocumentor\Plugin\Core\Descriptor\Validator\Constraints\Functions\IsArgumentInDocBlock;
+use Symfony\Component\Finder\Iterator\SizeRangeFilterIterator;
+												
     final class Client extends Common
  	{
 		private $_nbaUrl;
@@ -14,6 +17,13 @@
 		private $_remoteData;
 		private $_clients;
 
+		/**
+		 * NBA clients
+		 * 
+		 * Currently available clients.
+		 * 
+		 * @var array
+		 */
 		public static $nbaClients = [
 			'taxon',
 			'multimedia',
@@ -26,18 +36,26 @@
 		 * Constructor
 		 *
 		 * Sets ini values for $_nbaUrl and $_nbaTimeout;
-		 * implicitly sets $_config through either method
+		 * implicitly sets $_config through either method.
 		 *
          * @return void
 		 */
 		public function __construct () {
 			parent::__construct();
-			$this->_setNbaUrl();
-            $this->_setNbaTimeout();
+			$this->setNbaUrl();
+            $this->setNbaTimeout();
 		}
 		
-		/*
-		 * Catch common mistake where client is called without brackets
+		/**
+		 * Catch common error where client is set without brackets
+		 * 
+		 * __get magic method is used to catch the common error where the client 
+		 * is set without brackets. In this case, the client is set as an unknown property.
+		 * This is matched against the available clients. In case of a match, an exception
+		 * is thrown to warn the user.
+		 * 
+		 * @param string $value
+		 * @throws \BadMethodCallException
 		 */
 		public function __get ($value) {
 			if (!property_exists($this, $value) && in_array($value, $this::$nbaClients)) {
@@ -48,8 +66,10 @@
 
 		/**
 		 * Sets the client to taxon
-		 *
-         * @return Returns this instance
+		 * 
+		 * Disables all previously set clients and resets to taxon
+		 * 
+		 * @return \nl\naturalis\bioportal\Client
 		 */
 		public function taxon () {
 			$this->_clients = [];
@@ -60,7 +80,9 @@
 		/**
 		 * Sets the client to specimen
 		 *
-         * @return Returns this instance
+		 * Disables all previously set clients and resets to specimen
+		 * 
+         * @return \nl\naturalis\bioportal\Client
 		 */
 		public function specimen () {
 			$this->_clients = [];
@@ -68,6 +90,13 @@
 			return $this;
 		}
 		
+		/**
+		 * Sets the client to names
+		 *
+		 * Disables all previously set clients and resets to names
+		 * 
+		 * @return \nl\naturalis\bioportal\Client
+		 */
 		public function names () {
 			$this->_clients = [];
 			$this->_clients[] = 'names';
@@ -77,7 +106,9 @@
  		/**
 		 * Sets the client to multimedia
 		 *
-         * @return class This class (allowing chaining)
+		 * Disables all previously set clients and resets to multimedia
+		 * 
+         * @return \nl\naturalis\bioportal\Client
 		 */
 		public function multimedia () {
 			$this->_clients = [];
@@ -88,7 +119,9 @@
  		/**
 		 * Sets the client to geo
 		 *
-         * @return class This class (allowing chaining)
+		 * Disables all previously set clients and resets to geo
+		 * 
+         * @return \nl\naturalis\bioportal\Client
 		 */
 		public function geo () {
 			$this->_clients = [];
@@ -97,12 +130,13 @@
 		}
 
 		/**
-		 * Sets all clients
+		 * Sets all (but geo) clients
 		 *
-		 * Sets taxon, specimen, names and multimedia clients, allowing distributed query.
-		 * Does not verify query, so use with care!
+		 * Sets taxon, specimen, names and multimedia clients, allowing for 
+		 * distributed query (mostly metadata queries). Excludes geo service 
+		 * and does not verify query, so use with care!
 		 *
-         * @return class This class (allowing chaining)
+         * @return \nl\naturalis\bioportal\Client
 		 */
 		public function all () {
 			$this->_clients = array_diff($this::$nbaClients, array('geo'));
@@ -110,27 +144,12 @@
 		}
 
 		/**
-		 * Returns publicly available clients
-		 *
-         * @return json All available classes in the client
+		 * Sets QuerySpec object
+		 * 
+		 * @param object $querySpec QuerySpec object
+		 * @throws \InvalidArgumentException In case $querySpec is not a valid QuerySpec object
+		 * @return \nl\naturalis\bioportal\Client
 		 */
-		public function getAllClients () {
-			return json_encode($this::$nbaClients);
-		}
-
-		public function getClients () {
-			return json_encode($this->_clients);
-		}
-		
-		/**
-         * Sets QuerySpec
-         *
-         * Imports QuerySpec object from QuerySpec class
-         *
-         * @param class $spec QuerySpec
-         *
-         * @return class This class (allowing chaining)
-         */
 		public function querySpec ($querySpec) {
 		    if (!$querySpec || !($querySpec instanceof QuerySpec)) {
                 throw new \InvalidArgumentException('Error: invalid querySpec, ' .
@@ -140,20 +159,21 @@
             return $this;
 		}
 
-        /**
-         * Queries the NBA
-         *
+		/**
+         * Performs a _querySpec NBA query
+         * 
          * 1. Sets the curl channels for one or more clients
-         * 2. Performs the NBA query
-         * 3. Returns NBA result
+         * 2. Performs the NBA query using multicurl
+         * 3. Returns NBA response
          *
          * Depending on the number of clients, the result is returned
-         * either as json or an array of json responses (in case multiple
-         * channels have been used).
+         * either as json or an array of json responses.
          *
-         * @return string|array NBA data as json or array with responses
-         * formatted as [client1 => json, client2 => json]
-         */
+		 * @throws \RuntimeException In case QuerySpec is not set
+		 * @return string|string[] NBA response as json if a single client has been
+		 * set, or as an array of responses in case of multiple clients 
+		 * (formatted as [client1 => json, client2 => json]).
+		 */
 		public function query () {
 			$this->_bootstrap();
 			if (!$this->_querySpec || empty($this->_querySpec->getQuerySpec())) {
@@ -168,66 +188,25 @@
 					'?_querySpec=' . $this->_querySpec->getQuerySpec()
 				];
 			}
-			return $this->_queryAndReturnRemoteData();
-		}
-
-		/**
-		 * Shorthand function to override complete config and set variables
-		 */
-		public function setConfig ($config = false) {
-		    $this->_setConfig($config);
-		}
-
-		/**
-		 * Returns current config
-         *
-         * @return array config
-		 */
-		public function getConfig () {
-		    return $this->_config;
-		}
-
-		/**
-		 * Set $_nbaUrl, overriding default value
-		 */
-		public function setNbaUrl ($url = false) {
-			$this->_setNbaUrl($url);
-		}
-
-		/**
-		 * Returns current $_nbaUrl
-         *
-         * @return string $_nbaUrl
-		 */
-		public function getNbaUrl () {
-			return $this->_nbaUrl;
-		}
-
-		public function setNbaTimeout ($timeout = false) {
- 	 	    $this->_setNbaTimeout($timeout);
-		}
-
-		/**
-		 * Returns current $_nbaTimeout
-         *
-         * @return string $_nbaTimeout
-		 */
-		public function getNbaTimeout () {
- 	 	    return $this->_nbaTimeout;
-		}
-
-		/**
-		 * Returns current $_querySpec
-         *
-         * @return string $_querySpec
-		 */
-		public function getQuerySpec ($encoded = false) {
-		    return !$encoded ? urldecode($this->_querySpec->getQuerySpec()) : 
-		    	$this->_querySpec->getQuerySpec();
+			return $this->_performQueryAndReturnRemoteData();
 		}
 		
-		
-
+		/**
+		 * Performs a getFieldInfo NBA metadata query
+		 *
+		 * 1. Sets the curl channels for one or more clients
+		 * 2. Performs the NBA query using multicurl
+		 * 3. Returns NBA response
+		 *
+		 * Depending on the number of clients, the result is returned
+		 * either as json or an array of json responses.
+		 *
+		* @param string|array $fields Comma-separated string of fields; if input is 
+		 * an array, this is converted to a comma-separated string
+		 * @return string|string[] NBA response as json if a single client has been
+		 * set, or as an array of responses in case of multiple clients 
+		 * (formatted as [client1 => json, client2 => json]).
+		 */
 		public function getFieldInfo ($fields = false) {
 			$this->_bootstrap();
 			foreach ($this->_clients as $client) {
@@ -236,47 +215,67 @@
 					$url .= '?fields=' . $this->commaSeparate($fields);
 				}
 				$this->_channels[] =
-					[
-						'client' => $client,
-						'url' => $url,
-					];
+				[
+					'client' => $client,
+					'url' => $url,
+				];
 			}
-			return $this->_queryAndReturnRemoteData();
+			return $this->_performQueryAndReturnRemoteData();
 		}
 		
-		
-
+		/**
+		 * Performs an NBA find/findByIds query
+		 * 
+		 * Depending on the provided $id(s), either the NBA find or findByIds
+		 * method is used to retrieve records. Depending on the number of clients, 
+		 * the result is returned either as json or an array of json responses.
+		 *
+		 * @param string|array $fields Comma-separated string of fields; if input is
+		 * an array, this is converted to a comma-separated string
+		 * @throws \InvalidArgumentException In case no $id is provided
+		 * @return string|string[] NBA response as json if a single client has been
+		 * set, or as an array of responses in case of multiple clients
+		 * (formatted as [client1 => json, client2 => json]).
+		 */
 		public function find ($id = false) {
 			$this->_bootstrap();
 			if (!$id) {
-                throw new \InvalidArgumentException('Error: no id(s) ' . 
-                	'provided for find method.');
-		    }
-		    $r = $this->commaSeparate($id);
-            $method = strpos($r, ',') === false ? 'find' : 'findByIds';
+				throw new \InvalidArgumentException('Error: no id(s) ' .
+					'provided for find method.');
+			}
+			$r = $this->commaSeparate($id);
+			$method = strpos($r, ',') === false ? 'find' : 'findByIds';
 			foreach ($this->_clients as $client) {
 				$this->_channels[] =
-					[
-						'client' => $client,
-						'url' => $this->_nbaUrl . $client . '/' . $method . '/' . $r,
-					];
+				[
+					'client' => $client,
+					'url' => $this->_nbaUrl . $client . '/' . $method . '/' . $r,
+				];
 			}
-			return $this->_queryAndReturnRemoteData();
+			return $this->_performQueryAndReturnRemoteData();
 		}
 		
-		
-		/*
-		 * Unlike find, this returns array with specimen data or empty array.
-		 * Can be called with or without calling ->specimen(). Cannot be used
-		 * with other services!
+		/**
+		 * Convenience method to get specimen(s) by unitID
+		 * 
+		 * Unlike find, this returns a json-encoded object with specimen data, 
+		 * extracted from NBA response (so not a direct NBA response). Returns
+		 * json-encoded empty array in case nothing is found. Can be called 
+		 * with or without setting ->specimen(). Cannot be used with other services,
+		 * even if they contain a unitID!
+		 * 
+		 * @param string $unitId
+		 * @throws \InvalidArgumentException In case no $unitId is provided
+		 * @throws \RuntimeException In case this method is used for other service 
+		 * but specimen
+		 * @return string Item from NBA response as json 
 		 */
-		
 		public function findByUnitId ($unitId = false) {
 			if (!$unitId) {
 				throw new \InvalidArgumentException('Error: no UnitID ' .
 					'provided for exists/findByUnitId method.');
 			}
-			// Only works for specimens; return exception if called for other  service
+			// Only works for specimens; return exception if called for other service
 			if (!empty($this->_clients) && !in_array('specimen', $this->_clients)) {
 				throw new \RuntimeException('Error: exists/findByUnitId method ' .
 					'can only be used to query specimens.');
@@ -286,31 +285,35 @@
 				->addCondition(new Condition('unitID', 'EQUALS_IC', $unitId))
 				->setConstantScore();
 			$this->_channels = [];
-			$this->_channels[] = 
-				[
-					'url' => $this->_nbaUrl . 'specimen/query/?_querySpec=' . 
-						$query->getQuerySpec()
-				];
+			$this->_channels[] =
+			[
+				'url' => $this->_nbaUrl . 'specimen/query/?_querySpec=' .
+					$query->getQuerySpec()
+			];
 			$this->_query();
 			$data = json_decode($this->_remoteData[0]);
-			return isset($data->resultSet[0]->item) ? 
+			return isset($data->resultSet[0]->item) ?
 				json_encode([$data->resultSet[0]->item]) : json_encode([]);
 		}
-	
-
-
-
-		/* Returns whether or not the specified string is a valid UnitID
-		 * (i.e. is the UnitID of at least one specimen record). */
+		
+		/**
+		 * Uses findByUnitId to determine if specimen with given unitID exists
+		 * 
+		 * @param string $unitId
+		 * @return boolean
+		 */
 		public function exists ($unitId = false) {
 			return !empty(json_decode($this->findByUnitId($unitId))) ;
 		}
 		
-		
-		
-		/*
-		 * Returns all "special collections" defined within the specimen dataset.
-		 * Can be called with or without calling ->specimen().
+		/**
+		 * Performs an NBA getNamedCollections query
+		 * 
+		 * Uses the NBA query getNamedCollections to get all "special collections" 
+		 * defined within the specimen dataset. Can be called with or without 
+		 * setting ->specimen().
+		 * 
+		 * @return string Collections as json
 		 */
 		public function getNamedCollections () {
 			$this->_channels = [];
@@ -319,113 +322,192 @@
 			return $this->_remoteData[0];
 		}
 		
-		
-		
-		
-		/*
-		 * Convenience method to retrieve geo areas. The output is comparable to
-		 * getDistinctValuesPerGroup() in the java client. This method additionally
-		 * inserts both the id and Dutch name, which are absent from the
-		 * getDistinctValuesPerGroup() output.
+		/**
+		 * Convenience method to retrieve geo areas 
+		 * 
+		 * The output is comparable to getDistinctValuesPerGroup() in the Java client. 
+		 * This method additionally inserts both the id and Dutch name, which are absent 
+		 * from the getDistinctValuesPerGroup() output. The results are formatted in a 
+		 * slightly different way, grouping localities per language.
+		 * 
+		 * @return string Result array as json
 		 */
 		public function getGeoAreas () {
-		    $query = new QuerySpec();
-            $query
-            	->setSize(2000)
-                ->setFields(['sourceSystemId', 'areaType', 'locality', 'countryNL'])
-                ->setConstantScore();
+			$query = new QuerySpec();
+			$query
+				->setSize(2000)
+				->setFields(['sourceSystemId', 'areaType', 'locality', 'countryNL'])
+				->setConstantScore();
 			$data = json_decode($this->geo()->querySpec($query)->query(), true);
 			// Enhance data
-            foreach ($data['resultSet'] as $i => $row) {
-                $result[$row['areaType']][$i]['id'] = $row['id'];
-                $result[$row['areaType']][$i]['locality']['en'] =
-                    $row['locality'];
-                $result[$row['areaType']][$i]['locality']['nl'] =
-                    !empty($row['countryNL']) && $row['countryNL'] != '\N' ?
-                        $row['countryNL'] : $row['locality'];
-            }
-            return isset($result) ? json_encode($result) : false;
+			foreach ($data['resultSet'] as $i => $row) {
+				$result[$row['areaType']][$i]['id'] = $row['id'];
+				$result[$row['areaType']][$i]['locality']['en'] =
+				$row['locality'];
+				$result[$row['areaType']][$i]['locality']['nl'] =
+					!empty($row['countryNL']) && $row['countryNL'] != '\N' ?
+					$row['countryNL'] : $row['locality'];
+			}
+			return isset($result) ? json_encode($result) : json_encode([]);
 		}
-
-		/*
-		 * Can be used with or without setting a querySpec. 
-		 * QuerySpec must be set before calling getDistinctValues, e.g.:
-		 * $client->multimedia()->querySpec($query)->getDistinctValues('creator');
+		
+		/**
+		 * Performs an NBA getDistinctValues query
+		 * 
+		 * Uses NBA getDistinctValues method to get distinct values for a specific field.
+		 * Supports multiple clients in case the same fields occurs in multiple services. 
+		 * Can be used with or without setting a QuerySpec. The QuerySpec must be set 
+		 * _before_ calling getDistinctValues. Depending on the number of clients, 
+		 * the result is returned either as json or an array of json responses.
+		 *
+		 * @param string $field
+		 * @example $client->multimedia()->querySpec($query)->getDistinctValues('creator');
+		 * @return string|string[] NBA response as json if a single client has been
+		 * set, or as an array of responses in case of multiple clients
+		 * (formatted as [client1 => json, client2 => json]).
 		 */
 		public function getDistinctValues ($field = false) {
 			$this->_bootstrap();
 			if (!$field) {
-                throw new \InvalidArgumentException('Error: no field provided for ' .
-                    'getDistinctValues.');
-		    }
-		    foreach ($this->_clients as $client) {
-		    	$url = $this->_nbaUrl . $client . '/getDistinctValues/' . $field;
-		    	if ($this->_querySpec) {
-		    		$url .= '?_querySpec=' . $this->_querySpec->getQuerySpec();
-		    	}
-				$this->_channels[] =
-					[
-						'client' => $client,
-						'url' => $url,
-					];
+				throw new \InvalidArgumentException('Error: no field provided for ' .
+					'getDistinctValues.');
 			}
-            return $this->_queryAndReturnRemoteData();
-        }
-        
-        
-        /*
-         * Can be used with or without setting a querySpec.
-         * QuerySpec must be set before calling getDistinctValues, e.g.:
-         * $client->multimedia()->querySpec($query)->count('creator');
-         */
-        public function count () {
-        	$this->_bootstrap();
-         	foreach ($this->_clients as $client) {
-         		$url = $this->_nbaUrl . $client . '/count/';
-         		if ($this->_querySpec) {
-         			$url .= '?_querySpec=' . $this->_querySpec->getQuerySpec();
-         		}
-         		$this->_channels[] =
-        			[
-        				'client' => $client,
-        				'url' => $url,
-        			];
-        	}
-        	return $this->_queryAndReturnRemoteData();
-        }
-        
-        
-        
-
+			foreach ($this->_clients as $client) {
+				$url = $this->_nbaUrl . $client . '/getDistinctValues/' . $field;
+				if ($this->_querySpec) {
+					$url .= '?_querySpec=' . $this->_querySpec->getQuerySpec();
+				}
+				$this->_channels[] =
+				[
+					'client' => $client,
+					'url' => $url,
+				];
+			}
+			return $this->_performQueryAndReturnRemoteData();
+		}
+		
+		/**
+		 * Performs an NBA count query
+		 * 
+		 * Uses NBA count method to count number of results. Supports multiple clients. 
+		 * Can be used with or without setting a QuerySpec. The QuerySpec must be set 
+		 * _before_ calling count. Depending on the number of clients, the result is 
+		 * returned either as json or an array of json responses.
+		 *
+		 * @example $client->multimedia()->querySpec($query)->count('creator');
+		 * @return string|string[] NBA response as json if a single client has been
+		 * set, or as an array of responses in case of multiple clients
+		 * (formatted as [client1 => json, client2 => json]).
+		 */
+		public function count () {
+			$this->_bootstrap();
+			foreach ($this->_clients as $client) {
+				$url = $this->_nbaUrl . $client . '/count/';
+				if ($this->_querySpec) {
+					$url .= '?_querySpec=' . $this->_querySpec->getQuerySpec();
+				}
+				$this->_channels[] =
+				[
+					'client' => $client,
+					'url' => $url,
+				];
+			}
+			return $this->_performQueryAndReturnRemoteData();
+		}
+		
+		
+		
+		
 		/**
 		 * Accepts an array of querySpec objects
 		 *
 		 * @param unknown $queries
+		 * 
+		 */
+		/**
+		 * Uses count to count number of results
+		 *
+		 * Supports multiple clients. Can be used with or without setting a QuerySpec.
+		 * The QuerySpec must be set _before_ calling count.
+		 *
+		 * Depending on the number of clients, the result is returned
+		 * either as json or an array of json responses.
+		 *
+		 * @example $client->multimedia()->querySpec($query)->count('creator');
+		 * @return string|string[] NBA response as json if a single client has been
+		 * set, or as an array of responses in case of multiple clients
+		 * (formatted as [client1 => json, client2 => json]).
+		 */
+		
+		
+		/**
+		 * Performs NBA queries in batch
+		 * 
+		 * Takes an array of QuerySpecs and simultaneously queries the NBA. The
+		 * maximum number of queries is capped by $_maxBatchSize. The more
+		 * queries in batch, the more memory is used. This method only takes
+		 * a single client. The array with results uses the same keys as the
+		 * input array of QuerySpec objects.
+		 * 
+		 * @param array $querySpecs Array of QuerySpec objects
+		 * @throws \RuntimeException In case multiple clients are provided
+		 * @throws \RangeException In case batch size exceeds $_maxBatchSize
+		 * @throws \InvalidArgumentException In case of invalid QuerySpec object
+		 * @return string[] NBA response as an array of responses 
+		 * (formatted as [key1 => json, key2 => json]).
 		 */
 		public function batchQuery ($querySpecs = []) {
 			$this->_bootstrap();
 			if (count($this->_clients) > 1) {
-                throw new \RuntimeException('Error: batch accepts a single client only.');
-		    }
-		    // Warn for batch size limit if test runs successfully
-		    // This is merely an indication -- successs not guaranteed!
-		    if (count($querySpecs) > $this->getMaxBatchSize()) {
-                throw new \RangeException('Error: batch size too large, maximum exceeds '
-                    . $this->getMaxBatchSize() . '.');
-		    }
-		    $this->_reset();
-		    foreach ($querySpecs as $key => $querySpec) {
-                if (!$querySpec instanceof QuerySpec) {
-                    throw new \InvalidArgumentException('Error: ' . 
-                    	'batch array should contain valid querySpec objects.');
-    		    }
+				throw new \RuntimeException('Error: batch accepts a single client only.');
+			}
+			// Warn for batch size limit if test runs successfully
+			// This is merely an indication -- successs not guaranteed!
+			if (count($querySpecs) > $this->getMaxBatchSize()) {
+				throw new \RangeException('Error: batch size too large, maximum exceeds '
+						. $this->getMaxBatchSize() . '.');
+			}
+			$this->_reset();
+			foreach ($querySpecs as $key => $querySpec) {
+				if (!$querySpec instanceof QuerySpec) {
+					throw new \InvalidArgumentException('Error: ' .
+							'batch array should contain valid querySpec objects.');
+				}
 				$this->_channels[$key] =
-					[
+				[
 						'url' => $this->_nbaUrl . $this->_clients[0] . '/query/' .
-                            '?_querySpec=' . $querySpec->getQuerySpec()
-					];
-            }
-            return $this->_queryAndReturnRemoteData();
+						'?_querySpec=' . $querySpec->getQuerySpec()
+				];
+			}
+			return $this->_performQueryAndReturnRemoteData();
+		}
+		
+		/**
+		 * Gets all publicly available clients
+		 *
+		 * @return array All clients
+		 */
+		public function getAllClients () {
+			return $this::$nbaClients;
+		}
+		
+		/**
+		 * Gets current clients
+		 *
+		 * @return array Set clients
+		 */
+		public function getClients () {
+			return $this->_clients;
+		}
+		
+		/**
+		 * Returns current $_querySpec
+		 *
+		 * @return string $_querySpec
+		 */
+		public function getQuerySpec ($encoded = false) {
+			return !$encoded ? urldecode($this->_querySpec->getQuerySpec()) :
+			$this->_querySpec->getQuerySpec();
 		}
 		
 		/*
@@ -434,16 +516,96 @@
 		public function getMaxBatchSize () {
 			return $this->_maxBatchSize;
 		}
-		
-		private function _reset () {
-		    $reset = ['_remoteData', '_querySpec', '_channels'];
-		    foreach ($this as $k => $v) {
-		        if (in_array($k, $reset)) {
-		            $this->{$k} = null;
-		        }
-		    }
+
+		/**
+		 * Gets current configuration
+         *
+		 * @return array Configuration settings
+		 */
+		public function getConfig () {
+		    return $this->_config;
 		}
 
+		/**
+		 * Sets $_nbaUrl configuration setting, overriding setting in client.ini
+		 * 
+		 * 1. Reads client.ini and sets $_config if this hasn't been set prior
+		 * 2. Validates url
+		 * 3. Overrides client.ini setting, appending slash if missing
+		 * 
+		 * @param string $url
+		 * @throws \RuntimeException In case client.ini does not contain this setting
+		 * @throws \InvalidArgumentException In case url is invalid
+		 * @return \nl\naturalis\bioportal\Client
+		 */
+		public function setNbaUrl ($url = false) {
+			if (empty($this->_config)) {
+				$this->_setConfig();
+			}
+			if (!isset($this->_config['nba_url'])) {
+				throw new \RuntimeException('Error: nba_url is not set in client.ini!');
+			}
+			$nbaUrl = $url ? $url : $this->_config['nba_url'];
+			// Make sure url is valid and ends with a slash
+			if (filter_var($nbaUrl, FILTER_VALIDATE_URL) === false) {
+				throw new \InvalidArgumentException('Error: nba_url "' . $nbaUrl .
+					'" is not a valid url!');
+			}
+			$this->_nbaUrl = substr($nbaUrl, -1) != '/' ? $nbaUrl . '/' : $nbaUrl;
+			return $this;
+		}
+		
+		/**
+		 * Gets $_nbaUrl configuration setting
+		 * 
+		 * @return string NBA url
+		 */
+		public function getNbaUrl () {
+			return $this->_nbaUrl;
+		}
+
+		/**
+		 * Sets $_nbaTimeout configuration setting, overriding setting in client.ini
+		 * 
+		 * 1. Reads client.ini and sets $_config if this hasn't been set prior
+		 * 2. Validates timeout (accepts string if this can be cast to proper integer)
+		 * 3. Overrides client.ini setting, appending slash if missing
+		 * 
+		 * @param int|string $timeout
+		 * @throws \RuntimeException In case client.ini does not contain this setting
+		 * @throws \InvalidArgumentException In case $timeout is invalid
+		 * @return \nl\naturalis\bioportal\Client
+		 */
+		public function setNbaTimeout ($timeout = false) {
+			if (empty($this->_config)) {
+				$this->_setConfig();
+			}
+			if (!isset($this->_config['nba_timeout'])) {
+				throw new \RuntimeException('Error: nba_timeout is not set in client.ini!');
+			}
+			$nbaTimeout = $timeout ? $timeout : $this->_config['nba_timeout'];
+			// Only override default if $nbaTimeout is valid
+			if (!$this->isInteger($nbaTimeout) || (int) $nbaTimeout < 0) {
+				throw new \InvalidArgumentException('Error: nba_timeout "' . $nbaTimeout .
+					'" is not a valid integer!');
+			}
+			$this->_nbaTimeout = $nbaTimeout;
+			return $this;
+		}
+		
+		/**
+		 * Gets $_nbaTimeout configuration setting
+         *
+         * @return int $_nbaTimeout
+		 */
+		public function getNbaTimeout () {
+ 	 	    return $this->_nbaTimeout;
+		}
+
+		/*
+		 * Checks if clients have been set and if names service specific parameters
+		 * are not used for other service.
+		 */
 		private function _bootstrap () {
 			// Cannot proceed if no client has been set
 			if (empty($this->_clients)) {
@@ -455,7 +617,7 @@
 				foreach ($this->_clients as $client) {
 					if ($client != 'names') {
 						throw new \RuntimeException('Error: querySpec includes criteria ' .
-							'that are exclusive to names service, yet ' . $client . 
+							'that are exclusive to names service, yet ' . $client .
 							' service is queried.');
 					}
 				}
@@ -463,12 +625,24 @@
 			return true;
 		}
 		
+		/*
+		 * Resets values
+		 */
+		private function _reset () {
+		    $reset = ['_remoteData', '_querySpec', '_channels'];
+		    foreach ($this as $k => $v) {
+		        if (in_array($k, $reset)) {
+		            $this->{$k} = null;
+		        }
+		    }
+		}
+
 		/* 
 		 * Shorthand method to query and return the remote data either directly
 		 * if a single client has been used, or an array of client => result 
 		 * if multiple clients have been used.
 		 */
-		private function _queryAndReturnRemoteData () {
+		private function _performQueryAndReturnRemoteData () {
 			$this->_query();
 			if (count($this->_channels) == 1) {
 				return $this->_remoteData[$this->_clients[0]];
@@ -476,6 +650,9 @@
 			return $this->_remoteData;
 		}
 		
+		/*
+		 * Multicurl query
+		 */
 		private function _query () {
 		    $this->_remoteData = [];
 			$mh = curl_multi_init();
@@ -485,15 +662,15 @@
         		curl_setopt($ch[$key], CURLOPT_HTTPHEADER, array('Expect:'));
                 curl_setopt($ch[$key], CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch[$key], CURLOPT_HEADER, false);
-
 			    if (isset($this->_channels[$key]['postfields'])) {
                     curl_setopt($ch[$key], CURLOPT_POST, true);
                     curl_setopt($ch[$key], CURLOPT_POSTFIELDS,
                         $this->_channels[$key]['postfields']);
-                }
+                }                
                 if ($this->_nbaTimeout) {
 					curl_setopt($ch[$key], CURLOPT_TIMEOUT, $this->_nbaTimeout);
 				}
+				
 				curl_multi_add_handle($mh, $ch[$key]);
 			}
 			do {
@@ -518,9 +695,7 @@
 		}
 
 		/*
-		 * Config file is parsed and variables are set using private methods.
-		 * Function can be called publicly through $setConfig(), but config settings are
-		 * applied only if option exists in client.ini.
+		 * Parses client.ini file and sets $_config parameters.
 		 */
 		private function _setConfig ($config = false) {
 		    $ini = dirname(__FILE__) . '/../../../../config/client.ini';
@@ -529,63 +704,7 @@
                     'Please create a copy of "config/client.ini.tpl".');
             }
             $this->_config = parse_ini_file($ini);
-            // If $config is provided by user, change settings
-            if ($config) {
-                foreach ((array) $config as $k => $v) {
-                    // _setConfigValue() checks if method and variable exist
-                    $val = $this->_setConfigValue($k, $v);
-                    if ($val) {
-                        $this->_config[$k] = $val;
-                    }
-                }
-            }
 		}
 
- 	    /**
-         * Method to set a value using the appropriate method.
-         * 1. $var nba_do_something must translate to _setNbaDoSomething() method
-         * 2. _setNbaDoSomething() must return value that has been set
-         */
-        private function _setConfigValue ($var, $val) {
-            $method = '_set' . ucfirst($this->camelCase($var));
-            if (method_exists($this, $method)) {
-                $res = $this->{$method}($val);
-            }
-            return isset($res) ? $res : false;
-        }
-
-		private function _setNbaUrl ($url = false) {
-		    if (empty($this->_config)) {
-                $this->_setConfig();
-            }
-		    if (!isset($this->_config['nba_url'])) {
-                throw new \RuntimeException('Error: nba_url is not set in client.ini!');
-            }
-            $nbaUrl = $url ? $url : $this->_config['nba_url'];
-            // Make sure url is valid and ends with a slash
-            if (filter_var($nbaUrl, FILTER_VALIDATE_URL) === false) {
-                throw new \InvalidArgumentException('Error: nba_url "' . $nbaUrl . 
-                	'" is not a valid url!');
-            }
-            $this->_nbaUrl = substr($nbaUrl, -1) != '/' ? $nbaUrl . '/' : $nbaUrl;
-            return $this->_nbaUrl;
-		}
-
- 		private function _setNbaTimeout ($timeout = false) {
-		    if (empty($this->_config)) {
-                $this->_setConfig();
-            }
-		    if (!isset($this->_config['nba_timeout'])) {
-                throw new \RuntimeException('Error: nba_timeout is not set in client.ini!');
-            }
-            $nbaTimeout = $timeout ? $timeout : $this->_config['nba_timeout'];
-            // Only override default if $nbaTimeout is valid
-            if (!$this->isInteger($nbaTimeout) || (int) $nbaTimeout < 0) {
-                throw new \InvalidArgumentException('Error: nba_timeout "' . $nbaTimeout .
-                    '" is not a valid integer!');
-            }
-            $this->_nbaTimeout = $nbaTimeout;
-            return $this->_nbaTimeout;
-		}
-
+ 
  	}
