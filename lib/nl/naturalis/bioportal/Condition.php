@@ -7,7 +7,6 @@
      * a condition equals a statement. A condition can also represent a nested set of 
      * and/or statements. Each statement is evaluated before it is appended to the condition.
      */
-
  	final class Condition extends Common
  	{
         private $_field;
@@ -19,12 +18,43 @@
         private $_statement = [];
         private $_condition = [];
 
+        
+        /**
+         * Constructor
+         * 
+         * Condition is initialised with field, operator and value, so the constructor
+         * has to bootstrap these. Values are set through private methods, which throw
+         * exceptions if field or operator are empty or if operator does not match 
+         * values in nl\naturalis\bioportal\Common::operators. Value can be omitted _only_ 
+         * in the specific case of EQUALS/NOT_EQUALS. When the bootstrap is passed, 
+         * $_condition is set.
+         * 
+         * @param string $field
+         * @param string $operator
+         * @param unknown $value
+         * @return void
+         */
         public function __construct ($field = false, $operator = false, $value = null) {
             parent::__construct();
             $this->_bootstrap($field, $operator, $value);
             $this->_setCondition();
         }
 
+        /**
+         * Append AND condition
+         * 
+         * Mirrors functionality in Java client, which allows user to pass either
+         * a field-operator-value triplet or a previously instantiated Condition object.
+         * Normal use would be the triplet. When the bootstrap is passed, 
+         * $_condition is set.
+         * 
+         * @param string|object $fieldOrCondition Field or previously created 
+         * Condition object
+         * @param string $operator Operator (when field is set)
+         * @param unknown $value Value (when field is set)
+         * @throws \InvalidArgumentException In case Condition object is invalid
+         * @return \nl\naturalis\bioportal\Condition
+         */
         public function setAnd ($fieldOrCondition, $operator = false, $value = null) {
         	// Allow setting a previously constructed Condition, cf Java client
         	if (is_object($fieldOrCondition)) {
@@ -41,7 +71,22 @@
         	return $this;
         }
 
- 	    public function setOr ($fieldOrCondition, $operator = false, $value = null) {
+        /**
+         * Append OR condition
+         *
+         * Mirrors functionality in Java client, which allows user to pass either
+         * a field-operator-value triplet or a previously instantiated Condition object.
+         * Normal use would be the triplet. When the bootstrap is passed, 
+         * $_condition is set.
+         * 
+         * @param string|object $fieldOrCondition Field or previously created 
+         * Condition object
+         * @param string $operator Operator (when field is set)
+         * @param unknown $value Value (when field is set)
+         * @throws \InvalidArgumentException In case Condition object is invalid
+         * @return \nl\naturalis\bioportal\Condition
+         */
+        public function setOr ($fieldOrCondition, $operator = false, $value = null) {
  	    	// Allow setting a previously constructed Condition, cf Java client
  	    	if (is_object($fieldOrCondition)) {
  	    		if (!($fieldOrCondition instanceof Condition)) {
@@ -57,8 +102,14 @@
  	    	return $this;
  	    }
  	    
- 	    /*
- 	     * Can only be used to override previously initialised value
+  	    /**
+ 	     * Overrides field in existing Condition
+ 	     * 
+ 	     * Mirrors functionality in Java client. A bit of a theoretical method,
+ 	     * as normally one would simply create a new triplet.
+ 	     * 
+ 	     * @param string $field
+ 	     * @return \nl\naturalis\bioportal\Condition
  	     */
  	    public function setField ($field = null) {
  	    	$this->_setField($field);
@@ -66,8 +117,14 @@
  	    	return $this;
  	    }
  	    
- 	    /*
- 	     * Can only be used to override previously initialised value
+ 	    /**
+ 	     * Overrides operator in existing Condition
+ 	     *
+ 	     * Mirrors functionality in Java client. A bit of a theoretical method,
+ 	     * as normally one would simply create a new triplet.
+ 	     *
+ 	     * @param string $operator
+ 	     * @return \nl\naturalis\bioportal\Condition
  	     */
  	    public function setOperator ($operator = null) {
  	    	$this->_setOperator($operator);
@@ -75,8 +132,14 @@
  	    	return $this;
  	    }
  	    
- 	    /*
- 	     * Can only be used to override previously initialised value
+ 	    /**
+ 	     * Overrides value in existing Condition
+ 	     *
+ 	     * Mirrors functionality in Java client. A bit of a theoretical method,
+ 	     * as normally one would simply create a new triplet.
+ 	     *
+ 	     * @param unknown $value
+ 	     * @return \nl\naturalis\bioportal\Condition
  	     */
  	    public function setValue ($value = null) {
  	    	$this->_setValue($value);
@@ -84,9 +147,17 @@
  	    	return $this;
  	    }
  	    
-		/**
- 	     * Creates a negated condition if parameter equals 'not';
- 	     * else removes negation (as per to Java client)
+ 	    /**
+  	     * Sets a negated condition 
+  	     * 
+  	     * Conditions can be created using negative operators (NOT_EQUALS, etc), 
+ 	     * or the entire condition can be negated. This flexibility can lead to 
+ 	     * very complex queries; see the Java client documentation for further 
+ 	     * information. Sets a negated condition if parameter is empty or equals 'NOT';
+  	     * use any other value (e.g. FALSE) to remove the negation.
+	     * 
+ 	     * @param string $not
+ 	     * @return \nl\naturalis\bioportal\Condition
  	     */
  	    public function setNot ($not = 'NOT') {
   	    	$this->_not = strtoupper($not) == 'NOT' ? 'NOT' : false;
@@ -94,6 +165,16 @@
  	    	return $this;
  	    }
  	    
+  	    /**
+  	     * Set boost factor
+  	     * 
+  	     * Set the Elastic boost factor to increase or reduce the "weight"
+  	     * of the Condition.
+  	     * 
+  	     * @param float $boost
+  	     * @throws \InvalidArgumentException In case of invalid $boost
+  	     * @return \nl\naturalis\bioportal\Condition
+  	     */
   	    public function setBoost ($boost = false) {
  	    	$boost = (float) $boost;
  	    	if (empty($boost)) {
@@ -105,6 +186,17 @@
  	    	return $this;
  	    }
  	    
+ 	    
+ 	    /**
+ 	     * Removes scoring for the condition
+ 	     * 
+ 	     * Scoring will be disabled (set to 1) for this condition if value
+ 	     * is empty or set to TRUE. In theory this will increase performance. 
+ 	     * 
+ 	     * @param string $constant
+ 	     * @throws \InvalidArgumentException In case of invalid $constant
+ 	     * @return \nl\naturalis\bioportal\Condition
+ 	     */
  	    public function setConstantScore ($constant = true) {
  	    	if (!is_bool($constant)) {
  	    		throw new \InvalidArgumentException('Error: condition constant ' .
@@ -116,7 +208,10 @@
  	    }
  	    
  	    /**
- 	     * Switches _isNot parameter (as per Java client)
+ 	     * Switches the _not parameter
+ 	     * 
+ 	     * @see \nl\naturalis\bioportal\Condition::setNot()
+ 	     * @return \nl\naturalis\bioportal\Condition
  	     */
  	    public function negate () {
  	    	$this->_not = !$this->_not ? 'NOT' : false;
@@ -124,17 +219,32 @@
  	    	return $this;
  	    }
  	    
+		/**
+		 * Gets current complete condition
+		 * 
+		 * @return string Condition as json-formatted string
+		 */
  	    public function getCondition () {
  	    	return json_encode($this->_condition);
   	    }
  	    
- 	    public function getAnd () {
+  	    /**
+  	     * Gets AND section of condition
+  	     *
+  	     * @return string Condition as json-formatted string
+  	     */
+  	     public function getAnd () {
  	    	if (isset($this->_condition['and'])) {
  	    		return json_encode($this->_condition['and']);
  	    	}
  	    	return null;
  	    }
  	    
+ 	    /**
+ 	     * Gets OR section of condition
+ 	     *
+ 	     * @return string Condition as json-formatted string
+ 	     */
  	    public function getOr () {
  	    	if (isset($this->_condition['or'])) {
  	    		return json_encode($this->_condition['or']);
@@ -142,30 +252,65 @@
  	    	return null;
  	    }
  	    
+ 	    /**
+ 	     * Gets condition field
+ 	     *
+ 	     * @return string Field
+ 	     */
  	    public function getField () {
- 	    	return json_encode($this->_field);
+ 	    	return $this->_field;
         }
         
+        /**
+         * Gets condition operator
+         *
+         * @return string Operator
+         */
         public function getOperator () {
-        	return json_encode($this->_operator);
+        	return $this->_operator;
         }
         
+        /**
+         * Gets condition value
+         *
+         * @return string Value
+         */
         public function getValue () {
-        	return json_encode($this->_value);
+        	return $this->_value;
         }
         
+        /**
+         * Gets condition boost factor
+         *
+         * @return float Boost factor
+         */
         public function getBoost () {
         	return json_encode($this->_boost);
         }
 
+        /**
+         * Gets condition negation (_not)
+         *
+         * @return string
+         */
         public function getNot () {
-        	return json_encode($this->_not);
+        	return $this->_not;
         }
         
+        /**
+         * Gets if condition is negated
+         *
+         * @return bool
+         */
         public function isNegated () {
         	return $this->_not == 'NOT';
         }
         
+        /**
+         * Gets if condition uses constant score
+         *
+         * @return bool
+         */
         public function isConstantScore () {
         	return $this->_constantScore;
         }
@@ -251,7 +396,6 @@
             $this->_operator = strtoupper($operator);
             return $this->_operator;
         }
-        
 
  	 	/*
  	 	 * Value can be null but not an empty string
