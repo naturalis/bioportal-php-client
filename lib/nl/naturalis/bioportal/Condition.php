@@ -103,7 +103,7 @@
  	    }
  	    
   	    /**
- 	     * Overrides field in existing Condition
+ 	     * Override field in existing Condition
  	     * 
  	     * Mirrors functionality in Java client. A bit of a theoretical method,
  	     * as normally one would simply create a new triplet.
@@ -118,7 +118,7 @@
  	    }
  	    
  	    /**
- 	     * Overrides operator in existing Condition
+ 	     * Override operator in existing Condition
  	     *
  	     * Mirrors functionality in Java client. A bit of a theoretical method,
  	     * as normally one would simply create a new triplet.
@@ -133,7 +133,7 @@
  	    }
  	    
  	    /**
- 	     * Overrides value in existing Condition
+ 	     * Override value in existing Condition
  	     *
  	     * Mirrors functionality in Java client. A bit of a theoretical method,
  	     * as normally one would simply create a new triplet.
@@ -148,7 +148,7 @@
  	    }
  	    
  	    /**
-  	     * Sets a negated condition 
+  	     * Set a negated condition 
   	     * 
   	     * Conditions can be created using negative operators (NOT_EQUALS, etc), 
  	     * or the entire condition can be negated. This flexibility can lead to 
@@ -188,7 +188,7 @@
  	    
  	    
  	    /**
- 	     * Removes scoring for the condition
+ 	     * Remove scoring for the condition
  	     * 
  	     * Scoring will be disabled (set to 1) for this condition if value
  	     * is empty or set to TRUE. In theory this will increase performance. 
@@ -208,7 +208,7 @@
  	    }
  	    
  	    /**
- 	     * Switches the _not parameter
+ 	     * Switch the _not parameter
  	     * 
  	     * @see \nl\naturalis\bioportal\Condition::setNot()
  	     * @return \nl\naturalis\bioportal\Condition
@@ -220,7 +220,7 @@
  	    }
  	    
 		/**
-		 * Gets current complete condition
+		 * Get current complete condition
 		 * 
 		 * @return string Condition as json-formatted string
 		 */
@@ -229,7 +229,7 @@
   	    }
  	    
   	    /**
-  	     * Gets AND section of condition
+  	     * Get AND section of condition
   	     *
   	     * @return string Condition as json-formatted string
   	     */
@@ -241,7 +241,7 @@
  	    }
  	    
  	    /**
- 	     * Gets OR section of condition
+ 	     * Get OR section of condition
  	     *
  	     * @return string Condition as json-formatted string
  	     */
@@ -253,7 +253,7 @@
  	    }
  	    
  	    /**
- 	     * Gets condition field
+ 	     * Get condition field
  	     *
  	     * @return string Field
  	     */
@@ -262,7 +262,7 @@
         }
         
         /**
-         * Gets condition operator
+         * Get condition operator
          *
          * @return string Operator
          */
@@ -271,7 +271,7 @@
         }
         
         /**
-         * Gets condition value
+         * Get condition value
          *
          * @return string Value
          */
@@ -280,7 +280,7 @@
         }
         
         /**
-         * Gets condition boost factor
+         * Get condition boost factor
          *
          * @return float Boost factor
          */
@@ -289,7 +289,7 @@
         }
 
         /**
-         * Gets condition negation (_not)
+         * Get condition negation (_not)
          *
          * @return string
          */
@@ -298,7 +298,7 @@
         }
         
         /**
-         * Gets if condition is negated
+         * Get if condition is negated
          *
          * @return bool
          */
@@ -307,7 +307,7 @@
         }
         
         /**
-         * Gets if condition uses constant score
+         * Get if condition uses constant score
          *
          * @return bool
          */
@@ -337,7 +337,7 @@
         }
 
         /*
-         * Formats condition array; specifically excludes value if null, to allow
+         * Format condition array; specifically excludes value if null, to allow
          * empty/not-empty queries. Should only be called after _bootstrap().
          */
         private function _setStatement () {

@@ -35,7 +35,7 @@
 		/**
 		 * Constructor
 		 *
-		 * Sets ini values for $_nbaUrl, $_nbaTimeout and $_maxBatchSize;
+		 * Set ini values for $_nbaUrl, $_nbaTimeout and $_maxBatchSize;
 		 * implicitly reads config.ini and set $_config through either method.
 		 *
          * @return void
@@ -66,7 +66,7 @@
 		}
 
 		/**
-		 * Sets the client to taxon
+		 * Set client to taxon
 		 * 
 		 * Disables all previously set clients and resets to taxon
 		 * 
@@ -79,7 +79,7 @@
 		}
 
 		/**
-		 * Sets the client to specimen
+		 * Set client to specimen
 		 *
 		 * Disables all previously set clients and resets to specimen
 		 * 
@@ -92,7 +92,7 @@
 		}
 		
 		/**
-		 * Sets the client to names
+		 * Set client to names
 		 *
 		 * Disables all previously set clients and resets to names
 		 * 
@@ -105,7 +105,7 @@
 		}
 
  		/**
-		 * Sets the client to multimedia
+		 * Set client to multimedia
 		 *
 		 * Disables all previously set clients and resets to multimedia
 		 * 
@@ -118,7 +118,7 @@
 		}
 
  		/**
-		 * Sets the client to geo
+		 * Set client to geo
 		 *
 		 * Disables all previously set clients and resets to geo
 		 * 
@@ -131,7 +131,7 @@
 		}
 
 		/**
-		 * Sets all (but geo) clients
+		 * Set all (but geo) clients
 		 *
 		 * Sets taxon, specimen, names and multimedia clients, allowing for 
 		 * distributed query (mostly metadata queries). Excludes geo service 
@@ -145,7 +145,7 @@
 		}
 
 		/**
-		 * Sets QuerySpec object
+		 * Set QuerySpec object
 		 * 
 		 * @param object $querySpec QuerySpec object
 		 * @throws \InvalidArgumentException In case $querySpec is not a valid QuerySpec object
@@ -161,7 +161,7 @@
 		}
 
 		/**
-         * Performs a _querySpec NBA query
+         * Perform a _querySpec NBA query
          * 
          * 1. Sets the curl channels for one or more clients
          * 2. Performs the NBA query using multicurl
@@ -193,7 +193,7 @@
 		}
 		
 		/**
-		 * Performs a getFieldInfo NBA metadata query
+		 * Perform a getFieldInfo NBA metadata query
 		 *
 		 * 1. Sets the curl channels for one or more clients
 		 * 2. Performs the NBA query using multicurl
@@ -225,7 +225,7 @@
 		}
 		
 		/**
-		 * Performs an NBA find/findByIds query
+		 * Perform a find/findByIds NBA query
 		 * 
 		 * Depending on the provided $id(s), either the NBA find or findByIds
 		 * method is used to retrieve records. Depending on the number of clients, 
@@ -257,9 +257,9 @@
 		}
 		
 		/**
-		 * Convenience method to get specimen(s) by unitID
+		 * Get specimen(s) by unitID
 		 * 
-		 * Unlike find, this returns a json-encoded object with specimen data, 
+		 * Unlike find, this method returns a json-encoded object with specimen data, 
 		 * extracted from NBA response (so not a direct NBA response). Returns
 		 * json-encoded empty array in case nothing is found. Can be called 
 		 * with or without setting ->specimen(). Cannot be used with other services,
@@ -298,7 +298,7 @@
 		}
 		
 		/**
-		 * Uses findByUnitId to determine if specimen with given unitID exists
+		 * Determine if specimen with given unitID exists
 		 * 
 		 * @param string $unitId
 		 * @return boolean
@@ -308,13 +308,13 @@
 		}
 		
 		/**
-		 * Performs an NBA getNamedCollections query
+		 * Perform an getNamedCollections NBA query
 		 * 
 		 * Uses the NBA query getNamedCollections to get all "special collections" 
 		 * defined within the specimen dataset. Can be called with or without 
 		 * setting ->specimen().
 		 * 
-		 * @return string Collections as json
+		 * @return string Collections as json-encoded string
 		 */
 		public function getNamedCollections () {
 			$this->_channels = [];
@@ -324,14 +324,14 @@
 		}
 		
 		/**
-		 * Convenience method to retrieve geo areas 
+		 * Retrieve NBA geo areas 
 		 * 
-		 * The output is comparable to getDistinctValuesPerGroup() in the Java client. 
+		 * Output is comparable to getDistinctValuesPerGroup() in the Java client. 
 		 * This method additionally inserts both the id and Dutch name, which are absent 
 		 * from the getDistinctValuesPerGroup() output. The results are formatted in a 
 		 * slightly different way, grouping localities per language.
 		 * 
-		 * @return string Result array as json
+		 * @return string Result as json-encoded string
 		 */
 		public function getGeoAreas () {
 			$query = new QuerySpec();
@@ -355,7 +355,7 @@
 		}
 		
 		/**
-		 * Performs an NBA getDistinctValues query
+		 * Perform a getDistinctValues NBA query
 		 * 
 		 * Uses NBA getDistinctValues method to get distinct values for a specific field.
 		 * Supports multiple clients in case the same fields occurs in multiple services. 
@@ -390,7 +390,7 @@
 		}
 		
 		/**
-		 * Performs an NBA count query
+		 * Perform an NBA count query
 		 * 
 		 * Uses NBA count method to count number of results. Supports multiple clients. 
 		 * Can be used with or without setting a QuerySpec. The QuerySpec must be set 
@@ -418,33 +418,8 @@
 			return $this->_performQueryAndReturnRemoteData();
 		}
 		
-		
-		
-		
 		/**
-		 * Accepts an array of querySpec objects
-		 *
-		 * @param unknown $queries
-		 * 
-		 */
-		/**
-		 * Uses count to count number of results
-		 *
-		 * Supports multiple clients. Can be used with or without setting a QuerySpec.
-		 * The QuerySpec must be set _before_ calling count.
-		 *
-		 * Depending on the number of clients, the result is returned
-		 * either as json or an array of json responses.
-		 *
-		 * @example $client->multimedia()->querySpec($query)->count('creator');
-		 * @return string|string[] NBA response as json if a single client has been
-		 * set, or as an array of responses in case of multiple clients
-		 * (formatted as [client1 => json, client2 => json]).
-		 */
-		
-		
-		/**
-		 * Performs NBA queries in batch
+		 * Perform NBA queries in batch
 		 * 
 		 * Takes an array of QuerySpecs and simultaneously queries the NBA. The
 		 * maximum number of queries is capped by $_maxBatchSize. The more
@@ -486,7 +461,7 @@
 		}
 		
 		/**
-		 * Gets all publicly available clients
+		 * Get all publicly available clients
 		 *
 		 * @return array All clients
 		 */
@@ -495,7 +470,7 @@
 		}
 		
 		/**
-		 * Gets current clients
+		 * Get current clients
 		 *
 		 * @return array Set clients
 		 */
@@ -504,26 +479,29 @@
 		}
 		
 		/**
-		 * Returns current $_querySpec
+		 * Get $_querySpec
 		 *
-		 * @return string $_querySpec
+         * Gets QuerySpec either as json or url-encoded json (default).
+         * 
+		 * @param string $encoded Url encode QuerySpec json-encoded string?
+		 * @return string|boolean $_querySpec QuerySpec as json-encoded string
 		 */
 		public function getQuerySpec ($encoded = false) {
 			return !$encoded ? urldecode($this->_querySpec->getQuerySpec()) :
-			$this->_querySpec->getQuerySpec();
+				$this->_querySpec->getQuerySpec();
 		}
 		
 		/**
-		 * Gets current configuration
+		 * Get current configuration
          *
-		 * @return array Configuration settings
+		 * @return string Configuration settings as json-encoded string
 		 */
 		public function getConfig () {
-		    return $this->_config;
+		    return json_encode($this->_config);
 		}
 
 		/**
-		 * Sets $_nbaUrl configuration setting, overriding setting in client.ini
+		 * Set $_nbaUrl configuration setting, overriding setting in client.ini
 		 * 
 		 * 1. Reads client.ini and sets $_config if this hasn't been set prior
 		 * 2. Validates url
@@ -552,7 +530,7 @@
 		}
 		
 		/**
-		 * Gets $_nbaUrl configuration setting
+		 * Get $_nbaUrl configuration setting
 		 * 
 		 * @return string NBA url
 		 */
@@ -561,7 +539,7 @@
 		}
 
 		/**
-		 * Sets $_nbaTimeout configuration setting, overriding setting in client.ini
+		 * Set $_nbaTimeout configuration setting, overriding setting in client.ini
 		 * 
 		 * 1. Reads client.ini and sets $_config if this hasn't been set prior
 		 * 2. Validates timeout (accepts string if this can be cast to proper integer)
@@ -590,7 +568,7 @@
 		}
 		
 		/**
-		 * Gets $_nbaTimeout configuration setting
+		 * Get $_nbaTimeout configuration setting
          *
          * @return int $_nbaTimeout
 		 */
@@ -599,7 +577,7 @@
 		}
 		
 		/**
-		 * Sets $_maxBatchQuery configuration setting, overriding setting in client.ini
+		 * Set $_maxBatchQuery configuration setting, overriding setting in client.ini
 		 *
 		 * 1. Reads client.ini and sets $_config if this hasn't been set prior
 		 * 2. Validates size (accepts string if this can be cast to proper integer)
@@ -628,7 +606,7 @@
 		}
 
 		/**
-		 * Gets $_maxBatchSize configuration setting
+		 * Get $_maxBatchSize configuration setting
 		 *
 		 * @return int $_maxBatchSize
 		 */
@@ -637,7 +615,7 @@
 		}
 		
 		/*
-		 * Checks if clients have been set and if names service specific parameters
+		 * Check if clients have been set and if names service specific parameters
 		 * are not used for other service.
 		 */
 		private function _bootstrap () {
@@ -660,7 +638,7 @@
 		}
 		
 		/*
-		 * Resets values
+		 * Reset values
 		 */
 		private function _reset () {
 		    $reset = ['_remoteData', '_querySpec', '_channels'];
@@ -729,7 +707,7 @@
 		}
 
 		/*
-		 * Parses client.ini file and sets $_config parameters.
+		 * Parse client.ini file and sets $_config parameters.
 		 */
 		private function _setConfig ($config = false) {
 		    $ini = dirname(__FILE__) . '/../../../../config/client.ini';

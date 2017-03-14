@@ -309,7 +309,42 @@
         }
         
         /**
-         * Gets QuerySpec fields
+         * Check if QuerySpec contains names service-only criteria
+         *
+         * Offers the option to check if names service specific criteria
+         * have been used. If so, no other service may be set in the CLient.
+         *
+         * @return boolean
+         */
+        public function usesSpecimensCriteria () {
+        	foreach ([$this->_specimensSize, $this->_specimensFrom,
+        		$this->_specimensSortFields] as $var) {
+        		if (isset($var)) {
+        			return true;
+       			}
+       		}
+      		return $this->isNoTaxa();
+        }
+        
+        /**
+         * Get QuerySpec
+         * 
+         * Gets QuerySpec either as json or url-encoded json (default).
+         * 
+         * @param bool $encoded Url encode QuerySpec json-encoded string?
+         * @return string|boolean
+         */
+        public function getQuerySpec ($encoded = true) {
+        	if (!empty($this->_querySpec)) {
+        		ksort($this->_querySpec);
+        		$d = json_encode($this->_querySpec);
+        		return $encoded ? urlencode($d) : $d;
+        	}
+        	return false;
+        }
+        
+        /**
+         * Get QuerySpec fields
          * 
          * @return string Fields as json-encoded string
          */
@@ -320,7 +355,7 @@
         /**
          * Get QuerySpec from
          * 
-         * @return integer QuerySpec from
+         * @return integer
          */
         public function getFrom () {
         	return $this->_from;
@@ -329,7 +364,7 @@
         /**
          * Get QuerySpec size
          *
-         * @return integer QuerySpec size
+         * @return integer
          */
         public function getSize () {
             return $this->_size;
@@ -338,64 +373,76 @@
         /**
          * Get QuerySpec from
          *
-         * @return string QuerySpec logical operator
+         * @return string
          */
         public function getLogicalOperator () {
             return $this->_logicalOperator;
         }
 
+        /**
+         * Get QuerySpec conditions
+         *
+         * @return string QuerySpec conditions as json-encoded string
+         */
         public function getConditions () {
             return json_encode($this->_conditions);
         }
 
+        /**
+         * Get QuerySpec sort fields
+         *
+         * @return string QuerySpec sort fields as json-encoded string
+         */
         public function getSortFields () {
         	return json_encode($this->_sortFields);
         }
  
+        /**
+         * Get QuerySpec constant score
+         *
+         * @return bool 
+         */
         public function isConstantScore () {
         	return $this->_constantScore;
         }
         
+        /**
+         * Get QuerySpec specimens from
+         *
+         * @return integer
+         */
         public function getSpecimensFrom () {
         	return $this->_specimensFrom;
         }
         
+        /**
+         * Get QuerySpec specimens size
+         *
+         * @return integer
+         */
         public function getSpecimensSize () {
         	return $this->_specimensSize;
         }
         
+        /**
+         * Get QuerySpec specimens sort fields
+         *
+         * @return string QuerySpec specimen sort fields as json-encoded string
+         */
         public function getSpecimensSortFields () {
-        	return $this->_specimensSortFields;
+        	return json_encode($this->_specimensSortFields);
         }
 
+        /**
+         * Get QuerySpec specimens return taxa in NBA response?
+         *
+         * @return bool
+         */
         public function isNoTaxa () {
         	return $this->_noTaxa;
         }
         
-        /*
-         * Offers client an option to easily check if names service specific
-         * criteria have been used.
-         */
-        public function usesSpecimensCriteria () {
-        	foreach ([$this->_specimensSize, $this->_specimensFrom, 
-        		$this->_specimensSortFields] as $var) {
-        		if (isset($var)) {
-        			return true;
-        		}
-        	}
-        	return $this->isNoTaxa();
-        }
-        
-        public function getQuerySpec ($encoded = true) {
-            if (!empty($this->_querySpec)) {
-                ksort($this->_querySpec);
-                $d = json_encode($this->_querySpec);
-                return $encoded ? urlencode($d) : $d;
-            }
-            return false;
-        }
-        
-        private function _bootstrapSort ($path, $direction) {
+         private function _bootstrapSort ($path, $direction) {
         	if (!$path || !is_string($path)) {
         		throw new \InvalidArgumentException('Error: ' .
         			'sort by statement incomplete! Statement should contain the path ' .
