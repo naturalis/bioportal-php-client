@@ -269,7 +269,7 @@
 		 * @throws \InvalidArgumentException In case no $unitId is provided
 		 * @throws \RuntimeException In case this method is used for other service 
 		 * but specimen
-		 * @return string Item from NBA response as json 
+		 * @return string|bool Item from NBA response as json; false if no result
 		 */
 		public function findByUnitId ($unitId = false) {
 			if (!$unitId) {
@@ -294,7 +294,7 @@
 			$this->_query();
 			$data = json_decode($this->_remoteData[0]);
 			return isset($data->resultSet[0]->item) ?
-				json_encode([$data->resultSet[0]->item]) : json_encode([]);
+				json_encode([$data->resultSet[0]->item]) : false;
 		}
 		
 		/**
@@ -331,7 +331,7 @@
 		 * from the getDistinctValuesPerGroup() output. The results are formatted in a 
 		 * slightly different way, grouping localities per language.
 		 * 
-		 * @return string Result as json-encoded string
+		 * @return string|bool Result as json-encoded string; false if no result
 		 */
 		public function getGeoAreas () {
 			$query = new QuerySpec();
@@ -351,9 +351,33 @@
 						$row['countryNL'] : $row['locality'];
 				}
 			}
-			return isset($result) ? json_encode($result) : json_encode([]);
+			return isset($result) ? json_encode($result) : false;
 		}
 		
+		/**
+		 * Perform a getGeoJsonForLocality NBA query
+		 * 
+		 * The NBA method is case-sensitive. Use a dedicated query if a locality exists
+		 * in the geo index.
+		 * 
+		 * @param string $locality
+		 * @throws \InvalidArgumentException In case of empty $locality
+		 * @return string|bool Returns geojson; false if no result
+		 */
+		public function getGeoJsonForLocality ($locality) {
+			if (!$locality) {
+				throw new \InvalidArgumentException('Error: no field provided for ' .
+					'getGeoJsonForLocality.');
+			}
+			$this->_channels = [];
+			$this->_channels[] = ['url' => $this->_nbaUrl . 'geo/getGeoJsonForLocality/' . 
+				$locality];
+			$this->_query();
+			$data = json_decode($this->_remoteData[0], true);
+			return !empty($data) && isset($data['coordinates']) ? 
+				$this->_remoteData[0] : false;
+		}
+				
 		/**
 		 * Perform a getDistinctValues NBA query
 		 * 
