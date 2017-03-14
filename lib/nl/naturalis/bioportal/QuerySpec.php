@@ -2,7 +2,13 @@
     namespace nl\naturalis\bioportal;
     use nl\naturalis\bioportal\Condition as Condition;
     use nl\naturalis\bioportal\Common as Common;
-
+	use phpDocumentor\Descriptor\Builder\Reflector\Tags\ExampleAssembler;
+	
+	/*
+	 * Getters return values as they are, except when they are arrays. In that
+	 * case the return is json-encoded.
+	 */
+				
     final class QuerySpec extends Common
  	{
 		private $_querySpec;
@@ -25,9 +31,10 @@
         }
         
 		/**
+		 * Add Condition object to QuerySpec
 		 * 
-		 * @param string $condition
-		 * @throws \InvalidArgumentException
+		 * @param object $condition
+		 * @throws \InvalidArgumentException In case of invalid Condition object
 		 * @return \nl\naturalis\bioportal\QuerySpec
 		 */
         public function addCondition ($condition = false) {
@@ -41,9 +48,16 @@
         }
         
 		/**
+		 * Set single sort criterium
 		 * 
-		 * @param string $path
-		 * @param string $direction
+		 * Set sort field and order for QuerySpec. Only a single criterium can be set;
+		 * use setSortFields() to set multiple criteria. Defaults to ascending direction.
+		 * Throws an exception (using private bootstrap method) if either path or direction 
+		 * are invalid.
+		 * 
+		 * @param string $path NBA path to field
+		 * @param string $direction 
+		 * @see \nl\naturalis\bioportal\QuerySpec::setSortFields()
 		 * @return \nl\naturalis\bioportal\QuerySpec
 		 */
         public function sortBy ($path = false, $direction = 'ASC') {
@@ -57,9 +71,20 @@
         }
         
 		/**
+		 * Set multiple sort criteria
 		 * 
+		 * Sets sort based on array of sort criteria. Note that input differs: 
+		 * setSortFields() takes an array with one or more array in which the first value 
+		 * is the path and the second the direction. 
 		 * 
-		 * @param array $fields
+		 * setSortFields([
+		 * 	 ['path', 'direction'], 
+		 *   ['path', 'direction']
+		 * ]);
+		 * 
+		 * Uses sortBy() method and its error checking to set criteria.
+		 * 
+		 * @param array $fields Input format is different from sortBy(); see description 
 		 * @return \nl\naturalis\bioportal\QuerySpec
 		 */
         public function setSortFields ($fields = []) {
@@ -71,9 +96,10 @@
         }
 		
         /**
+         * Set QuerySpec from offset parameter
          * 
          * @param int $from
-         * @throws \InvalidArgumentException
+         * @throws \InvalidArgumentException In case of invalid $from
          * @return \nl\naturalis\bioportal\QuerySpec
          */
  	 	public function setFrom ($from = false) {
@@ -87,9 +113,10 @@
  	 	}
 
  	    /**
+  	     * Set QuerySpec result size parameter
   	     * 
   	     * @param int $size
- 	     * @throws \InvalidArgumentException
+ 	     * @throws \InvalidArgumentException In case of invalid $size
  	     * @return \nl\naturalis\bioportal\QuerySpec
  	     */
  	    public function setSize ($size = false) {
@@ -102,6 +129,16 @@
             return $this;
  	    }
 
+ 	    /**
+ 	     * Set QuerySpec logical operator
+ 	     * 
+ 	     * Individual Condition objects are combined using 'AND' or 'OR'
+ 	     * parameter.
+ 	     * 
+ 	     * @param string $operator
+ 	     * @throws \UnexpectedValueException In case of invalid operator
+ 	     * @return \nl\naturalis\bioportal\QuerySpec
+ 	     */
         public function setLogicalOperator ($operator = false) {
             if (!in_array(strtoupper($operator), self::$logicalOperators)) {
                 throw new \UnexpectedValueException('Error: ' .
@@ -113,6 +150,16 @@
             return $this;
         }
 
+        /**
+         * Set QuerySpec fields to return
+         * 
+         * Returns only thw fields specified in the $fields array, rather than
+         * the full response.
+         * 
+         * @param array $fields
+         * @throws \InvalidArgumentException In case $fields is invalid
+         * @return \nl\naturalis\bioportal\QuerySpec
+         */
         public function setFields ($fields = []) {
             if (!is_array($fields) || empty($fields)) {
                 throw new \InvalidArgumentException('Error: ' .
@@ -123,6 +170,15 @@
             return $this;
         }
         
+        /**
+         * Set QuerySpec constant score
+         * 
+         * Override any settings in the Condition object(s) and disable scoring.
+         * 
+         * @param string $constant
+         * @throws \InvalidArgumentException In case $constant is invalid
+         * @return \nl\naturalis\bioportal\QuerySpec
+         */
         public function setConstantScore ($constant = true) {
         	if (!is_bool($constant)) {
         		throw new \InvalidArgumentException('Error: condition constant ' .
@@ -137,6 +193,18 @@
          	return $this;
         }
         
+        /**
+         * Set from offset parameter for specimens in names service
+         * 
+         * Sets the offset within an aggregation of specimens in the names service.
+         * So e.g. if there are 150 specimens for a particular scientific name, this
+         * method in combination with setSpecimensSize() allows the user to cycle 
+         * through these specimens.
+         * 
+         * @param integer|string $from
+         * @throws \InvalidArgumentException In case $from is not a valid integer
+         * @return \nl\naturalis\bioportal\QuerySpec
+         */
         public function setSpecimensFrom ($from) {
         	if (!$this->isInteger($from)) {
         		throw new \InvalidArgumentException('Error: setSpecimensFrom ' .
@@ -147,6 +215,18 @@
         	return $this;
         }
         
+        /**
+         * Set result size parameter for specimens in names service
+         *
+         * Sets the result size within an aggregation of specimens in the names service.
+         * So e.g. if there are 150 specimens for a particular scientific name, this
+         * method in combination with setSpecimensFrom() allows the user to cycle 
+         * through these specimens.
+         *
+         * @param integer|string $size
+         * @throws \InvalidArgumentException In case $size is not a valid integer
+         * @return \nl\naturalis\bioportal\QuerySpec
+         */
         public function setSpecimensSize ($size = false) {
         	if (!$this->isInteger($size)) {
         		throw new \InvalidArgumentException('Error: setSpecimensSize ' .
@@ -157,6 +237,18 @@
         	return $this;
         }
         
+        /**
+         * Set sort criterium for specimens in names service
+         * 
+         * Sort specimens within the aggregation by scientific name in names service.
+         * Only a single criterium can be set; use setSpecimenSortFields() to set 
+         * multiple criteria. Defaults to ascending direction. Throws an exception 
+         * (using private bootstrap method) if either path or direction are invalid.
+         * 
+         * @param string $path
+         * @param string $direction
+         * @return \nl\naturalis\bioportal\QuerySpec
+         */
         public function sortSpecimensBy ($path = false, $direction = 'ASC') {
         	$this->_bootstrapSort($path, $direction);
         	$this->_specimenSortFields[] = [
@@ -167,6 +259,22 @@
         	return $this;
         }
         
+        /**
+        * Set multiple sort criteria for specimens in names service
+        * 
+        * Sets sort based on array of sort criteria. Note that input differs:
+        * setSortFields() takes an array with one or more array in which the first value
+        * is the path and the second the direction.
+        *
+        * setSortFields([
+        * 	['path', 'direction'],
+        *   ['path', 'direction']
+        * ]);
+        *
+        * Uses sortBy() method and its error checking to set criteria.
+		* @param array $fields
+        * @return \nl\naturalis\bioportal\QuerySpec
+        */
         public function setSpecimensSortFields ($fields = []) {
         	$this->_specimensSortFields = [];
         	foreach ($fields as $sortBy) {
@@ -175,6 +283,17 @@
         	return $this;
         }
         
+        /**
+         * Exclude taxa from names service query
+         * 
+         * Response from names service includes both specimens and taxa. This method
+         * provides the option to exclude taxa. The opposite can be achieve by setting
+         * setSpecimensSize(0).
+         * 
+         * @param bool $noTaxa
+         * @throws \InvalidArgumentException In case $noTaxa is invalid
+         * @return \nl\naturalis\bioportal\QuerySpec
+         */
         public function setNoTaxa ($noTaxa = true) {
         	if (!is_bool($noTaxa)) {
         		throw new \InvalidArgumentException('Error: setNoTaxa ' .
@@ -189,20 +308,40 @@
          	return $this;
         }
         
+        /**
+         * Gets QuerySpec fields
+         * 
+         * @return string Fields as json-encoded string
+         */
         public function getFields () {
         	return json_encode($this->_fields);
         }
         
+        /**
+         * Get QuerySpec from
+         * 
+         * @return integer QuerySpec from
+         */
         public function getFrom () {
-        	return json_encode($this->_from);
+        	return $this->_from;
         }
         
+        /**
+         * Get QuerySpec size
+         *
+         * @return integer QuerySpec size
+         */
         public function getSize () {
-            return json_encode($this->_size);
+            return $this->_size;
         }
 
- 	    public function getLogicalOperator () {
-            return json_encode($this->_logicalOperator);
+        /**
+         * Get QuerySpec from
+         *
+         * @return string QuerySpec logical operator
+         */
+        public function getLogicalOperator () {
+            return $this->_logicalOperator;
         }
 
         public function getConditions () {
@@ -218,15 +357,15 @@
         }
         
         public function getSpecimensFrom () {
-        	return json_encode($this->_specimensFrom);
+        	return $this->_specimensFrom;
         }
         
         public function getSpecimensSize () {
-        	return json_encode($this->_specimensSize);
+        	return $this->_specimensSize;
         }
         
         public function getSpecimensSortFields () {
-        	return json_encode($this->_specimensSortFields);
+        	return $this->_specimensSortFields;
         }
 
         public function isNoTaxa () {

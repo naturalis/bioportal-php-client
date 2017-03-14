@@ -60,7 +60,7 @@ class QuerySpecTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSetCorrectlyConstructedLogicalOperator ()
 	{
-		$expected = json_encode('AND');
+		$expected = 'AND';
 		$query = new QuerySpec();
 		$query->setLogicalOperator('and');
 		$this->assertEquals($expected, $query->getLogicalOperator());
