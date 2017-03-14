@@ -1,9 +1,9 @@
 <?php
-    namespace nl\naturalis\bioportal;
-    use nl\naturalis\bioportal\QuerySpec as QuerySpec;
-use JMS\Serializer\Tests\Fixtures\GetSetObject;
-use phpDocumentor\Plugin\Core\Descriptor\Validator\Constraints\Functions\IsArgumentInDocBlock;
-use Symfony\Component\Finder\Iterator\SizeRangeFilterIterator;
+	namespace nl\naturalis\bioportal;
+	use nl\naturalis\bioportal\QuerySpec as QuerySpec;
+	use JMS\Serializer\Tests\Fixtures\GetSetObject;
+	use phpDocumentor\Plugin\Core\Descriptor\Validator\Constraints\Functions\IsArgumentInDocBlock;
+	use Symfony\Component\Finder\Iterator\SizeRangeFilterIterator;
 												
     final class Client extends Common
  	{
@@ -340,14 +340,16 @@ use Symfony\Component\Finder\Iterator\SizeRangeFilterIterator;
 				->setFields(['sourceSystemId', 'areaType', 'locality', 'countryNL'])
 				->setConstantScore();
 			$data = json_decode($this->geo()->querySpec($query)->query(), true);
-			// Enhance data
-			foreach ($data['resultSet'] as $i => $row) {
-				$result[$row['areaType']][$i]['id'] = $row['id'];
-				$result[$row['areaType']][$i]['locality']['en'] =
-				$row['locality'];
-				$result[$row['areaType']][$i]['locality']['nl'] =
-					!empty($row['countryNL']) && $row['countryNL'] != '\N' ?
-					$row['countryNL'] : $row['locality'];
+			if (isset($data['resultSet'])) {
+				// Enhance data
+				foreach ($data['resultSet'] as $i => $row) {
+					$result[$row['areaType']][$i]['id'] = $row['id'];
+					$result[$row['areaType']][$i]['locality']['en'] =
+					$row['locality'];
+					$result[$row['areaType']][$i]['locality']['nl'] =
+						!empty($row['countryNL']) && $row['countryNL'] != '\N' ?
+						$row['countryNL'] : $row['locality'];
+				}
 			}
 			return isset($result) ? json_encode($result) : json_encode([]);
 		}
@@ -379,10 +381,10 @@ use Symfony\Component\Finder\Iterator\SizeRangeFilterIterator;
 					$url .= '?_querySpec=' . $this->_querySpec->getQuerySpec();
 				}
 				$this->_channels[] =
-				[
-					'client' => $client,
-					'url' => $url,
-				];
+					[
+						'client' => $client,
+						'url' => $url,
+					];
 			}
 			return $this->_performQueryAndReturnRemoteData();
 		}
@@ -476,8 +478,8 @@ use Symfony\Component\Finder\Iterator\SizeRangeFilterIterator;
 				}
 				$this->_channels[$key] =
 				[
-						'url' => $this->_nbaUrl . $this->_clients[0] . '/query/' .
-						'?_querySpec=' . $querySpec->getQuerySpec()
+					'url' => $this->_nbaUrl . $this->_clients[0] . '/query/' .
+					'?_querySpec=' . $querySpec->getQuerySpec()
 				];
 			}
 			return $this->_performQueryAndReturnRemoteData();
@@ -634,9 +636,6 @@ use Symfony\Component\Finder\Iterator\SizeRangeFilterIterator;
 			return $this->_maxBatchSize;
 		}
 		
-		
-		
-
 		/*
 		 * Checks if clients have been set and if names service specific parameters
 		 * are not used for other service.

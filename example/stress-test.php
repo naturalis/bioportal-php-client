@@ -15,6 +15,9 @@
 
     // Use the shorthand method to fetch all predefined geo areas
     $areas = json_decode($client->getGeoAreas());
+    if (empty($areas)) {
+    	die('No areas found?!');
+    }
 
     // Loop over the three types of areas
     foreach(['Country', 'Municipality', 'Nature'] as $type) {
