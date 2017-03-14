@@ -285,7 +285,7 @@
          * @return float Boost factor
          */
         public function getBoost () {
-        	return json_encode($this->_boost);
+        	return $this->_boost;
         }
 
         /**
