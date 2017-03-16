@@ -1,6 +1,7 @@
 <?php
 	namespace nl\naturalis\bioportal;
 	use nl\naturalis\bioportal\QuerySpec as QuerySpec;
+	use nl\naturalis\bioportal\NameGroupQuerySpec as NameGroupQuerySpec;
 	use JMS\Serializer\Tests\Fixtures\GetSetObject;
 	use phpDocumentor\Plugin\Core\Descriptor\Validator\Constraints\Functions\IsArgumentInDocBlock;
 	use Symfony\Component\Finder\Iterator\SizeRangeFilterIterator;
@@ -131,16 +132,16 @@
 		}
 
 		/**
-		 * Set all (but geo) clients
+		 * Set three main clients: specimen, taxon and multimedia
 		 *
-		 * Sets taxon, specimen, names and multimedia clients, allowing for 
+		 * Sets taxon, specimen, multimedia clients, allowing for 
 		 * distributed query (mostly metadata queries). Excludes geo service 
 		 * and does not verify query, so use with care!
 		 *
          * @return \nl\naturalis\bioportal\Client
 		 */
 		public function all () {
-			$this->_clients = array_diff($this::$nbaClients, array('geo'));
+			$this->_clients = array_diff($this::$nbaClients, ['geo', 'names']);
 			return $this;
 		}
 
@@ -154,7 +155,7 @@
 		public function querySpec ($querySpec) {
 		    if (!$querySpec || !($querySpec instanceof QuerySpec)) {
                 throw new \InvalidArgumentException('Error: invalid querySpec, ' .
-                	'should be created using the QuerySpec class.');
+                	'should be created using the QuerySpec or NameGroupQuerySpec class.');
 		    }
             $this->_querySpec = $querySpec;
             return $this;
@@ -647,14 +648,21 @@
 			if (empty($this->_clients)) {
 				throw new \RuntimeException('Error: client(s) not set.');
 			}
-			// Test if names service querySpec extension has not been used
-			// for other service; this would generate an NBA exception.
-			if (!empty($this->_querySpec) && $this->_querySpec->usesSpecimensCriteria()) {
+			// Names service requires NameGroupQuerySpec
+			if (!empty($this->_querySpec) && 
+				$this->_querySpec instanceof QuerySpec && 
+				in_array('names', $this->_clients)) {
+				throw new \RuntimeException('Error: names service requires NameGroupQuerySpec ' .
+					'instead of QuerySpec (offering dedicated methods for paginating and sorting).');
+			}
+			// NameGroupQuerySpec can only be used for names service
+			if (!empty($this->_querySpec) && 
+				$this->_querySpec instanceof NameGroupQuerySpec) {
 				foreach ($this->_clients as $client) {
 					if ($client != 'names') {
-						throw new \RuntimeException('Error: querySpec includes criteria ' .
-							'that are exclusive to names service, yet ' . $client .
-							' service is queried.');
+						throw new \RuntimeException('Error: NameGroupQuerySpec ' .
+							'used for ' . $client . ' service. NameGroupQuerySpec ' .
+							'is strictly used for names service.');
 					}
 				}
 			}
