@@ -357,8 +357,8 @@
 		/**
 		 * Perform a getGeoJsonForLocality NBA query
 		 * 
-		 * The NBA method is case-sensitive. Use a dedicated query if a locality exists
-		 * in the geo index.
+		 * The NBA method is case-sensitive. Use a dedicated query to check if a locality 
+		 * exists in the geo index.
 		 * 
 		 * @param string $locality
 		 * @throws \InvalidArgumentException In case of empty $locality
@@ -466,8 +466,8 @@
 			// Warn for batch size limit if test runs successfully
 			// This is merely an indication -- successs not guaranteed!
 			if (count($querySpecs) > $this->getMaxBatchSize()) {
-				throw new \RangeException('Error: batch size too large, maximum exceeds '
-						. $this->getMaxBatchSize() . '.');
+				throw new \RangeException('Error: batch size too large, maximum exceeds ' . 
+					$this->getMaxBatchSize() . '.');
 			}
 			$this->_reset();
 			foreach ($querySpecs as $key => $querySpec) {
@@ -478,7 +478,7 @@
 				$this->_channels[$key] =
 				[
 					'url' => $this->_nbaUrl . $this->_clients[0] . '/query/' .
-					'?_querySpec=' . $querySpec->getQuerySpec()
+						'?_querySpec=' . $querySpec->getQuerySpec()
 				];
 			}
 			return $this->_performQueryAndReturnRemoteData();
@@ -706,7 +706,6 @@
                 if ($this->_nbaTimeout) {
 					curl_setopt($ch[$key], CURLOPT_TIMEOUT, $this->_nbaTimeout);
 				}
-				
 				curl_multi_add_handle($mh, $ch[$key]);
 			}
 			do {

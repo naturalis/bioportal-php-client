@@ -1,5 +1,10 @@
 <?php
-    /* This example script uses a batch query to stress test the NBA. */
+    /* This example script uses a batch query to stress test the NBA. 
+     * 
+     * All areas are retrieved. Per area type, a batch query with all
+     * areas for that type is compiled. The number of specimens
+     * found per area is printed to screen.
+     */
     namespace nl\naturalis\bioportal;
     require_once '../lib/nl/naturalis/bioportal/Common.php';
     require_once '../lib/nl/naturalis/bioportal/Client.php';
@@ -21,14 +26,21 @@
 
     // Loop over the three types of areas
     foreach(['Country', 'Municipality', 'Nature'] as $type) {
+    	
+    	// Start timer
     	$start = microtime(true);
+    	
+    	// Initialise batch array
     	$batch = [];
     	
-    	 // Create QuerySpec for each area that will fetch the specimens within its borders
 	    echo 'Querying ' . count((array)$areas->{$type}) . " areas of type $type for specimens...\n";
 	    foreach ($areas->{$type} as $area) {
-	        $c = new Condition('gatheringEvent.siteCoordinates.geoShape', 'IN', $area->locality->en);
+	    	
+	    	// Create QuerySpec for each area that will fetch the specimens within its borders
+	    	$c = new Condition('gatheringEvent.siteCoordinates.geoShape', 'IN', $area->locality->en);
 	        $query = new QuerySpec();
+	        
+	        // Add QuerySpec to batch array
 	        $batch[$area->locality->en] = $query->setSize(5)->addCondition($c);
 	    }
 	    
@@ -41,8 +53,10 @@
 	    // Print result
 	    foreach ($result as $area => $json) {
 	    	$data = json_decode($json);
+	    	// Result as expected
 	    	if (isset($data->totalSize)) {
 	    		echo $area . ': ' . $data->totalSize . " specimen(s)\n";
+	    	// No result; add to errors array
 	    	} else {
 	    		$errors[$area] = $json;
 	    	}

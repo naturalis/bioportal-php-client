@@ -4,41 +4,40 @@
 
     // Initialise Client
     $client = new Client();
-    // Default ini settings (or even complete config!) can be modified if necessary
+    
+    // Default ini settings can be modified if necessary
     $client->setNbaUrl('http://145.136.242.164:8080/v2/');
 
     // First condition
     // Condition should be initialized with triplet, as per Java client
-    $c = new Condition('acceptedName.genusOrMonomial', 'LIKE', 'lar');
+    $condition = new Condition('acceptedName.genusOrMonomial', 'EQUALS_IC', 'larus');
+    
     // Cannot replicate ->and and ->or methods of Java client
     // as these are reserved terms; use ->setAnd and ->setOr instead
-    $c->setAnd('acceptedName.specificEpithet', 'LIKE', 'fus');
-
-    // Second condition
-    $d = new Condition('defaultClassification.kingdom', 'NOT_EQUALS', 'Animalia');
-    $d->setAnd('defaultClassification.kingdom', 'NOT_EQUALS', 'Fungi');
-
+    $condition
+	  	->setAnd('acceptedName.specificEpithet', 'LIKE', 'fus');
+    
+	// Second condition
+	$secondCondition = new Condition('sourceSystem.code', 'EQUALS', 'COL');
+    
     // Initialise QuerySpec
     $query = new QuerySpec();
+    
     // Append search criteria to QuerySpec; methods are identical to Java client
-    // Criteria can be chained as per example below
     $query
         ->setFrom(0)
         ->setSize('50') // valid strings are automatically cast to integers
-        ->addCondition($c)
-        ->addCondition($d)
-        ->setLogicalOperator('or')
-        ->sortBy('acceptedName.genusOrMonomial', 'asc');
-        /* Or add multiple criteria directly using setSortFields
+        ->addCondition($condition)
+        ->addCondition($secondCondition)
+        ->setLogicalOperator('and') 
         ->setSortFields([
-            ['acceptedName.genusOrMonomial', 'asc'],
-            ['acceptedName.specificEpithet', 'asc'],
-        ])
-        */
+            ['acceptedName.genusOrMonomial'], // 'asc' is default, can be omitted
+            ['acceptedName.specificEpithet', 'desc'],
+        ]);
 
-    // Set service and pass on QuerySpec
+    // Set taxon service and pass QuerySpec
     $client->taxon()->querySpec($query);
-    // Print QuerySpec sent to NBA
-    echo "QuerySpec:\n" . $client->getQuerySpec() . "\n\n";
+    
     // Print NBA result
-    echo "NBA response:\n" . $client->query() . "\n\n";
+    header('Content-Type: application/json');
+    echo $client->query();
