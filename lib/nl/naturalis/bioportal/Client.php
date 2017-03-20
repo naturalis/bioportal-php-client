@@ -44,8 +44,8 @@
 		public function __construct () {
 			parent::__construct();
 			$this->setNbaUrl();
-            $this->setNbaTimeout();
-            $this->setMaxbatchSize();
+            $this->setNbaTimeout(); 
+            $this->setMaxBatchSize();
 		}
 		
 		/**
