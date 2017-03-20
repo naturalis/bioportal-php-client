@@ -650,7 +650,7 @@
 			}
 			// Names service requires NameGroupQuerySpec
 			if (!empty($this->_querySpec) && 
-				$this->_querySpec instanceof QuerySpec && 
+				!($this->_querySpec instanceof NameGroupQuerySpec) && 
 				in_array('names', $this->_clients)) {
 				throw new \RuntimeException('Error: names service requires NameGroupQuerySpec ' .
 					'instead of QuerySpec (offering dedicated methods for paginating and sorting).');
