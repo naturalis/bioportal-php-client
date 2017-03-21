@@ -441,6 +441,32 @@
 			return $this->_performQueryAndReturnRemoteData();
 		}
 		
+		
+		/**
+		 * Perform an NBA getPaths metadata query
+		 * 
+		 * Gets NBA path for the selected service(s)
+		 * 
+		 * @param string $sort Sort alphabetically?
+		 * @return string NBA repsonse as json formatted string
+		 */
+		public function getPaths ($sort = false) {
+			$this->_bootstrap();
+			foreach ($this->_clients as $client) {
+				$url = $this->_nbaUrl . $client . '/metadata/getPaths';
+				if ($sort) {
+					$url .= '/?sorted=true';
+				}
+				$this->_channels[] =
+					[
+						'client' => $client,
+						'url' => $url,
+					];
+			}
+			return $this->_performQueryAndReturnRemoteData();
+				
+		}
+		
 		/**
 		 * Perform NBA queries in batch
 		 * 
