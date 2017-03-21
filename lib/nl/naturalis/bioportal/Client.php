@@ -132,16 +132,14 @@
 		}
 
 		/**
-		 * Set three main clients: specimen, taxon and multimedia
+		 * Set all clients for global query
 		 *
-		 * Sets taxon, specimen, multimedia clients, allowing for 
-		 * distributed query (mostly metadata queries). Excludes geo service 
-		 * and does not verify query, so use with care!
+		 * Sets all clients, allowing for distributed query (mostly metadata queries). 
 		 *
          * @return \nl\naturalis\bioportal\Client
 		 */
 		public function all () {
-			$this->_clients = array_diff($this::$nbaClients, ['geo', 'names']);
+			$this->_clients = $this::$nbaClients;
 			return $this;
 		}
 
