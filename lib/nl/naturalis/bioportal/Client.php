@@ -508,7 +508,8 @@
 							'?_querySpec=' . $querySpec->getQuerySpec()
 					];
 			}
-			return $this->_performQueryAndReturnRemoteData();
+			$this->_query();
+			return $this->_remoteData;
 		}
 		
 		/**
