@@ -15,8 +15,9 @@
     $client = new Client();
     
     // Default ini settings can be modified if necessary
-    $client->setNbaUrl('http://145.136.242.164:8080/v2/');
-    $client->setNbaTimeout(10);
+    $client
+    	->setNbaUrl('http://145.136.242.164:8080/v2/')
+    	->setNbaTimeout(10);
 
     // Use the shorthand method to fetch all predefined geo areas
     $areas = json_decode($client->getGeoAreas());
