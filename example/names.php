@@ -39,7 +39,8 @@
     	$batch = [];
     	
     	// Create batch queries for first 10 items
-    	// Should be done with setSpecimensSize() but that method is currently unavailable
+    	// Should normally be done with setSpecimensSize(10) in nams service, but that method is currently unavailable
+    	// We take the overhead of getting much more than 10 specimens per taxon for granted...
     	foreach (array_slice($row->item->specimens, 0, 10) as $item) {
     		$condition = new Condition('unitID', 'EQUALS', $item->unitID);
     		$query = new QuerySpec();
