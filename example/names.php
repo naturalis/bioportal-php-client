@@ -1,9 +1,8 @@
 <?php
 	/* This example script uses a combination of names service and batch queries.
 	 *
-	 * The names service is queried for 100 Taraxacum species. For each taxon, the
-	 * first 10 specimens are retrieved.
-	 * 
+	 * The names service is queried for 100 Taraxacum species with specimens. 
+	 * For each taxon, a short summary of the first 10 specimens is printed.
 	 */
 	namespace nl\naturalis\bioportal;
 	require_once '../lib/nl/naturalis/bioportal/Common.php';
