@@ -293,7 +293,7 @@
 			$this->_query();
 			$data = json_decode($this->_remoteData[0]);
 			return isset($data->resultSet[0]->item) ?
-				json_encode([$data->resultSet[0]->item]) : false;
+				json_encode($data->resultSet[0]->item) : false;
 		}
 		
 		/**
@@ -484,7 +484,9 @@
 		 * (formatted as [key1 => json, key2 => json]).
 		 */
 		public function batchQuery ($querySpecs = []) {
-			$this->_bootstrap();
+			if (empty($this->_clients)) {
+				throw new \RuntimeException('Error: batch client not set.');
+			}
 			if (count($this->_clients) > 1) {
 				throw new \RuntimeException('Error: batch accepts a single client only.');
 			}
@@ -498,13 +500,13 @@
 			foreach ($querySpecs as $key => $querySpec) {
 				if (!$querySpec instanceof QuerySpec) {
 					throw new \InvalidArgumentException('Error: ' .
-							'batch array should contain valid querySpec objects.');
+						'batch array should contain valid querySpec objects.');
 				}
 				$this->_channels[$key] =
-				[
-					'url' => $this->_nbaUrl . $this->_clients[0] . '/query/' .
-						'?_querySpec=' . $querySpec->getQuerySpec()
-				];
+					[
+						'url' => $this->_nbaUrl . $this->_clients[0] . '/query/' .
+							'?_querySpec=' . $querySpec->getQuerySpec()
+					];
 			}
 			return $this->_performQueryAndReturnRemoteData();
 		}
@@ -684,6 +686,9 @@
 				$this->_querySpec instanceof NameGroupQuerySpec) {
 				foreach ($this->_clients as $client) {
 					if ($client != 'names') {
+						
+						var_dump($this->_querySpec->getQuerySpec(false));
+						
 						throw new \RuntimeException('Error: NameGroupQuerySpec ' .
 							'used for ' . $client . ' service. NameGroupQuerySpec ' .
 							'is strictly used for names service.');
