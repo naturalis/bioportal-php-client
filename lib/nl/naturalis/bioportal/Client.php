@@ -158,6 +158,15 @@
             $this->_querySpec = $querySpec;
             return $this;
 		}
+		
+		/**
+		 * Set QuerySpec object
+		 * 
+		 * Wrapper method for querySpec(); setQuerySpec may be a more logical name...
+		 */
+		public function setQuerySpec ($querySpec) {
+			$this->querySpec($querySpec);
+		}
 
 		/**
          * Perform a _querySpec NBA query
