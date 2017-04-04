@@ -5,11 +5,9 @@
 	 * For each taxon, a short summary of the first 10 specimens is printed.
 	 */
 	namespace nl\naturalis\bioportal;
-	require_once '../lib/nl/naturalis/bioportal/Common.php';
-	require_once '../lib/nl/naturalis/bioportal/Client.php';
-	require_once '../lib/nl/naturalis/bioportal/Condition.php';
-	require_once '../lib/nl/naturalis/bioportal/QuerySpec.php';
-	require_once '../lib/nl/naturalis/bioportal/NameGroupQuerySpec.php';
+	
+	// For some reason Autoloader doesn't work outside of main directory; use (manual) Loader instead
+	require_once '../lib/nl/naturalis/bioportal/Loader.php';
 	
 	// Initialise Client
 	$client = new Client();

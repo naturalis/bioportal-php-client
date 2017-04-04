@@ -5,11 +5,10 @@
      * areas for that type is compiled. The number of specimens
      * found per area is printed to screen.
      */
-    namespace nl\naturalis\bioportal;
-    require_once '../lib/nl/naturalis/bioportal/Common.php';
-    require_once '../lib/nl/naturalis/bioportal/Client.php';
-    require_once '../lib/nl/naturalis/bioportal/Condition.php';
-    require_once '../lib/nl/naturalis/bioportal/QuerySpec.php';
+	namespace nl\naturalis\bioportal;
+	
+	// For some reason Autoloader doesn't work outside of main directory; use (manual) Loader instead
+	require_once '../lib/nl/naturalis/bioportal/Loader.php';
 
     // Initialise Client
     $client = new Client();
