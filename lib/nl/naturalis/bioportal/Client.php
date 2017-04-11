@@ -191,11 +191,11 @@
 			$this->_channels = [];
 			foreach ($this->_clients as $client) {
 				$this->_channels[] =
-				[
-					'client' => $client,
-					'url' => $this->_nbaUrl . $client . '/query/' .
-					'?_querySpec=' . $this->_querySpec->getQuerySpec()
-				];
+					[
+						'client' => $client,
+						'url' => $this->_nbaUrl . $client . '/query/' .
+						'?_querySpec=' . $this->_querySpec->getQuerySpec()
+					];
 			}
 			return $this->_performQueryAndReturnRemoteData();
 		}
@@ -224,10 +224,10 @@
 					$url .= '?fields=' . $this->commaSeparate($fields);
 				}
 				$this->_channels[] =
-				[
-					'client' => $client,
-					'url' => $url,
-				];
+					[
+						'client' => $client,
+						'url' => $url,
+					];
 			}
 			return $this->_performQueryAndReturnRemoteData();
 		}
@@ -256,10 +256,10 @@
 			$method = strpos($r, ',') === false ? 'find' : 'findByIds';
 			foreach ($this->_clients as $client) {
 				$this->_channels[] =
-				[
-					'client' => $client,
-					'url' => $this->_nbaUrl . $client . '/' . $method . '/' . $r,
-				];
+					[
+						'client' => $client,
+						'url' => $this->_nbaUrl . $client . '/' . $method . '/' . $r,
+					];
 			}
 			return $this->_performQueryAndReturnRemoteData();
 		}
@@ -295,10 +295,10 @@
 				->setConstantScore();
 			$this->_channels = [];
 			$this->_channels[] =
-			[
-				'url' => $this->_nbaUrl . 'specimen/query/?_querySpec=' .
-					$query->getQuerySpec()
-			];
+				[
+					'url' => $this->_nbaUrl . 'specimen/query/?_querySpec=' .
+						$query->getQuerySpec()
+				];
 			$this->_query();
 			$data = json_decode($this->_remoteData[0]);
 			return isset($data->resultSet[0]->item) ?
@@ -385,6 +385,33 @@
 			return !empty($data) && isset($data['coordinates']) ? 
 				$this->_remoteData[0] : false;
 		}
+		
+		/**
+		 * Performs a getSpeciesWithSpecimens NBA query
+		 * 
+		 * A critically import method for BioPortal: it returns specimens aggregated by taxon.
+		 * This is an extension of the regular names service query, which will return _all_
+		 * specimens for a particular taxon. This method filters out those specimens per taxon
+		 * that do not match the search criteria. Can be used without setting the names 
+		 * service first. Make sure to pass a NameGroupQuerySpec instead of a 
+		 * regular QuerySpec.
+		 * 
+		 * @param string $nameGroupQuerySpec NameGroupQuerySpec
+		 * @return string NBA response as json
+		 */
+		public function getSpeciesWithSpecimens ($nameGroupQuerySpec = false) {
+			$this->_reset();
+			if ($nameGroupQuerySpec) {
+				$this->querySpec($nameGroupQuerySpec);
+			}
+			$url = $this->_nbaUrl . 'names/getSpeciesWithSpecimens/';
+			if ($this->_querySpec) {
+				$url .= '?_querySpec=' . $this->_querySpec->getQuerySpec();
+			}
+			$this->_channels[] = ['url' => $url];
+			$this->_query();
+			return $this->_remoteData[0];
+		}
 				
 		/**
 		 * Perform a getDistinctValues NBA query
@@ -442,10 +469,10 @@
 					$url .= '?_querySpec=' . $this->_querySpec->getQuerySpec();
 				}
 				$this->_channels[] =
-				[
-					'client' => $client,
-					'url' => $url,
-				];
+					[
+						'client' => $client,
+						'url' => $url,
+					];
 			}
 			return $this->_performQueryAndReturnRemoteData();
 		}
@@ -457,7 +484,9 @@
 		 * Gets NBA path for the selected service(s)
 		 * 
 		 * @param string $sort Sort alphabetically?
-		 * @return string NBA repsonse as json formatted string
+		 * @return string|string[] NBA response as json if a single client has been
+		 * set, or as an array of responses in case of multiple clients
+		 * (formatted as [client1 => json, client2 => json]).
 		 */
 		public function getPaths ($sort = false) {
 			$this->_bootstrap();
@@ -473,7 +502,6 @@
 					];
 			}
 			return $this->_performQueryAndReturnRemoteData();
-				
 		}
 		
 		/**

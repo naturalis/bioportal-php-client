@@ -50,6 +50,6 @@ PHPDoc
 Documentation can be generated using phpdoc 2.x. If you have used composer, 
 documentation can be generated using the following command:
 
-path/to/bioportal-php-client/vendor/bin/phpdoc run -d ../../lib/nl/naturalis/bioportal -t ../../documentation
+path/to/bioportal-php-client/vendor/bin/phpdoc run -d path/to/bioportal-php-client/lib/nl/naturalis/bioportal -t path/to/bioportal-php-client/documentation
 
 

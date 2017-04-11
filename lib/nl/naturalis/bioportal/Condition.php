@@ -401,11 +401,11 @@
  	 	 * Value can be null but not an empty string
  	 	 */
  	 	private function _setValue ($value) {
-            if (empty($value) && !is_null($value)) {
-                throw new \InvalidArgumentException('Error: condition value is empty.');
+ 	 		if (empty($value) && !is_numeric($value)) {
+ 	 			throw new \InvalidArgumentException('Error: condition value is blank.');
             }
             $this->_value = $value;
             return $this->_value;
-        }
+ 	 	}
          
  	}
