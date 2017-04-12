@@ -69,10 +69,24 @@ class ConditionTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals('InvalidArgumentException', get_class($e));
 	}
 	
-	public function testConditionWithCorrectlyConstructedEmptyValue () {
+	public function testCorrectlyConstructedConditionWithoutValue () {
 		$expected = '{"field":"acceptedName.genusOrMonomial","operator":"NOT_EQUALS"}';
 		$condition = new Condition('acceptedName.genusOrMonomial', 'NOT_EQUALS');
 		$this->assertEquals($expected, $condition->getCondition());
+	}
+	
+	public function testCorrectlyConstructedConditionWithZeroValue () {
+		$expected = '{"field":"taxonCount","operator":"GT","value":0}';
+		$condition = new Condition('taxonCount', 'GT', 0);
+		$this->assertEquals($expected, $condition->getCondition());
+	}
+
+	public function testIncorrectlyConstructedConditionWithEmptyString () {
+		$e = new \stdClass();
+		try {
+			$condition = new Condition('acceptedName.genusOrMonomial', 'EQUALS_IC', '');
+		} catch (\Exception $e) {}
+		$this->assertEquals('InvalidArgumentException', get_class($e));
 	}
 	
 	public function testConditionWithoutConstructor () {
