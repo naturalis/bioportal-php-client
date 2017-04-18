@@ -11,14 +11,14 @@
 				
     class QuerySpec extends Common
  	{
-		private $_querySpec;
- 	    private	$_conditions;
-		private $_from;
-		private $_size;
-		private $_sortFields;
-		private $_fields;
-		private $_logicalOperator;
-		private $_constantScore = false;
+		protected $_querySpec;
+ 	    protected $_conditions;
+		protected $_from;
+		protected $_size;
+		protected $_sortFields;
+		protected $_fields;
+		protected $_logicalOperator;
+		protected $_constantScore = false;
 		
  	    public function __construct() {
             parent::__construct();
