@@ -396,8 +396,8 @@
 		 */
 		public function getGeoJsonForGid ($gid) {
 			if (!$gid) {
-				throw new \InvalidArgumentException('Error: no gid provided for ' .
-					'getGeoJsonForGid.');
+				throw new \InvalidArgumentException('Error: no geographic id 
+					provided for getGeoJsonForGid.');
 			}
 			$this->_reset();			
 			$data = json_decode($this->geo()->find($gid));
