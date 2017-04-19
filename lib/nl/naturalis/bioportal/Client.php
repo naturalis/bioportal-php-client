@@ -347,16 +347,16 @@
 				->setSize(2000)
 				->setFields(['sourceSystemId', 'areaType', 'locality', 'countryNL'])
 				->setConstantScore();
-			$data = json_decode($this->geo()->querySpec($query)->query(), true);
-			if (isset($data['resultSet'])) {
+			$data = json_decode($this->geo()->querySpec($query)->query());
+			if (isset($data->resultSet)) {
 				// Enhance data
-				foreach ($data['resultSet'] as $i => $row) {
-					$result[$row['areaType']][$i]['id'] = $row['id'];
-					$result[$row['areaType']][$i]['locality']['en'] =
-					$row['locality'];
-					$result[$row['areaType']][$i]['locality']['nl'] =
-						!empty($row['countryNL']) && $row['countryNL'] != '\N' ?
-						$row['countryNL'] : $row['locality'];
+				foreach ($data->resultSet as $i => $row) {
+					$result[$row->item->areaType][$i]['id'] = $row->item->id;
+					$result[$row->item->areaType][$i]['locality']['en'] =
+						$row->item->locality;
+					$result[$row->item->areaType][$i]['locality']['nl'] =
+						!empty($row->item->countryNL) && $row->item->countryNL != '\N' ?
+						$row->item->countryNL : $row->item->locality;
 				}
 			}
 			return isset($result) ? json_encode($result) : false;
