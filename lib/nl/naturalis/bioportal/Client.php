@@ -289,11 +289,11 @@
 				throw new \RuntimeException('Error: exists/findByUnitId method ' .
 					'can only be used to query specimens.');
 			}
+			$this->_reset();
 			$query = new QuerySpec();
 			$query
 				->addCondition(new Condition('unitID', 'EQUALS_IC', $unitId))
 				->setConstantScore();
-			$this->_channels = [];
 			$this->_channels[] =
 				[
 					'url' => $this->_nbaUrl . 'specimen/query/?_querySpec=' .
@@ -374,16 +374,34 @@
 		 */
 		public function getGeoJsonForLocality ($locality) {
 			if (!$locality) {
-				throw new \InvalidArgumentException('Error: no field provided for ' .
+				throw new \InvalidArgumentException('Error: no locality provided for ' .
 					'getGeoJsonForLocality.');
 			}
-			$this->_channels = [];
+			$this->_reset();
 			$this->_channels[] = ['url' => $this->_nbaUrl . 'geo/getGeoJsonForLocality/' . 
 				$locality];
 			$this->_query();
-			$data = json_decode($this->_remoteData[0], true);
-			return !empty($data) && isset($data['coordinates']) ? 
-				$this->_remoteData[0] : false;
+			$data = json_decode($this->_remoteData[0]);
+			return isset($data->coordinates) ? $this->_remoteData[0] : false;
+		}
+		
+    	 /**
+		 * Shorthand method to return geojson for a geographic NBA id
+		 * 
+		 * Does a find and returns the shape of the geo object found.
+		 * 
+		 * @param string $gid
+		 * @throws \InvalidArgumentException In case of empty $gid
+		 * @return string|bool Returns geojson; false if no result
+		 */
+		public function getGeoJsonForGid ($gid) {
+			if (!$gid) {
+				throw new \InvalidArgumentException('Error: no gid provided for ' .
+					'getGeoJsonForGid.');
+			}
+			$this->_reset();			
+			$data = json_decode($this->geo()->find($gid));
+			return isset($data->shape) ? json_encode($data->shape) : false;
 		}
 		
 		/**
