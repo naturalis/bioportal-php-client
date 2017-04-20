@@ -339,14 +339,9 @@
 		 * from the getDistinctValuesPerGroup() output. The results are formatted in a 
 		 * slightly different way, grouping localities per language.
 		 * 
-		 * Note: @GEO portion of geo id is not included as this causes problems
-		 * with jQuery selectors and possibly CSS. It is automatically appended in
-		 * getGeoJsonForGid().
-		 * 
-		 * @see \nl\naturalis\bioportal\Client::getGeoJsonForGid()
 		 * @return string|bool Result as json-encoded string; false if no result
 		 */
-		public function getGeoAreas () {
+		public function getGeoAreas ($trimGidSuffix = false) {
 			$query = new QuerySpec();
 			$query
 				->setSize(2000)
@@ -357,7 +352,8 @@
 				// Enhance data
 				foreach ($data->resultSet as $i => $row) {
 					// Strip @GEO off id because this causes problems with CSS and jQuery
-					$result[$row->item->areaType][$i]['id'] = str_replace('@GEO', '', $row->item->id);
+					$result[$row->item->areaType][$i]['id'] = $trimGidSuffix ?
+						strstr($row->item->id, '@', true) : $row->item->id;
 					$result[$row->item->areaType][$i]['locality']['en'] =
 						$row->item->locality;
 					$result[$row->item->areaType][$i]['locality']['nl'] =
@@ -399,6 +395,7 @@
 		 * @param string $gid
 		 * @throws \InvalidArgumentException In case of empty $gid
 		 * @return string|bool Returns geojson; false if no result
+		 * @see \nl\naturalis\bioportal\Client::getGeoAreas()
 		 */
 		public function getGeoJsonForGid ($gid) {
 			if (!$gid) {
@@ -406,8 +403,8 @@
 					provided for getGeoJsonForGid.');
 			}
 			$this->_reset();
-			// Append @GEO if necessary
-			$gid .= strpos($gid, '@GEO') === false ? '@GEO' : '';
+			// Test if id suffix has not been stripped in getGeoAreas(); append if so
+			$gid .= strpos($gid, '@') === false ? '@GEO' : '';
 			$data = json_decode($this->geo()->find($gid));
 			return isset($data->shape) ? json_encode($data->shape) : false;
 		}
