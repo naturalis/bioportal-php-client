@@ -339,6 +339,11 @@
 		 * from the getDistinctValuesPerGroup() output. The results are formatted in a 
 		 * slightly different way, grouping localities per language.
 		 * 
+		 * Note: @GEO portion of geo id is not included as this causes problems
+		 * with jQuery selectors and possibly CSS. It is automatically appended in
+		 * getGeoJsonForGid().
+		 * 
+		 * @see \nl\naturalis\bioportal\Client::getGeoJsonForGid()
 		 * @return string|bool Result as json-encoded string; false if no result
 		 */
 		public function getGeoAreas () {
@@ -351,7 +356,8 @@
 			if (isset($data->resultSet)) {
 				// Enhance data
 				foreach ($data->resultSet as $i => $row) {
-					$result[$row->item->areaType][$i]['id'] = $row->item->id;
+					// Strip @GEO off id because this causes problems with CSS and jQuery
+					$result[$row->item->areaType][$i]['id'] = str_replace('@GEO', '', $row->item->id);
 					$result[$row->item->areaType][$i]['locality']['en'] =
 						$row->item->locality;
 					$result[$row->item->areaType][$i]['locality']['nl'] =
@@ -399,7 +405,9 @@
 				throw new \InvalidArgumentException('Error: no geographic id 
 					provided for getGeoJsonForGid.');
 			}
-			$this->_reset();			
+			$this->_reset();
+			// Append @GEO if necessary
+			$gid .= strpos($gid, '@GEO') === false ? '@GEO' : '';
 			$data = json_decode($this->geo()->find($gid));
 			return isset($data->shape) ? json_encode($data->shape) : false;
 		}
