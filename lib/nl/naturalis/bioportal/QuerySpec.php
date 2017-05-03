@@ -195,7 +195,7 @@
          * @param bool $encoded Url encode QuerySpec json-encoded string?
          * @return string|boolean
          */
-        public function getQuerySpec ($encoded = true) {
+        public function getQuerySpec ($encoded = false) {
         	if (!empty($this->_querySpec)) {
         		ksort($this->_querySpec);
         		$d = json_encode($this->_querySpec);
