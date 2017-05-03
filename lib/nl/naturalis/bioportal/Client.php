@@ -599,7 +599,8 @@
 		 * @return string|boolean $_querySpec QuerySpec as json-encoded string
 		 */
 		public function getQuerySpec ($encoded = false) {
-			return $this->_querySpec->getQuerySpec($encoded);
+			return isset($this->_querySpec) ? 
+				$this->_querySpec->getQuerySpec($encoded) : false;
 		}
 		
 		/**
