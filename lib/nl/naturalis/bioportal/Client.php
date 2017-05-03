@@ -194,7 +194,7 @@
 					[
 						'client' => $client,
 						'url' => $this->_nbaUrl . $client . '/query/' .
-						'?_querySpec=' . $this->_querySpec->getQuerySpec()
+						'?_querySpec=' . $this->_querySpec->getQuerySpec(true)
 					];
 			}
 			return $this->_performQueryAndReturnRemoteData();
@@ -297,7 +297,7 @@
 			$this->_channels[] =
 				[
 					'url' => $this->_nbaUrl . 'specimen/query/?_querySpec=' .
-						$query->getQuerySpec()
+						$query->getQuerySpec(true)
 				];
 			$this->_query();
 			$data = json_decode($this->_remoteData[0]);
@@ -429,7 +429,7 @@
 			}
 			$url = $this->_nbaUrl . 'names/getSpeciesWithSpecimens/';
 			if ($this->_querySpec) {
-				$url .= '?_querySpec=' . $this->_querySpec->getQuerySpec();
+				$url .= '?_querySpec=' . $this->_querySpec->getQuerySpec(true);
 			}
 			$this->_channels[] = ['url' => $url];
 			$this->_query();
@@ -460,7 +460,7 @@
 			foreach ($this->_clients as $client) {
 				$url = $this->_nbaUrl . $client . '/getDistinctValues/' . $field;
 				if ($this->_querySpec) {
-					$url .= '?_querySpec=' . $this->_querySpec->getQuerySpec();
+					$url .= '?_querySpec=' . $this->_querySpec->getQuerySpec(true);
 				}
 				$this->_channels[] =
 					[
@@ -489,7 +489,7 @@
 			foreach ($this->_clients as $client) {
 				$url = $this->_nbaUrl . $client . '/count/';
 				if ($this->_querySpec) {
-					$url .= '?_querySpec=' . $this->_querySpec->getQuerySpec();
+					$url .= '?_querySpec=' . $this->_querySpec->getQuerySpec(true);
 				}
 				$this->_channels[] =
 					[
@@ -565,7 +565,7 @@
 				$this->_channels[$key] =
 					[
 						'url' => $this->_nbaUrl . $this->_clients[0] . '/query/' .
-							'?_querySpec=' . $querySpec->getQuerySpec()
+							'?_querySpec=' . $querySpec->getQuerySpec(true)
 					];
 			}
 			$this->_query();
@@ -747,9 +747,6 @@
 				$this->_querySpec instanceof NameGroupQuerySpec) {
 				foreach ($this->_clients as $client) {
 					if ($client != 'names') {
-						
-						var_dump($this->_querySpec->getQuerySpec(false));
-						
 						throw new \RuntimeException('Error: NameGroupQuerySpec ' .
 							'used for ' . $client . ' service. NameGroupQuerySpec ' .
 							'is strictly used for names service.');
