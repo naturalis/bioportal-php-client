@@ -265,6 +265,28 @@
 		}
 		
 		/**
+		 * Returns the url(s) used for the NBA query
+		 * 
+		 * This is useful for debugging purposes if an NBA shorthand function has been
+		 * used that does not require a QuerySpec (e.g. find).
+		 * 
+		 * @param string $service Name of the appropriate channel
+		 * @return mixed|array|string Url or array of urls
+		 */
+		public function getNbaQueryUrl ($service = false) {
+			if (!empty($this->_channels)) {
+				if (count($this->_channels) == 1) {
+					return array_values($this->_channels)[0]['url'];
+				}
+				if ($service && isset($this->_channels[$service])) {
+					return $this->_channels[$service];
+				}
+				return array_column($this->_channels, 'url');
+			}
+			return false;
+		}
+		
+		/**
 		 * Get specimen(s) by unitID
 		 * 
 		 * Unlike find, this method returns a json-encoded object with specimen data, 
