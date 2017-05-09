@@ -183,7 +183,7 @@
          * Depending on the number of clients, the result is returned
          * either as json or an array of json responses.
          *
-		 * @param string $usePost
+		 * @param string $usePost Default is false
 		 * @throws \RuntimeException In case QuerySpec is not set
 		 * @return string|string[] NBA response as json if a single client has been
 		 * set, or as an array of responses in case of multiple clients 
@@ -196,6 +196,7 @@
 			}
 			$this->_channels = [];
 			foreach ($this->_clients as $client) {
+				// Get
 				if (!$usePost) {
 					$this->_channels[] =
 						[
@@ -203,6 +204,7 @@
 							'url' => $this->_nbaUrl . $client . '/query/' .
 								'?_querySpec=' . $this->_querySpec->getQuerySpec(true)
 						];
+				// Post
 				} else {
 					$this->_channels[] =
 						[
