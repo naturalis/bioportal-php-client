@@ -25,7 +25,7 @@
     }
 
     // Loop over the three types of areas
-    foreach(['Country', 'Municipality', 'Nature'] as $type) {
+    foreach (['Country', 'Municipality', 'Nature'] as $type) {
     	
     	// Start timer
     	$start = microtime(true);
