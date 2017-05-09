@@ -174,28 +174,43 @@
          * 1. Sets the curl channels for one or more clients
          * 2. Performs the NBA query using multicurl
          * 3. Returns NBA response
+         * 
+         * Normally uses a get request, as not all NBA services support post.
+         * In edge cases (e.g. when using an extremely large geojson), 
+         * post maybe required. In this case, use ->query(true) to force a
+         * post request. Post data is sent as json.
          *
          * Depending on the number of clients, the result is returned
          * either as json or an array of json responses.
          *
+		 * @param string $usePost
 		 * @throws \RuntimeException In case QuerySpec is not set
 		 * @return string|string[] NBA response as json if a single client has been
 		 * set, or as an array of responses in case of multiple clients 
 		 * (formatted as [client1 => json, client2 => json]).
 		 */
-		public function query () {
+		public function query ($usePost = false) {
 			$this->_bootstrap();
 			if (!$this->_querySpec || empty($this->_querySpec->getQuerySpec())) {
 				throw new \RuntimeException('Error: querySpec empty or not set.');
 			}
 			$this->_channels = [];
 			foreach ($this->_clients as $client) {
-				$this->_channels[] =
-					[
-						'client' => $client,
-						'url' => $this->_nbaUrl . $client . '/query/' .
-						'?_querySpec=' . $this->_querySpec->getQuerySpec(true)
-					];
+				if (!$usePost) {
+					$this->_channels[] =
+						[
+							'client' => $client,
+							'url' => $this->_nbaUrl . $client . '/query/' .
+								'?_querySpec=' . $this->_querySpec->getQuerySpec(true)
+						];
+				} else {
+					$this->_channels[] =
+						[
+							'client' => $client,
+							'url' => $this->_nbaUrl . $client . '/query/?',
+							'post_fields' => $this->_querySpec->getQuerySpec(),
+						];
+				}
 			}
 			return $this->_performQueryAndReturnRemoteData();
 		}
@@ -812,14 +827,18 @@
 			foreach ($this->_channels as $key => $channel) {
 				$ch[$key] = curl_init();
 				curl_setopt($ch[$key], CURLOPT_URL, $this->_channels[$key]['url']);
-        		curl_setopt($ch[$key], CURLOPT_HTTPHEADER, array('Expect:'));
                 curl_setopt($ch[$key], CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch[$key], CURLOPT_HEADER, false);
-			    if (isset($this->_channels[$key]['postfields'])) {
-                    curl_setopt($ch[$key], CURLOPT_POST, true);
+                // Handle post request if set
+			    if (isset($this->_channels[$key]['post_fields'])) {
+					curl_setopt($ch[$key], CURLOPT_HTTPHEADER, [
+					    'Content-Type: application/json',
+					    'Content-Length: ' . strlen($this->_channels[$key]['post_fields'])
+					]);                  
+					curl_setopt($ch[$key], CURLOPT_POST, true);
                     curl_setopt($ch[$key], CURLOPT_POSTFIELDS,
-                        $this->_channels[$key]['postfields']);
-                }                
+                        $this->_channels[$key]['post_fields']);
+                }
                 if ($this->_nbaTimeout) {
 					curl_setopt($ch[$key], CURLOPT_TIMEOUT, $this->_nbaTimeout);
 				}
