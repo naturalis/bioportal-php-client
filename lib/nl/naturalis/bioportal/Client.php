@@ -765,6 +765,56 @@
 			return $this->_maxBatchSize;
 		}
 		
+		
+		/**
+		 * Returns the Elastic "min_gram" setting of the LIKE analyser
+		 * 
+		 * This setting can be used in dynamic applications to determine if the LIKE
+		 * operator can be used in a condition. If the number of characters in a search term 
+		 * is smaller than this setting and a LIKE operator is used, 
+		 * the NBA will return an error.
+		 * 
+		 * @throws \RuntimeException If setting cannot be found
+		 * @return int Minimum term length for LIKE condition
+		 */
+		public function getOperatorLikeMinTermLength () {
+			$this->_channels = [];
+			$this->_channels[] = ['url' => $this->_nbaUrl . 'metadata/getSettings'];
+			$this->_query();
+			$data = json_decode($this->_remoteData[0]);
+			if (!isset($data->{'operator.LIKE.min_term_length'})) {
+				throw new \RuntimeException('Error: cannot fetch operator.LIKE.min_term_length.');
+			}
+			return $data->{'operator.LIKE.min_term_length'};
+		}
+		
+    		
+		
+		/**
+		 * Returns the Elastic "max_gram" setting of the LIKE analyser
+		 * 
+		 * This setting can be used in dynamic applications to determine if the LIKE
+		 * operator can be used in a condition. If the number of characters in a search term 
+		 * is larger than this setting and a LIKE operator is used, 
+		 * the NBA will return an error. 
+		 * 
+		 * @throws \RuntimeException If setting cannot be found
+		 * @return int Maximum term length for LIKE condition
+		 */
+		public function getOperatorLikeMaxTermLength () {
+			$this->_channels = [];
+			$this->_channels[] = ['url' => $this->_nbaUrl . 'metadata/getSettings'];
+			$this->_query();
+			$data = json_decode($this->_remoteData[0]);
+			if (!isset($data->{'operator.LIKE.max_term_length'})) {
+				throw new \RuntimeException('Error: cannot fetch operator.LIKE.max_term_length.');
+			}
+			return $data->{'operator.LIKE.max_term_length'};
+		}
+		
+		
+		
+		
 		/*
 		 * Check if clients have been set and if names service specific parameters
 		 * are not used for other service.
