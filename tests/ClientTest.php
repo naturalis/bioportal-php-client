@@ -64,7 +64,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			->addCondition($d)
 			->addCondition($c);
 		$client = new Client();
-		$client->querySpec($query);
+		$client->setQuerySpec($query);
 		$this->assertEquals($expected, $client->getQuerySpec());
 	}
 
@@ -76,7 +76,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$e = new \stdClass();
 		try {
 			$client = new Client();
-			$client->querySpec($query);
+			$client->setQuerySpec($query);
 		} catch (\Exception $e) {}
 		$this->assertEquals('InvalidArgumentException', get_class($e));
 	}
@@ -91,7 +91,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			$client = new Client();
 			$client
 				->names()
-				->querySpec($query)
+				->setQuerySpec($query)
 				->query();
 		} catch (\Exception $e) {}
 		$this->assertEquals('RuntimeException', get_class($e));
@@ -107,7 +107,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 			$client = new Client();
 			$client
 				->specimen()
-				->querySpec($query)
+				->setQuerySpec($query)
 				->query();
 		} catch (\Exception $e) {}
 		$this->assertEquals('RuntimeException', get_class($e));

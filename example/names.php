@@ -29,7 +29,7 @@
 	    ->setSize(100);
 
 	// Fetch all 100 taxa
-    $data = json_decode($client->names()->querySpec($query)->query());
+    $data = json_decode($client->names()->setQuerySpec($query)->query());
     
     // Loop over taxa and fetch details for the first 10 specimens
     foreach ($data->resultSet as $row) {

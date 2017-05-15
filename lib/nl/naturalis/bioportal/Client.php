@@ -150,7 +150,7 @@
 		 * @throws \InvalidArgumentException In case $querySpec is not a valid QuerySpec object
 		 * @return \nl\naturalis\bioportal\Client
 		 */
-		public function querySpec ($querySpec) {
+		public function setQuerySpec ($querySpec) {
 		    if (!$querySpec || !($querySpec instanceof QuerySpec)) {
                 throw new \InvalidArgumentException('Error: invalid querySpec, ' .
                 	'should be created using the QuerySpec or ScientificNameGroupQuerySpec class.');
@@ -160,16 +160,7 @@
 		}
 		
 		/**
-		 * Set QuerySpec object
-		 * 
-		 * Wrapper method for querySpec(); setQuerySpec may be a more logical name...
-		 */
-		public function setQuerySpec ($querySpec) {
-			$this->querySpec($querySpec);
-		}
-
-		/**
-         * Perform a _querySpec NBA query
+         * Perform a NBA query using a QuerySpec object
          * 
          * 1. Sets the curl channels for one or more clients
          * 2. Performs the NBA query using multicurl
@@ -183,7 +174,7 @@
          * Depending on the number of clients, the result is returned
          * either as json or an array of json responses.
          *
-		 * @param string $usePost Default is false
+		 * @param string $usePost Use post instead of get (which is the default)
 		 * @throws \RuntimeException In case QuerySpec is not set
 		 * @return string|string[] NBA response as json if a single client has been
 		 * set, or as an array of responses in case of multiple clients 
@@ -192,7 +183,7 @@
 		public function query ($usePost = false) {
 			$this->_bootstrap();
 			if (!$this->_querySpec || empty($this->_querySpec->getQuerySpec())) {
-				throw new \RuntimeException('Error: querySpec empty or not set.');
+				throw new \RuntimeException('Error: QuerySpec empty or not set.');
 			}
 			$this->_channels = [];
 			foreach ($this->_clients as $client) {
@@ -386,7 +377,7 @@
 				->setSize(2000)
 				->setFields(['sourceSystemId', 'areaType', 'locality', 'countryNL'])
 				->setConstantScore();
-			$data = json_decode($this->geo()->querySpec($query)->query());
+			$data = json_decode($this->geo()->setQuerySpec($query)->query());
 			if (isset($data->resultSet)) {
 				// Enhance data
 				foreach ($data->resultSet as $i => $row) {
@@ -464,7 +455,7 @@
 		public function getSpeciesWithSpecimens ($scientificNameGroupQuerySpec = false) {
 			$this->_reset();
 			if ($scientificNameGroupQuerySpec) {
-				$this->querySpec($scientificNameGroupQuerySpec);
+				$this->setQuerySpec($scientificNameGroupQuerySpec);
 			}
 			$url = $this->_nbaUrl . 'names/getSpeciesWithSpecimens/';
 			if ($this->_querySpec) {
@@ -485,7 +476,7 @@
 		 * the result is returned either as json or an array of json responses.
 		 *
 		 * @param string $field
-		 * @example $client->multimedia()->querySpec($query)->getDistinctValues('creator');
+		 * @example $client->multimedia()->setQuerySpec($query)->getDistinctValues('creator');
 		 * @return string|string[] NBA response as json if a single client has been
 		 * set, or as an array of responses in case of multiple clients
 		 * (formatted as [client1 => json, client2 => json]).
@@ -518,7 +509,7 @@
 		 * _before_ calling count. Depending on the number of clients, the result is 
 		 * returned either as json or an array of json responses.
 		 *
-		 * @example $client->multimedia()->querySpec($query)->count('creator');
+		 * @example $client->multimedia()->setQuerySpec($query)->count('creator');
 		 * @return string|string[] NBA response as json if a single client has been
 		 * set, or as an array of responses in case of multiple clients
 		 * (formatted as [client1 => json, client2 => json]).

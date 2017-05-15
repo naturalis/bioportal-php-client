@@ -36,7 +36,7 @@
         ]);
 
     // Set taxon service and pass QuerySpec
-    $client->taxon()->querySpec($query);
+    $client->taxon()->setQuerySpec($query);
     
     // Print NBA result
     header('Content-Type: application/json');
