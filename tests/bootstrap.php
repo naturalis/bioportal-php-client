@@ -2,6 +2,6 @@
 require_once 'vendor/autoload.php';
 require_once 'lib/nl/naturalis/bioportal/Common.php';
 require_once 'lib/nl/naturalis/bioportal/QuerySpec.php';
-require_once 'lib/nl/naturalis/bioportal/NameGroupQuerySpec.php';
+require_once 'lib/nl/naturalis/bioportal/ScientificNameGroupQuerySpec.php';
 require_once 'lib/nl/naturalis/bioportal/Client.php';
 require_once 'lib/nl/naturalis/bioportal/Condition.php';

@@ -2,7 +2,7 @@
 namespace nl\naturalis\bioportal\Test;
 use nl\naturalis\bioportal\Condition as Condition;
 use nl\naturalis\bioportal\QuerySpec as QuerySpec;
-use nl\naturalis\bioportal\NameGroupQuerySpec as NameGroupQuerySpec;
+use nl\naturalis\bioportal\ScientificNameGroupQuerySpec as ScientificNameGroupQuerySpec;
 use nl\naturalis\bioportal\Client as Client;
 
 class ClientTest extends \PHPUnit_Framework_TestCase
@@ -97,9 +97,9 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals('RuntimeException', get_class($e));
 	}
 	
-	public function testSpecimenServiceMisusesNameGroupQuerySpec () {
+	public function testSpecimenServiceMisusesScientificNameGroupQuerySpec () {
 		$c = new Condition('identifications.scientificName.genusOrMonomial', 'EQUALS_IC', 'larus');
-		$query = new NameGroupQuerySpec();
+		$query = new ScientificNameGroupQuerySpec();
 		$query
 			->addCondition($c);
 		$e = new \stdClass();

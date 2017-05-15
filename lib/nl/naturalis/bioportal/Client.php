@@ -1,7 +1,7 @@
 <?php
 	namespace nl\naturalis\bioportal;
 	use nl\naturalis\bioportal\QuerySpec as QuerySpec;
-	use nl\naturalis\bioportal\NameGroupQuerySpec as NameGroupQuerySpec;
+	use nl\naturalis\bioportal\ScientificNameGroupQuerySpec as ScientificNameGroupQuerySpec;
 	use JMS\Serializer\Tests\Fixtures\GetSetObject;
 	use phpDocumentor\Plugin\Core\Descriptor\Validator\Constraints\Functions\IsArgumentInDocBlock;
 	use Symfony\Component\Finder\Iterator\SizeRangeFilterIterator;
@@ -153,7 +153,7 @@
 		public function querySpec ($querySpec) {
 		    if (!$querySpec || !($querySpec instanceof QuerySpec)) {
                 throw new \InvalidArgumentException('Error: invalid querySpec, ' .
-                	'should be created using the QuerySpec or NameGroupQuerySpec class.');
+                	'should be created using the QuerySpec or ScientificNameGroupQuerySpec class.');
 		    }
             $this->_querySpec = $querySpec;
             return $this;
@@ -455,16 +455,16 @@
 		 * This is an extension of the regular names service query, which will return _all_
 		 * specimens for a particular taxon. This method filters out those specimens per taxon
 		 * that do not match the search criteria. Can be used without setting the names 
-		 * service first. Make sure to pass a NameGroupQuerySpec instead of a 
+		 * service first. Make sure to pass a ScientificNameGroupQuerySpec instead of a 
 		 * regular QuerySpec.
 		 * 
-		 * @param string $nameGroupQuerySpec NameGroupQuerySpec
+		 * @param string ScientificNameGroupQuerySpec ScientificNameGroupQuerySpec
 		 * @return string NBA response as json
 		 */
-		public function getSpeciesWithSpecimens ($nameGroupQuerySpec = false) {
+		public function getSpeciesWithSpecimens ($scientificNameGroupQuerySpec = false) {
 			$this->_reset();
-			if ($nameGroupQuerySpec) {
-				$this->querySpec($nameGroupQuerySpec);
+			if ($scientificNameGroupQuerySpec) {
+				$this->querySpec($scientificNameGroupQuerySpec);
 			}
 			$url = $this->_nbaUrl . 'names/getSpeciesWithSpecimens/';
 			if ($this->_querySpec) {
@@ -824,20 +824,20 @@
 			if (empty($this->_clients)) {
 				throw new \RuntimeException('Error: client(s) not set.');
 			}
-			// Names service requires NameGroupQuerySpec
+			// Names service requires ScientificNameGroupQuerySpec
 			if (!empty($this->_querySpec) && 
-				!($this->_querySpec instanceof NameGroupQuerySpec) && 
+				!($this->_querySpec instanceof ScientificNameGroupQuerySpec) && 
 				in_array('names', $this->_clients)) {
-				throw new \RuntimeException('Error: names service requires NameGroupQuerySpec ' .
+				throw new \RuntimeException('Error: names service requires ScientificNameGroupQuerySpec ' .
 					'instead of QuerySpec (offering dedicated methods for paginating and sorting).');
 			}
-			// NameGroupQuerySpec can only be used for names service
+			// ScientificNameGroupQuerySpec can only be used for names service
 			if (!empty($this->_querySpec) && 
-				$this->_querySpec instanceof NameGroupQuerySpec) {
+				$this->_querySpec instanceof ScientificNameGroupQuerySpec) {
 				foreach ($this->_clients as $client) {
 					if ($client != 'names') {
-						throw new \RuntimeException('Error: NameGroupQuerySpec ' .
-							'used for ' . $client . ' service. NameGroupQuerySpec ' .
+						throw new \RuntimeException('Error: ScientificNameGroupQuerySpec ' .
+							'used for ' . $client . ' service. ScientificNameGroupQuerySpec ' .
 							'is strictly used for names service.');
 					}
 				}

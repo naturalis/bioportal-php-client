@@ -1,7 +1,7 @@
 <?php
     namespace nl\naturalis\bioportal;
  	
-    final class NameGroupQuerySpec extends QuerySpec
+    final class ScientificNameGroupQuerySpec extends QuerySpec
  	{
 		private $_specimensSize;
 		private $_specimensFrom;
