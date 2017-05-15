@@ -208,6 +208,49 @@
 			return $this->_performQueryAndReturnRemoteData();
 		}
 		
+        /**
+         * Perform a NBA querySpecial query using a QuerySpec object
+         * 
+         * Identical to query(), but used only for ScientificNameGroup queries. 
+         * The NBA uses querySpecial to remove specimens not complying
+         * to the search terms from the result. If a regular query() is used, 
+         * complete ScientificNameGroup documents, including irrelevant results,
+         * are returned!
+         * 
+         * Please refer to NBA documentation for more information.
+         *
+		 * @param string $usePost Use post instead of get (which is the default)
+		 * @throws \RuntimeException In case ScientificNameGroupQuerySpec is not set or 
+		 * a regular QuerySpec is used.
+		 * @return string|string[] NBA response as json if a single client has been
+		 * set, or as an array of responses in case of multiple clients 
+		 * (formatted as [client1 => json, client2 => json]).
+		 * @see \nl\naturalis\bioportal\Client::query()
+		 */
+		public function querySpecial ($usePost = false) {
+			if (!$this->_querySpec || empty($this->_querySpec->getQuerySpec())) {
+				throw new \RuntimeException('Error: ScientificNameGroupQuerySpec empty or not set.');
+			}
+			// Set names client and reuse _bootstrap() to check for ScientificNameGroupQuerySpec
+			$this->names()->_bootstrap();
+			if (!$usePost) {
+				$this->_channels[] =
+					[
+						'client' => 'names',
+						'url' => $this->_nbaUrl . 'names/querySpecial/' .
+							'?_querySpec=' . $this->_querySpec->getQuerySpec(true)
+					];
+			} else {
+				$this->_channels[] =
+					[
+						'client' => 'names',
+						'url' => $this->_nbaUrl . 'names/querySpecial/',
+						'post_fields' => $this->_querySpec->getQuerySpec(),
+					];
+			}
+			return $this->_performQueryAndReturnRemoteData();
+		}
+		
 		/**
 		 * Perform a getFieldInfo NBA metadata query
 		 *
@@ -438,34 +481,7 @@
 			$data = json_decode($this->geo()->find($gid));
 			return isset($data->shape) ? json_encode($data->shape) : false;
 		}
-		
-		/**
-		 * Performs a getSpeciesWithSpecimens NBA query
-		 * 
-		 * A critically import method for BioPortal: it returns specimens aggregated by taxon.
-		 * This is an extension of the regular names service query, which will return _all_
-		 * specimens for a particular taxon. This method filters out those specimens per taxon
-		 * that do not match the search criteria. Can be used without setting the names 
-		 * service first. Make sure to pass a ScientificNameGroupQuerySpec instead of a 
-		 * regular QuerySpec.
-		 * 
-		 * @param string ScientificNameGroupQuerySpec ScientificNameGroupQuerySpec
-		 * @return string NBA response as json
-		 */
-		public function getSpeciesWithSpecimens ($scientificNameGroupQuerySpec = false) {
-			$this->_reset();
-			if ($scientificNameGroupQuerySpec) {
-				$this->setQuerySpec($scientificNameGroupQuerySpec);
-			}
-			$url = $this->_nbaUrl . 'names/getSpeciesWithSpecimens/';
-			if ($this->_querySpec) {
-				$url .= '?_querySpec=' . $this->_querySpec->getQuerySpec(true);
-			}
-			$this->_channels[] = ['url' => $url];
-			$this->_query();
-			return $this->_remoteData[0];
-		}
-				
+						
 		/**
 		 * Perform a getDistinctValues NBA query
 		 * 
@@ -833,7 +849,7 @@
 					}
 				}
 			}
-			return true;
+			return $this;
 		}
 		
 		/*
@@ -846,6 +862,7 @@
 		            $this->{$k} = null;
 		        }
 		    }
+		    return $this;
 		}
 
 		/* 
