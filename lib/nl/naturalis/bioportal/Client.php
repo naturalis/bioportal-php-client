@@ -866,7 +866,7 @@
 		 * Reset values
 		 */
 		private function _reset () {
-		    $reset = ['_remoteData', '_querySpec', '_channels'];
+		    $reset = ['_remoteData', '_querySpec', '_channels', '_curlErrors'];
 		    foreach ($this as $k => $v) {
 		        if (in_array($k, $reset)) {
 		            $this->{$k} = null;
@@ -926,7 +926,9 @@
 				} while ($mrc == CURLM_CALL_MULTI_PERFORM);
 			}
 			foreach ($this->_channels as $key => $channel) {
-				$this->_curlErrors[$key] = curl_error($channel);
+				if (curl_error($ch[$key])) {
+					$this->_curlErrors[$key] = curl_getinfo($ch[$key]);
+				}
 			    $label = isset($this->_channels[$key]['client']) ?
                     $this->_channels[$key]['client'] : $key;
 				$this->_remoteData[$label] = curl_multi_getcontent($ch[$key]);
