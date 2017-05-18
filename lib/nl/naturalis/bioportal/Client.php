@@ -17,7 +17,8 @@
 		private $_channels;
 		private $_remoteData;
 		private $_clients;
-
+		private $_curlErrors;
+		
 		/**
 		 * NBA clients
 		 * 
@@ -657,6 +658,15 @@
 		public function getConfig () {
 		    return json_encode($this->_config);
 		}
+		
+		/**
+		 * Get curl errors
+         *
+		 * @return array Curl errors (per channel) returned by _query()
+		 */
+		public function getCurlErrors () {
+			return $this->_curlErrors;
+		}
 
 		/**
 		 * Set $_nbaUrl configuration setting, overriding setting in client.ini
@@ -792,7 +802,7 @@
 			if (!isset($data->{'operator.LIKE.min_term_length'})) {
 				throw new \RuntimeException('Error: cannot fetch operator.LIKE.min_term_length.');
 			}
-			return $data->{'operator.LIKE.min_term_length'};
+			return (int) $data->{'operator.LIKE.min_term_length'};
 		}
 		
     		
@@ -816,7 +826,7 @@
 			if (!isset($data->{'operator.LIKE.max_term_length'})) {
 				throw new \RuntimeException('Error: cannot fetch operator.LIKE.max_term_length.');
 			}
-			return $data->{'operator.LIKE.max_term_length'};
+			return (int) $data->{'operator.LIKE.max_term_length'};
 		}
 		
 		
@@ -916,6 +926,7 @@
 				} while ($mrc == CURLM_CALL_MULTI_PERFORM);
 			}
 			foreach ($this->_channels as $key => $channel) {
+				$this->_curlErrors[$key] = curl_error($channel);
 			    $label = isset($this->_channels[$key]['client']) ?
                     $this->_channels[$key]['client'] : $key;
 				$this->_remoteData[$label] = curl_multi_getcontent($ch[$key]);
