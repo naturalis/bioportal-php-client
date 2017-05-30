@@ -82,25 +82,30 @@
         public function camelCase ($str) {
             return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $str))));
         }
-
-        /**
-         * Cleans input string with commas or converts array to comma-separated string
-         * 
-         * @param string|array $data
-         * @return string Comma-separated string
-         */
-		 public function commaSeparate ($data = '') {
-            if (!is_array($data)) {
-                $p = array_map('trim', explode(',', $data));
-                if (count($p) == 1) {
-                    $ids[] = trim($data);
-                } else {
-                    $ids = $p;
-                }
-            } else {
-                $ids = array_map('trim', $data);
-            }
-            return implode(',', $ids);
+		
+		/**
+		 * Cleans input string with commas or converts array to comma-separated string:
+		 * trims values and rawurldecodes these for use in url path.
+		 *
+		 * @param string|array $data        	
+		 * @return string Comma-separated string
+		 */
+		public function commaSeparate ($data = '') {
+			if (!is_array($data)) {
+				$p = array_map(function ($s) {
+					return rawurldecode(trim($s));
+				}, explode(',', $data));
+				if (count($p) == 1) {
+					$ids[] = rawurldecode(trim($data));
+				} else {
+					$ids = $p;
+				}
+			} else {
+				$ids = array_map(function ($s) {
+					return rawurldecode(trim($s));
+				}, explode(',', $data));
+			}
+			return implode(',', $ids);
 		}
 
     }
