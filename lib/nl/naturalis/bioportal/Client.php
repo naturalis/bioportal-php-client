@@ -440,8 +440,18 @@
     	public function getSourceSystems () {
 			return $this->_getNativeNbaEndpoint('metadata/getSourceSystems');
 		}
+
+    	/**
+		 * NBA settings
+		 * 
+		 * @return string NBA settings as json-encoded string
+		 */
+    	public function getSettings () {
+			return $this->_getNativeNbaEndpoint('metadata/getSettings');
+		}
 		
-/**
+		
+		/**
 		 * Perform a getNamedCollections NBA query
 		 * 
 		 * Uses the NBA query getNamedCollections to get all "special collections" 
