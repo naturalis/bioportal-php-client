@@ -562,11 +562,8 @@
 				throw new \InvalidArgumentException('Error: no locality provided for ' .
 					'getGeoJsonForLocality.');
 			}
-			$this->_reset();
-			$this->_channels[] = ['url' => $this->_nbaUrl . 'geo/getGeoJsonForLocality/' . 
-				$locality];
-			$this->_query();
-			$data = json_decode($this->_remoteData[0]);
+			$data = json_decode($this->_getNativeNbaEndpoint('geo/getGeoJsonForLocality/' . 
+				$locality));
 			return isset($data->coordinates) ? $this->_remoteData[0] : false;
 		}
 		
@@ -900,14 +897,11 @@
 		 * is smaller than this setting and a LIKE operator is used, 
 		 * the NBA will return an error.
 		 * 
-		 * @throws \RuntimeException If setting cannot be found
+		 * @throws \RuntimeException If setting does not exist
 		 * @return int Minimum term length for LIKE condition
 		 */
 		public function getOperatorLikeMinTermLength () {
-			$this->_channels = [];
-			$this->_channels[] = ['url' => $this->_nbaUrl . 'metadata/getSettings'];
-			$this->_query();
-			$data = json_decode($this->_remoteData[0]);
+			$data = json_decode($this->_getNativeNbaEndpoint('metadata/getSettings'));
 			if (!isset($data->{'operator.LIKE.min_term_length'})) {
 				throw new \RuntimeException('Error: cannot fetch operator.LIKE.min_term_length.');
 			}
@@ -924,20 +918,41 @@
 		 * is larger than this setting and a LIKE operator is used, 
 		 * the NBA will return an error. 
 		 * 
-		 * @throws \RuntimeException If setting cannot be found
+		 * @throws \RuntimeException If setting does not exist
 		 * @return int Maximum term length for LIKE condition
 		 */
 		public function getOperatorLikeMaxTermLength () {
-			$this->_channels = [];
-			$this->_channels[] = ['url' => $this->_nbaUrl . 'metadata/getSettings'];
-			$this->_query();
-			$data = json_decode($this->_remoteData[0]);
+			$data = json_decode($this->_getNativeNbaEndpoint('metadata/getSettings'));
 			if (!isset($data->{'operator.LIKE.max_term_length'})) {
 				throw new \RuntimeException('Error: cannot fetch operator.LIKE.max_term_length.');
 			}
 			return (int) $data->{'operator.LIKE.max_term_length'};
 		}
 		
+    	
+    	/**
+    	 * Maximum number of results NBA can handle
+    	 * 
+		 * @throws \RuntimeException In case no or multiple clients are set, or if 
+		 * setting does not exist
+    	 * @return int Maximum number of results NBA can handle
+    	 */
+    	public function getIndexMaxResultWindow () {
+    	    if (empty($this->_clients)) {
+				throw new \RuntimeException('Error: client not set.');
+			}
+			if (count($this->_clients) > 1) {
+				throw new \RuntimeException('Error: getIndexMaxResultWindow accepts a ' .
+					'single client only.');
+			}
+    		$data = json_decode($this->_getNativeNbaEndpoint($this->_clients[0] .
+    				'/metadata/getSettings'));
+			if (!isset($data->{'index.max_result_window'})) {
+				throw new \RuntimeException('Error: cannot fetch index.max_result_window ' .
+					'for service "' . $this->_clients[0] . '".');
+			}
+			return (int) $data->{'index.max_result_window'};
+		}
 		
 		
 		
@@ -1073,7 +1088,8 @@
 				throw new \RuntimeException('Error: no endpoint provided for ' . 
 					$caller['function'] . '.');
      		}
-			$this->_channels = [];
+			$this->_reset();
+     		$this->_channels = [];
 			$this->_channels[] = ['url' => $this->_nbaUrl . $endPoint];
 			$this->_query();
 			return $this->_remoteData[0];
