@@ -418,14 +418,14 @@
 		}
 		
        	 /**
-		 * Perform a getControlledLists NBA query
+		 * Perform a getControlledList NBA query
 		 * 
-		 * Uses the NBA query getControlledLists to return all fields that are 
-		 * controlled during import. Values in these fields can be accessed using 
-		 * getControlledList('field').
+		 * Uses the NBA query getControlledList to return controlled values.
 		 * 
-		 * @return string Collections as json-encoded string
-		 * @see \nl\naturalis\bioportal\Client::getControlledList()
+		 * @param string $field Controlled field
+		 * @throws \RuntimeException In case of empty $field
+		 * @throws \InvalidArgumentException In case $field is not a controlled list
+		 * @return string Values as json-encoded string
 		 */
 		public function getControlledList ($field = false) {
 			if (!$field) {
@@ -436,7 +436,18 @@
 					'" is not a controlled list.'); 
 				
 			}
-			return $this->_getNativeNbaEndpoint('metadata/getControlledList/'. $field);
+			return $this->_getNativeNbaEndpoint('metadata/getControlledList/' . $field);
+		}
+		
+       	 /**
+		 * Perform a getRestServices NBA query
+		 * 
+		 * Overview of all NBA rest services.
+		 * 
+		 * @return string Services as json-encoded string
+		 */
+		public function getRestServices () {
+			return $this->_getNativeNbaEndpoint('metadata/getRestServices');
 		}
 		
 		
