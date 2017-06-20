@@ -281,10 +281,6 @@
 			return $this->_performQueryAndReturnRemoteData();
 		}
 		
-		public function getAllowedDateFormats () {
-			
-		}
-		
 		/**
 		 * Perform a find/findByIds NBA query
 		 * 
@@ -391,6 +387,52 @@
 		}
 		
 		/**
+		 * Checks if a operator is allowed for an NBA field
+		 * 
+		 * Useful to check if e.g. LIKE operator can be used for a specific field.
+		 * Only works with a single service.
+		 * 
+		 * @param string $field NBA field
+		 * @param string $operator NBA operator
+		 * @throws \RuntimeException In case no or multiple clients are set
+		 * @throws \InvalidArgumentException In case field or operator are not set,
+		 * field does not exist for service, or operator is invalid
+		 * @return bool
+		 */
+    	public function isOperatorAllowed ($field = false, $operator = false) {
+    		if (empty($this->_clients)) {
+				throw new \RuntimeException('Error: client not set.');
+			}
+			if (count($this->_clients) > 1) {
+				throw new \RuntimeException('Error: isOperatorAllowed accepts a ' .
+					'single client only.');
+			}
+    		if (!$field || !$operator) {
+				throw new \InvalidArgumentException('Error: no field or operator ' . 
+					'provided for isOperatorAllowed.'); 
+			}
+			if (!in_array($field, json_decode($this->getPaths()))) {
+				throw new \InvalidArgumentException('Error: field "' . $field .
+					'" not available for service "' . $this->_clients[0] . '".'); 
+			}
+    		if (!in_array($operator, $this::$operators)) {
+				throw new \InvalidArgumentException('Error: invalid operator "' .
+					$operator . '".'); 
+			}
+			return $this->_getNativeNbaEndpoint($this->_clients[0] . '/metadata/' . 
+				'isOperatorAllowed/' . $field . '/' . $operator);
+		}
+
+		/**
+		 * Valid date formats for NBA
+		 * 
+		 * @return string Formats as json-encoded string
+		 */
+    	public function getAllowedDateFormats () {
+			return $this->_getNativeNbaEndpoint('metadata/getAllowedDateFormats');
+		}
+		
+		/**
 		 * Perform a getNamedCollections NBA query
 		 * 
 		 * Uses the NBA query getNamedCollections to get all "special collections" 
@@ -429,7 +471,8 @@
 		 */
 		public function getControlledList ($field = false) {
 			if (!$field) {
-				throw new \RuntimeException('Error: no field provided for getControlledList.'); 
+				throw new \InvalidArgumentException('Error: no field provided for ' .
+					'getControlledList.'); 
 			}
 			if (!in_array($field, json_decode($this->getControlledLists()))) {
 				throw new \InvalidArgumentException('Error: field "' . $field . 
