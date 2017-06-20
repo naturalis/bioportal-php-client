@@ -107,25 +107,5 @@
 			}
 			return implode(',', $ids);
 		}
-		
-		/**
-		 * Shorthand method to call native NBA endpoint
-		 * 
-		 * @param string $endPoint Relative path to endpoint
-		 * @throws \RuntimeException In case no endpoint is provided
-		 * @return string NBA response as json
-		 */
-    	protected function _getNativeNbaEndpoint ($endPoint = false) {
-    		if (empty($endPoint)) {
-    			$trace = debug_backtrace();
-    			$caller = $trace[1];
-				throw new \RuntimeException('Error: no endpoint provided for ' . 
-					$caller['function'] . '.');
-     		}
-			$this->_channels = [];
-			$this->_channels[] = ['url' => $this->_nbaUrl . $endPoint];
-			$this->_query();
-			return $this->_remoteData[0];
-		}
 
     }

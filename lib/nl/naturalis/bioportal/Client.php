@@ -391,7 +391,7 @@
 		}
 		
 		/**
-		 * Perform an getNamedCollections NBA query
+		 * Perform a getNamedCollections NBA query
 		 * 
 		 * Uses the NBA query getNamedCollections to get all "special collections" 
 		 * defined within the specimen dataset. Can be called with or without 
@@ -402,6 +402,43 @@
 		public function getNamedCollections () {
 			return $this->_getNativeNbaEndpoint('specimen/getNamedCollections');
 		}
+		
+    	 /**
+		 * Perform a getControlledLists NBA query
+		 * 
+		 * Uses the NBA query getControlledLists to return all fields that are 
+		 * controlled during import. Values in these fields can be accessed using 
+		 * getControlledList('field').
+		 * 
+		 * @return string Collections as json-encoded string
+		 * @see \nl\naturalis\bioportal\Client::getControlledList()
+		 */
+		public function getControlledLists () {
+			return $this->_getNativeNbaEndpoint('metadata/getControlledLists');
+		}
+		
+       	 /**
+		 * Perform a getControlledLists NBA query
+		 * 
+		 * Uses the NBA query getControlledLists to return all fields that are 
+		 * controlled during import. Values in these fields can be accessed using 
+		 * getControlledList('field').
+		 * 
+		 * @return string Collections as json-encoded string
+		 * @see \nl\naturalis\bioportal\Client::getControlledList()
+		 */
+		public function getControlledList ($field = false) {
+			if (!$field) {
+				throw new \RuntimeException('Error: no field provided for getControlledList.'); 
+			}
+			if (!in_array($field, json_decode($this->getControlledLists()))) {
+				throw new \InvalidArgumentException('Error: field "' . $field . 
+					'" is not a controlled list.'); 
+				
+			}
+			return $this->_getNativeNbaEndpoint('metadata/getControlledList/'. $field);
+		}
+		
 		
 		/**
 		 * Retrieve NBA geo areas 
@@ -948,6 +985,27 @@
             }
             $this->_config = parse_ini_file($ini);
 		}
-
+    		
+		/**
+		 * Shorthand method to call native NBA endpoint
+		 * 
+		 * @param string $endPoint Relative path to endpoint
+		 * @throws \RuntimeException In case no endpoint is provided
+		 * @return string NBA response as json
+		 */
+    	private function _getNativeNbaEndpoint ($endPoint = false) {
+    		if (!$endPoint) {
+    			$trace = debug_backtrace();
+    			$caller = $trace[1];
+				throw new \RuntimeException('Error: no endpoint provided for ' . 
+					$caller['function'] . '.');
+     		}
+			$this->_channels = [];
+			$this->_channels[] = ['url' => $this->_nbaUrl . $endPoint];
+			$this->_query();
+			return $this->_remoteData[0];
+		}
+		
+		
  
  	}

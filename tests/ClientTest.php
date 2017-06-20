@@ -149,5 +149,24 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals('InvalidArgumentException', get_class($e));
 	}
 	
+	public function testSetGetIncorrectControlledList () {
+		$e = new \stdClass();
+		try {
+			$client = new Client();
+			$client->getControlledList('incorrectField');
+		} catch (\Exception $e) {}
+		$this->assertEquals('InvalidArgumentException', get_class($e));
+	}
+	
+	public function testSetGetCorrectControlledList () {
+		$expected = json_encode([
+			"male",
+			"female",
+			"mixed",
+			"hermaphrodite"
+		]);
+		$client = new Client();
+		$this->assertEquals($expected, $client->getControlledList('Sex'));
+	}
 	
 }
