@@ -255,14 +255,11 @@
 		/**
 		 * Perform a getFieldInfo NBA metadata query
 		 *
-		 * 1. Sets the curl channels for one or more clients
-		 * 2. Performs the NBA query using multicurl
-		 * 3. Returns NBA response
+		 * Information on the fields for a service, including allowedOperators. Information
+		 * can be returned for the entire service or single fields. Depending on the number 
+		 * of clients, the result is returned either as json or an array of json responses.
 		 *
-		 * Depending on the number of clients, the result is returned
-		 * either as json or an array of json responses.
-		 *
-		* @param string|array $fields Comma-separated string of fields; if input is 
+		 * @param string|array $fields Comma-separated string of fields; if input is 
 		 * an array, this is converted to a comma-separated string
 		 * @return string|string[] NBA response as json if a single client has been
 		 * set, or as an array of responses in case of multiple clients 
@@ -282,6 +279,10 @@
 					];
 			}
 			return $this->_performQueryAndReturnRemoteData();
+		}
+		
+		public function getAllowedDateFormats () {
+			
 		}
 		
 		/**
@@ -399,10 +400,7 @@
 		 * @return string Collections as json-encoded string
 		 */
 		public function getNamedCollections () {
-			$this->_channels = [];
-			$this->_channels[] = ['url' => $this->_nbaUrl . 'specimen/getNamedCollections'];
-			$this->_query();
-			return $this->_remoteData[0];
+			return $this->_getNativeNbaEndpoint('specimen/getNamedCollections');
 		}
 		
 		/**
@@ -413,6 +411,7 @@
 		 * from the getDistinctValuesPerGroup() output. The results are formatted in a 
 		 * slightly different way, grouping localities per language.
 		 * 
+		 * @param bool $trimGidSuffix Optionally trim '@GEO' suffix from gid
 		 * @return string|bool Result as json-encoded string; false if no result
 		 */
 		public function getGeoAreas ($trimGidSuffix = false) {
@@ -448,7 +447,7 @@
 		 * @throws \InvalidArgumentException In case of empty $locality
 		 * @return string|bool Returns geojson; false if no result
 		 */
-		public function getGeoJsonForLocality ($locality) {
+		public function getGeoJsonForLocality ($locality = false) {
 			if (!$locality) {
 				throw new \InvalidArgumentException('Error: no locality provided for ' .
 					'getGeoJsonForLocality.');
@@ -471,7 +470,7 @@
 		 * @return string|bool Returns geojson; false if no result
 		 * @see \nl\naturalis\bioportal\Client::getGeoAreas()
 		 */
-		public function getGeoJsonForGid ($gid) {
+		public function getGeoJsonForGid ($gid = false) {
 			if (!$gid) {
 				throw new \InvalidArgumentException('Error: no geographic id 
 					provided for getGeoJsonForGid.');
