@@ -423,7 +423,7 @@
 				'isOperatorAllowed/' . $field . '/' . $operator);
 		}
 
-		/**
+    	/**
 		 * Valid date formats for NBA
 		 * 
 		 * @return string Formats as json-encoded string
@@ -433,6 +433,15 @@
 		}
 		
 		/**
+		 * Source systems in NBA
+		 * 
+		 * @return string NBA source systems as json-encoded string
+		 */
+    	public function getSourceSystems () {
+			return $this->_getNativeNbaEndpoint('metadata/getSourceSystems');
+		}
+		
+/**
 		 * Perform a getNamedCollections NBA query
 		 * 
 		 * Uses the NBA query getNamedCollections to get all "special collections" 
