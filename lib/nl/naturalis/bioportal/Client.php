@@ -464,7 +464,7 @@
 			return $this->_getNativeNbaEndpoint('specimen/getNamedCollections');
 		}
 		
-    	 /**
+    	/**
 		 * Perform a getControlledLists NBA query
 		 * 
 		 * Uses the NBA query getControlledLists to return all fields that are 
@@ -478,7 +478,7 @@
 			return $this->_getNativeNbaEndpoint('metadata/getControlledLists');
 		}
 		
-       	 /**
+       	/**
 		 * Perform a getControlledList NBA query
 		 * 
 		 * Uses the NBA query getControlledList to return controlled values.
@@ -501,7 +501,7 @@
 			return $this->_getNativeNbaEndpoint('metadata/getControlledList/' . $field);
 		}
 		
-       	 /**
+       	/**
 		 * Perform a getRestServices NBA query
 		 * 
 		 * Overview of all NBA rest services.
