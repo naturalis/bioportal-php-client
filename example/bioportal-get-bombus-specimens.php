@@ -2,7 +2,7 @@
     /* This script retrieves Bombus specimens from the NBA. 
      * 
      * The ScientificNameGroup is queried for 100 taxa. For each taxon, a maximum of
-     * 10 specimens are retrieved. This is a real world example from BioPortal.
+     * 10 specimens is retrieved. This is a real world example from BioPortal.
      */
 	namespace nl\naturalis\bioportal;
 	
