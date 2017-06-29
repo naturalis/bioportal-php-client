@@ -37,17 +37,21 @@
 	   	// Start loop timer
 	    $loopStart = microtime(true);
 	    
-	    // Get the genera only
+	    // Do query
 	    $client
 	    	->specimen()
 	    	->setQuerySpec($query)
 	    	->query();
 	   	
-	   	// Start loop timer
+	   	// End loop timer
 	    $loopEnd = round(microtime(true) - $loopStart, 2);
 	    	
 	    if ($i > 0 && $i % ($size * $printLoops) == 0) {
+	    	
+	    	// Get stats for loop
 	    	$currentStats = array_slice($stats, $i / $size - $printLoops, $i / $size);
+	    	
+	    	// Print stats
 	    	echo 'Records ' . ($i - ($size * $printLoops) + 1) . " to $i\n";
 	    	echo 'min: ' . min($currentStats) . "s\tmax: " . max($currentStats) . "s\taverage: " .
 	    		round(array_sum($currentStats) / count($currentStats), 2) . "s\n\n";
@@ -56,5 +60,18 @@
 	    // Store to calculate average query time
 	    $stats[$i] = $loopEnd;
 	    
+	    $lastCounter = $i;
+	    
+	}
+	
+	// Test if there's a last set to print
+	if ($lastCounter < $i) {
+		
+		$lastStats = array_slice($stats, array_search($lastCounter, array_keys($stats)), count($i));
+	    
+	    // Print stats
+	    echo 'Records ' . ($i - ($size * $printLoops) + 1) . " to $i\n";
+	    echo 'min: ' . min($lastStats) . "s\tmax: " . max($lastStats) . "s\taverage: " .
+	    	round(array_sum($lastStats) / count($lastStats), 2) . "s\n\n";
 	}
     
