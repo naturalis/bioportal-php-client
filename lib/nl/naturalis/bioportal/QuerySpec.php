@@ -147,7 +147,7 @@
         /**
          * Set QuerySpec fields to return
          * 
-         * Returns only thw fields specified in the $fields array, rather than
+         * Returns only the fields specified in the $fields array, rather than
          * the full response.
          * 
          * @param array $fields

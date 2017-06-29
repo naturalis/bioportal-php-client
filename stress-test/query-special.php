@@ -1,8 +1,10 @@
 <?php
-    /* This script retrieves Bombus specimens from the NBA. 
+    /* This script retrieves 1000 taxa with specimens from the NBA and performs and
+     * querySpecial for each. 
      * 
-     * The ScientificNameGroup is queried for 100 taxa. For each taxon, a maximum of
-     * 10 specimens is retrieved. This is a real world example from BioPortal.
+     * In the loop, ScientificNameGroup is queried for 100 taxa. For each taxon, a maximum of
+     * 10 specimens is retrieved. This is a real world example from BioPortal. Only timings are
+     * printed, not the results themselves.
      */
 	namespace nl\naturalis\bioportal;
 	
@@ -15,110 +17,112 @@
     // Default ini settings can be modified if necessary
     $client
     	->setNbaUrl('http://145.136.242.167:8080/v2/')
-    	->setNbaTimeout(10);
-
- 	// Bombus specimens
-    $condition = new Condition('specimens.matchingIdentifications.defaultClassification.genus', 'LIKE', 'bombus');
-    $condition->setOr('specimens.matchingIdentifications.scientificName.genusOrMonomial', 'LIKE', 'bombus');
+    	->setNbaTimeout(30);
     
- 	// Names query requires a ScientificNameGroup
- 	$query = new ScientificNameGroupQuerySpec();
- 	
- 	// Get 100 taxa; default sort order is by name	
- 	$query
- 		->addCondition($condition)
- 		->setLogicalOperator('and')
- 		->setSize(100)
- 		->setSpecimensSize(10)
- 		->setSortFields([
- 			['specimens.matchingIdentifications.scientificName.genusOrMonomial', 'asc'],
- 			['specimens.matchingIdentifications.scientificName.specificEpithet', 'asc'],
- 			['specimens.matchingIdentifications.scientificName.infraspecificEpithet', 'asc'],
- 		]
- 	);
-		
-   	// Start timer
-    $start = microtime(true);
+   	// We're interested in genera with at least two specimens
+   	$condition = new Condition('specimenCount', 'GT', 1);
+    $query = new ScientificNameGroupQuerySpec();
+    $query
+    	->addCondition($condition)
+    	->sortBy('specimenCount', 'desc')
+    	->setSize(1000);
+    // Get the genera only
+    $data = $client
+    	->names()
+    	->setQuerySpec($query)
+    	->getDistinctValues('specimens.matchingIdentifications.scientificName.genusOrMonomial');
     
-    // QuerySpecial is used to filter only matching results
- 	$taxa = json_decode($client->names()->setQuerySpec($query)->querySpecial());
- 	
- 	// Number of taxa
-    $totalTaxa = $taxa->totalSize;
+   	// Start script timer
+    $scriptStart = microtime(true);
+    $data = array_slice(json_decode($data, true), 0, 1000);
     
- 	// Get total number of specimens
-    $condition = new Condition('identifications.defaultClassification.genus', 'LIKE', 'bombus');
-    $condition->setOr('identifications.scientificName.genusOrMonomial', 'LIKE', 'bombus');
-    
- 	// Regular QuerySpec, as we're querying specimen
- 	$query = new QuerySpec();
+    echo 'Querying ' . count($data) . " taxa...\n\n"; 
  	
- 	// Same query; retrieve just a single result, we only need the totalSize	
- 	$query
- 		->addCondition($condition)
- 		->setLogicalOperator('and')
- 		->setSize(1)
- 		->setConstantScore();
- 	
- 	// Regular query
- 	$data = json_decode($client->specimen()->setQuerySpec($query)->query());
- 	
- 	// Total number of specimens
- 	$totalSpecimens = $data->totalSize;
- 	
- 	echo "Species ($totalTaxa) with specimens ($totalSpecimens)\n\n";
- 	
- 	// Append specimen details to $taxa; use batch query
-	// First aggregate queries for all specimens
-	foreach ($taxa->resultSet as $row) {
-		foreach ($row->item->specimens as $item) {
-			$condition = new Condition('unitID', 'EQUALS', $item->unitID);
-			$query = new QuerySpec();
-			$query
-				->addCondition($condition)
-				->setConstantScore()
-				->setSize(1);
-			$batch[$item->unitID] = $query;
-		}
-	}
+    // Loop over genera and emulate BP queries to retrieve data
+    foreach ($data as $genus => $count) {
 	
-	// Fetch all specimens at once
-	if (isset($batch)) {
-		$data = $client->specimen()->batchQuery($batch);
-		
-		// End NBA timer here
-		$nbaEnd = round(microtime(true) - $start, 2);
-		
-		// Decode json
-		$specimens = array_map('json_decode', $data);
-		
-		// Loop again over $taxa and append the fetched specimen details
-		foreach ($taxa->resultSet as $i => $row) {
-			foreach ($row->item->specimens as $j => $item) {
-				if (isset($specimens[$item->unitID])) {
-					$detail = $specimens[$item->unitID];
-					$taxa->resultSet[$i]->item->specimens[$j]->specimenDetails =
-						$detail->resultSet[0]->item;
-				}
+	    $condition = new Condition('specimens.matchingIdentifications.defaultClassification.genus', 
+	    	'LIKE', "{$genus}");
+	    $condition->setOr('specimens.matchingIdentifications.scientificName.genusOrMonomial', 
+	    	'LIKE', "{$genus}");
+	    
+	 	// Names query requires a ScientificNameGroup
+	 	$query = new ScientificNameGroupQuerySpec();
+	 	
+	 	// Get 100 taxa; default sort order is by name	
+	 	$query
+	 		->addCondition($condition)
+	 		->setLogicalOperator('and')
+	 		->setSize(100)
+	 		->setSpecimensSize(10)
+	 		->setSortFields([
+	 			['specimens.matchingIdentifications.scientificName.genusOrMonomial', 'asc'],
+	 			['specimens.matchingIdentifications.scientificName.specificEpithet', 'asc'],
+	 			['specimens.matchingIdentifications.scientificName.infraspecificEpithet', 'asc'],
+	 		]
+	 	);
+			
+	   	// Start loop timer
+	    $loopStart = microtime(true);
+	    
+	    // QuerySpecial is used to filter only matching results
+	 	$taxa = json_decode($client->names()->setQuerySpec($query)->querySpecial());
+	 	
+	 	// Number of taxa
+	    $totalTaxa = $taxa->totalSize;
+	    
+	 	// Get total number of specimens
+	    $condition = new Condition('identifications.defaultClassification.genus', 'LIKE', 'bombus');
+	    $condition->setOr('identifications.scientificName.genusOrMonomial', 'LIKE', 'bombus');
+	    
+	 	// Regular QuerySpec, as we're querying specimen
+	 	$query = new QuerySpec();
+	 	
+	 	// Same query; retrieve just a single result, we only need the totalSize	
+	 	$query
+	 		->addCondition($condition)
+	 		->setLogicalOperator('and')
+	 		->setSize(1)
+	 		->setConstantScore();
+	 	
+	 	// Regular query
+	 	$data = json_decode($client->specimen()->setQuerySpec($query)->query());
+	 	
+	 	// Total number of specimens
+	 	$totalSpecimens = $data->totalSize;
+	 	
+	 	// Append specimen details to $taxa; use batch query
+		// First aggregate queries for all specimens
+		foreach ($taxa->resultSet as $row) {
+			foreach ($row->item->specimens as $item) {
+				$condition = new Condition('unitID', 'EQUALS', $item->unitID);
+				$query = new QuerySpec();
+				$query
+					->addCondition($condition)
+					->setConstantScore()
+					->setSize(1);
+				$batch[$item->unitID] = $query;
 			}
 		}
-	}
-	
-	// Print results
-	foreach ($taxa->resultSet as $i => $row) {
-		echo ucfirst($row->item->name) . 
-			' -- ' . $row->item->specimenCount . " specimen(s)\n";
-		foreach ($row->item->specimens as $j => $item) {
-			echo $item->unitID . 
-				(isset($item->specimenDetails->kindOfUnit) ? ' -- ' . $item->specimenDetails->kindOfUnit : '') .
-				(isset($item->specimenDetails->preparationType) ? ' -- ' . $item->specimenDetails->preparationType : '') .
-				"\n";
+		
+		// Fetch all specimens at once
+		if (isset($batch)) {
+			$data = $client->specimen()->batchQuery($batch);
 		}
-		echo "\n";
-	}
+
+		// End NBA timer here
+		$loopEnd = round(microtime(true) - $loopStart, 2);
+		
+		// Store to calculate average query time
+		$timing[] = $loopEnd;
+		
+		// Print query time
+		echo "$genus -- $count taxa -- {$loopEnd}s\n";
+    }
+
+	$scriptEnd = round(microtime(true) - $scriptStart, 2);
 	
-	$scriptEnd = round(microtime(true) - $start, 2);
-	
-	echo "NBA query time: {$nbaEnd}s\n";
-	echo "Total time, including parsing and printing: {$scriptEnd}s\n\n\n";
-	
+	// Print statistics
+	echo "\n\nTotal running query time: {$nbaEnd}s\n";
+	echo "Average query time: " . round(array_sum($timing)/count($timing), 2) . "\n\n";
+    
