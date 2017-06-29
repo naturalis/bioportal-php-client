@@ -10,10 +10,10 @@
     $client = new Client();
     
     // Loop size
-    $size = 10000;
+    $size = 100;
     
     // Print results every x loops
-    $printLoops = 10;
+    $printLoops = 1000;
     
     // Default ini settings can be modified if necessary
     $client
