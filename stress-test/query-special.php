@@ -14,6 +14,9 @@
     // Initialise Client
     $client = new Client();
     
+    // Number of taxa to query
+    $nrTaxa = 1000;
+    
     // Default ini settings can be modified if necessary
     $client
     	->setNbaUrl('http://145.136.242.167:8080/v2/')
@@ -32,12 +35,13 @@
     	->setQuerySpec($query)
     	->getDistinctValues('specimens.matchingIdentifications.scientificName.genusOrMonomial');
     
-   	// Start script timer
-    $scriptStart = microtime(true);
-    $data = array_slice(json_decode($data, true), 0, 1000);
+    $data = array_slice(json_decode($data, true), 0, $nrTaxa);
     
     echo 'Querying ' . count($data) . " taxa...\n\n"; 
  	
+   	// Start script timer
+    $scriptStart = microtime(true);
+    
     // Loop over genera and emulate BP queries to retrieve data
     foreach ($data as $genus => $count) {
 	
@@ -114,7 +118,7 @@
 		$loopEnd = round(microtime(true) - $loopStart, 2);
 		
 		// Store to calculate average query time
-		$timing[] = $loopEnd;
+		$stats[] = $loopEnd;
 		
 		// Print query time
 		echo "$genus -- $count taxa -- {$loopEnd}s\n";
@@ -123,6 +127,6 @@
 	$scriptEnd = round(microtime(true) - $scriptStart, 2);
 	
 	// Print statistics
-	echo "\n\nTotal running query time: {$nbaEnd}s\n";
-	echo "Average query time: " . round(array_sum($timing)/count($timing), 2) . "\n\n";
+	echo "\n\nTotal running query time: " . $scriptEnd . "s\n";
+	echo "Average query time: " . round(array_sum($stats) / count($stats), 2) . "\n\n";
     
