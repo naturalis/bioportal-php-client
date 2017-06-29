@@ -69,8 +69,6 @@
 	   	// Start loop timer
 	    $loopStart = microtime(true);
 	    
-	    print_r($client->names()->setQuerySpec($query)->querySpecial()); die();
-	    
 	    // QuerySpecial is used to filter only matching results
 	 	$taxa = json_decode($client->names()->setQuerySpec($query)->querySpecial());
 	 	
