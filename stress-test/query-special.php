@@ -19,7 +19,7 @@
     
     // Default ini settings can be modified if necessary
     $client
-    	->setNbaUrl('http://145.136.242.167:8080/v2/')
+    	->setNbaUrl('http://145.136.240.125:32065/v2')
     	->setNbaTimeout(30);
     
    	// We're interested in genera with at least two specimens
@@ -68,6 +68,8 @@
 			
 	   	// Start loop timer
 	    $loopStart = microtime(true);
+	    
+	    print_r($client->names()->setQuerySpec($query)->querySpecial()); die();
 	    
 	    // QuerySpecial is used to filter only matching results
 	 	$taxa = json_decode($client->names()->setQuerySpec($query)->querySpecial());

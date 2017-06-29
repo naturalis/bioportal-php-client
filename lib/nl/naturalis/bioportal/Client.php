@@ -234,6 +234,7 @@
 			}
 			// Set names client and reuse _bootstrap() to check for ScientificNameGroupQuerySpec
 			$this->names()->_bootstrap();
+			$this->_channels = [];
 			if (!$usePost) {
 				$this->_channels[] =
 					[
