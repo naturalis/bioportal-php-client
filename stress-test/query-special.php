@@ -44,6 +44,8 @@
     
     // Loop over genera and emulate BP queries to retrieve data
     foreach ($data as $genus => $count) {
+    	
+    	$batch = [];
 	
 	    $condition = new Condition('specimens.matchingIdentifications.defaultClassification.genus', 
 	    	'LIKE', "{$genus}");
