@@ -17,7 +17,7 @@
     
     // Default ini settings can be modified if necessary
     $client
-    	->setNbaUrl('http://145.136.242.167:8080/v2/')
+    	->setNbaUrl('http://145.136.240.125:32065/v2')
     	->setNbaTimeout(30);
     
     // Get max window size
