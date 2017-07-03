@@ -78,7 +78,7 @@
 		// Test if there's a last set to print
 		if ($lastCounter < $i) {
 			
-			$lastStats = array_slice($stats, array_search($lastCounter, array_keys($stats)), count($i));
+			$lastStats = array_slice($stats, array_search($lastCounter, array_keys($stats)), count($stats));
 		    
 		    // Print stats
 		    echo 'Records ' . ($i - ($size * $printLoops) + 1) . " to $i\n";
