@@ -9,6 +9,7 @@
     final class Client extends Common
  	{
 		private $_nbaUrl;
+		private $_nbaDwcaDownloadDirectory;
 		private $_nbaTimeout = 5;
 		private $_maxBatchSize = 1000;
 		private $_config;
@@ -726,6 +727,52 @@
 			return $this->_remoteData;
 		}
 		
+    	
+    		
+    	public function dwcaQuery () {
+			$this->_bootstrap();
+			if (!$this->_querySpec || empty($this->_querySpec->getQuerySpec())) {
+				throw new \RuntimeException('Error: QuerySpec empty or not set.');
+			}
+			$this->_channels = [];
+			
+			
+	   		$url  = $nbaTestServer . '/specimen/dwca/dataset/' . $collection;
+	    	
+		    // Write to /dev/null
+		    $fp = fopen('/dev/null', 'w');
+		 
+		    // Init curl
+		    $ch = curl_init($url);
+		    
+			// Disable potential curl timeouts
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0); 
+			curl_setopt($ch, CURLOPT_TIMEOUT, 0);
+		    
+		    // Write download file to nowhere really
+		    curl_setopt($ch, CURLOPT_FILE, $fp);
+			
+		    // Get them data!
+		    curl_exec($ch);
+		    
+		    // Close curl and file pointer
+		    curl_close($ch);
+		    fclose($fp);
+		
+			
+			
+			
+			foreach ($this->_clients as $client) {
+				$this->_channels[] =
+					[
+						'client' => $client,
+						'url' => $this->_nbaUrl . $client . '/dwca/query/' .
+							'?_querySpec=' . $this->_querySpec->getQuerySpec(true)
+					];
+			}
+			return $this->_performQueryAndReturnRemoteData();
+		}
+		
 		/**
 		 * Get all publicly available clients
 		 *
@@ -889,6 +936,44 @@
 			return $this->_maxBatchSize;
 		}
 		
+    		/**
+		 * Set $_nbaDwcaDownloadDirectory configuration setting, overriding setting in client.ini
+		 *
+		 * This is not a required setting, unlike the other settings in client.ini.
+		 * 
+		 * 1. Reads client.ini and sets $_config if this hasn't been set prior
+		 * 2. Validates if directory is writable
+		 * 3. Overrides client.ini setting if it has been set previously
+		 *
+		 * @param string $directory
+		 * @throws \InvalidArgumentException In case directry is not writable
+		 * @return \nl\naturalis\bioportal\Client
+		 */
+		public function setNbaDwcaDownloadDirectory ($directory = false) {
+			if (empty($this->_config)) {
+				$this->_setConfig();
+			}
+			$nbaDownloadDirectory = $directory ? 
+				$directory : $this->config['nba_dwca_download_dir'];
+			if (!is_writable($nbaDownloadDirectory)) {
+				throw new \InvalidArgumentException('Error: directory ' . $nbaDownloadDirectory . 
+					' for DwCA files is not writable!');
+			}
+			$this->_nbaDwcaDownloadDirectory = $nbaDownloadDirectory;
+			return $this;
+		}
+
+		/**
+		 * Get $_nbaDwcaDownloadDirectory configuration setting
+		 *
+		 * @return string $_nbaDwcaDownloadDirectory
+		 */
+		public function getNbaDwcaDownloadDirectory () {
+			return $this->_nbaDwcaDownloadDirectory;
+		}
+		
+		
+		
 		
 		/**
 		 * Returns the Elastic "min_gram" setting of the LIKE analyser
@@ -999,7 +1084,7 @@
 		    }
 		    return $this;
 		}
-
+		
 		/* 
 		 * Shorthand method to query and return the remote data either directly
 		 * if a single client has been used, or an array of client => result 
