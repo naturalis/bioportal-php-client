@@ -44,9 +44,6 @@
     $data = array_slice(json_decode($data, true), 0, $nrTaxa);
     
     echo 'Querying ' . count($data) . " taxa...\n\n"; 
-    
-    
-    
  	
    	// Start script timer
     $scriptStart = microtime(true);
@@ -142,7 +139,9 @@
 	    }
 	
 		// Print statistics
-		echo "\n\nAverage query time: " . round(array_sum($stats) / count($stats), 2) . "\n";
+	    echo "\n\nLoop number: $loopNr\n";
+	    echo "Average query time: " . round(array_sum($stats) / count($stats), 2) . "\n";
 		echo 'Script running time: ' . round((microtime(true) - $scriptStart) / 60) . "m\n\n\n";
 		
+		$loopNr++;
     }
