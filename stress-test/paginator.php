@@ -31,7 +31,7 @@
     $scriptStart = microtime(true);
     
     // Time based loop
-    if ((microtime(true) - $scriptStart) < ($runningTime * 60)) {
+    while ((microtime(true) - $scriptStart) < ($runningTime * 60)) {
     	
     	$stats = [];
 
@@ -87,7 +87,7 @@
 		}
 		
 		echo 'Sum of loop times: ' . array_sum($stats) . "s\n";
-		echo 'Script running time: ' . round((microtime(true) - $scriptStart) / 60) . "m\s\s\s";
+		echo 'Script running time: ' . round((microtime(true) - $scriptStart) / 60) . "m\n\n\n";
 	
     }
 	
