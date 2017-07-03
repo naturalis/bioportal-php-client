@@ -37,10 +37,12 @@
 	    // Init curl
 	    $ch = curl_init($url);
 	    
-	    // Write download file to nowhere really; disable curl timeouts
-	    curl_setopt($ch, CURLOPT_FILE, $fp);
+		// Disable potential curl timeouts
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0); 
 		curl_setopt($ch, CURLOPT_TIMEOUT, 0);
+	    
+	    // Write download file to nowhere really
+	    curl_setopt($ch, CURLOPT_FILE, $fp);
 		
 	    // Get them data!
 	    curl_exec($ch);

@@ -10,7 +10,10 @@
 	// For some reason Autoloader doesn't work outside of main directory; use (manual) Loader instead
 	require_once '../lib/nl/naturalis/bioportal/Loader.php';
 
-    // Running time (in mins); set to 0.1 for just one loop
+	// NBA server 
+	$nbaTestServer = 'http://145.136.240.125:32065/v2';
+
+	// Running time (in mins); set to 0.1 for just one loop
     $runningTime = 120;
 	
 	// Initialise Client
@@ -18,7 +21,7 @@
     
     // Default ini settings can be modified if necessary
     $client
-    	->setNbaUrl('http://145.136.240.125:32065/v2')
+    	->setNbaUrl($nbaTestServer)
     	->setNbaTimeout(30);
 
     // Use the shorthand method to fetch all predefined geo areas
