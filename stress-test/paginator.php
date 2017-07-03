@@ -6,9 +6,6 @@
 	// For some reason Autoloader doesn't work outside of main directory; use (manual) Loader instead
 	require_once '../lib/nl/naturalis/bioportal/Loader.php';
 
-    // Initialise Client
-    $client = new Client();
-    
     // Running time (in mins); set to 1 for just one loop
     $runningTime = 120;
     
@@ -17,6 +14,9 @@
     
     // Print results every x loops
     $printLoops = 10;
+    
+    // Initialise Client
+    $client = new Client();
     
     // Default ini settings can be modified if necessary
     $client
@@ -36,7 +36,7 @@
     	$stats = [];
 
 		// Result-based loop
-		for ($i = 0; $i < $max; $i += $size) {
+		for ($i = 0; $i <= $max; $i += $size) {
 			
 			$condition = new Condition('sourceSystem.code', 'EQUALS', 'BRAMHS');
 		    $query = new QuerySpec();
