@@ -62,7 +62,7 @@
 		    echo 'Query took ' . round((microtime(true) - $start), 2) . " seconds\n\n";
 	
 		    // Print result (only on first iteration)
-		    if ($printResults) {
+		    if ($loopNr == 1) {
 			   	foreach ($result as $area => $json) {
 			    	$data = json_decode($json);
 			    	
@@ -90,7 +90,7 @@
 		    $printResults = false;
 	    }	
 	    
-	    echo "loop number: $loopNr\n";
+	    echo "Loop number: $loopNr\n";
 		echo 'Script running time: ' . round(((microtime(true) - $scriptStart) / 60), 2) . "m\n\n\n";
 	    
 	    $loopNr++;
