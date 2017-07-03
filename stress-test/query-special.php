@@ -41,7 +41,7 @@
     	->setQuerySpec($query)
     	->getDistinctValues('specimens.matchingIdentifications.scientificName.genusOrMonomial');
     
-    $data = array_slice(json_decode($data, true), 0, $nrTaxa);
+    $taxa = array_slice(json_decode($data, true), 0, $nrTaxa);
     
     echo 'Querying ' . count($data) . " taxa...\n\n"; 
  	
@@ -55,7 +55,7 @@
     while ((microtime(true) - $scriptStart) < ($runningTime * 60)) {
     	
 	    // Loop over genera and emulate BP queries to retrieve data
-	    foreach ($data as $genus => $count) {
+	    foreach ($taxa as $genus => $count) {
 	    	
 	    	$batch = [];
 		
