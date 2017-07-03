@@ -728,49 +728,38 @@
 		}
 		
     	
-    		
+    	/**
+    	 * Dynamically creates a DarwinCore Archive (DwCA) of an NBA query
+    	 * 
+    	 * When a valid QuerySpec is set, this method allows a use to download
+    	 * the result to a DwCA file, provided a valid download directory has
+    	 * been set. The resiulting file name consists the service plus a date-time.
+    	 * 
+    	 * @throws \RuntimeException In case multiple clients are set
+    	 * @return string File name of created file
+    	 */
     	public function dwcaQuery () {
-			$this->_bootstrap();
-			if (!$this->_querySpec || empty($this->_querySpec->getQuerySpec())) {
-				throw new \RuntimeException('Error: QuerySpec empty or not set.');
+ 			$this->_bootstrap();
+    		if (count($this->_clients) > 1) {
+				throw new \RuntimeException('Error: DwCA download accepts a single client only.');
 			}
-			$this->_channels = [];
-			
-			
-	   		$url  = $nbaTestServer . '/specimen/dwca/dataset/' . $collection;
-	    	
-		    // Write to /dev/null
-		    $fp = fopen('/dev/null', 'w');
-		 
-		    // Init curl
+			// Set download directory if necessary
+			if (empty($this->_nbaDwcaDownloadDirectory)) {
+				$this->setNbaDwcaDownloadDirectory();
+			}
+	   		$url  = $this->_nbaUrl . $this->_clients[0] . '/dwca/query/' .
+				'?_querySpec=' . $this->_querySpec->getQuerySpec(true);
+	    	$fileName = $this->setNbaDwcaDownloadDirectory() . '/' .
+	    		$this->_clients[0] . '-' . date("Ymd-Gi") . '.dwca.zip';
+		    $fp = fopen($file, 'w');
 		    $ch = curl_init($url);
-		    
-			// Disable potential curl timeouts
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0); 
 			curl_setopt($ch, CURLOPT_TIMEOUT, 0);
-		    
-		    // Write download file to nowhere really
 		    curl_setopt($ch, CURLOPT_FILE, $fp);
-			
-		    // Get them data!
 		    curl_exec($ch);
-		    
-		    // Close curl and file pointer
 		    curl_close($ch);
 		    fclose($fp);
-		
-			
-			
-			
-			foreach ($this->_clients as $client) {
-				$this->_channels[] =
-					[
-						'client' => $client,
-						'url' => $this->_nbaUrl . $client . '/dwca/query/' .
-							'?_querySpec=' . $this->_querySpec->getQuerySpec(true)
-					];
-			}
-			return $this->_performQueryAndReturnRemoteData();
+			return $fileName;
 		}
 		
 		/**
