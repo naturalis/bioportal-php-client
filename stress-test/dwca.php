@@ -1,10 +1,6 @@
 <?php
-    /* This script retrieves 1000 taxa with specimens from the NBA and performs and
-     * querySpecial for each. 
-     * 
-     * In the loop, ScientificNameGroup is queried for 100 taxa. For each taxon, a maximum of
-     * 10 specimens is retrieved. This is a real world example from BioPortal. Only timings are
-     * printed, not the results themselves.
+    /* This script generates a DwCA file of a specified collection (default: botany). 
+     * Running time is two hours; can be modified.
      */
 	namespace nl\naturalis\bioportal;
 	

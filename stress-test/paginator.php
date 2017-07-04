@@ -1,5 +1,5 @@
 <?php
-    /* This example loops over a large set and times the query for each loop. */
+    /* This example loops over a large set (all Bramhs specimens) and times the query for each loop. */
 
 	namespace nl\naturalis\bioportal;
 	

@@ -1,9 +1,9 @@
 <?php
-    /* This script retrieves 1000 taxa with specimens from the NBA and performs and
-     * querySpecial for each. 
+    /* This script retrieves 1000 (or any numner of) taxa with specimens from the NBA and performs a
+     * querySpecial for each. Running time is two hours; can be modified.
      * 
      * In the loop, ScientificNameGroup is queried for 100 taxa. For each taxon, a maximum of
-     * 10 specimens is retrieved. This is a real world example from BioPortal. Only timings are
+     * 10 specimens is retrieved. This is a real world example from BioPortal. Only running times are
      * printed, not the results themselves.
      */
 	namespace nl\naturalis\bioportal;

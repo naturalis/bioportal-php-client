@@ -1,9 +1,9 @@
 <?php
-    /* This example script uses a batch query to stress test the NBA. 
+    /* All geo areas in NBA are retrieved. Per area type, a batch query with all
+     * areas for that type is compiled. Running time is two hours; can be modified.
      * 
-     * All areas are retrieved. Per area type, a batch query with all
-     * areas for that type is compiled. The number of specimens
-     * found per area is printed to screen.
+     * The number of specimens found per area is printed to screen for the
+     * first loop.
      */
 	namespace nl\naturalis\bioportal;
 	
