@@ -8,7 +8,7 @@
 	require_once '../lib/nl/naturalis/bioportal/Loader.php';
 	
 	// NBA server
-	$nbaTestServer = 'http://145.136.242.167:8080/v2';
+	$nbaTestServer = 'http://145.136.240.125:32065/v2';
 
     // Collection name
     $collection = 'botany';
