@@ -16,7 +16,7 @@
 
     // Collection name
     $collection = 'botany';
-	
+    
 	// Running time (in mins); set to 1 for just one loop
     $runningTime = 120;
     	
@@ -26,34 +26,21 @@
 	// Keep track of number of loops
 	$loopNr = 1;
 	    	
-    // Time based loop
-    while ((microtime(true) - $scriptStart) < ($runningTime * 60)) {
-    	
-   		$url  = $nbaTestServer . '/specimen/dwca/dataset/' . $collection;
-    	
-	    // Write to /dev/null
-	    $fp = fopen('/dev/null', 'w');
-	 
-	    // Init curl
-	    $ch = curl_init($url);
-	    
-		// Disable potential curl timeouts
-		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0); 
-		curl_setopt($ch, CURLOPT_TIMEOUT, 0);
-	    
-	    // Write download file to nowhere really
-	    curl_setopt($ch, CURLOPT_FILE, $fp);
-		
-	    // Get them data!
-	    curl_exec($ch);
-	    
-	    // Close curl and file pointer
-	    curl_close($ch);
-	    fclose($fp);
+	// Initialise Client
+    $client = new Client();
+    
+    // Default ini settings can be modified if necessary
+    $client
+    	->setNbaUrl($nbaTestServer)
+    	->setNbaTimeout(30)
+    	->setNbaDwcaDownloadDirectory('/tmp');
 	
-		// Print statistics
+	// Time based loop
+    while ((microtime(true) - $scriptStart) < ($runningTime * 60)) {
+ 		// Print statistics
 	    echo "Loop number: $loopNr\n";
-		echo 'Script running time: ' . round(((microtime(true) - $scriptStart) / 60), 2) . "m\n\n";
+   		echo 'Archive written to: '. $client->specimen()->dwcaGetDataSet($collection) . "\n";
+	    echo 'Script running time: ' . round(((microtime(true) - $scriptStart) / 60), 2) . "m\n\n";
 	    
 		$loopNr++;
    }

@@ -146,7 +146,7 @@
 	
 		// Print statistics
 	    echo "\n\nLoop number: $loopNr\n";
-	    echo "Average query time: " . round(array_sum($stats) / count($stats), 2) . "\n";
+	    echo "Average query time: " . round(array_sum($stats) / count($stats), 2) . "s\n";
 		echo 'Script running time: ' . round((microtime(true) - $scriptStart) / 60) . "m\n\n\n";
 		
 		$loopNr++;
