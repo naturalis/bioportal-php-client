@@ -140,7 +140,7 @@
 			$stats[] = $loopEnd;
 			
 			// Print query time
-			echo "$genus\t$count taxa\t{$loopEnd}s\n";
+			echo "$genus\t$count taxa\t$totalSpecimens specimens\t{$loopEnd}s\n";
 	    }
 	
 		// Print statistics
