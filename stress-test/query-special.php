@@ -86,6 +86,11 @@
 		    // QuerySpecial is used to filter only matching results
 		 	$taxa = json_decode($client->names()->setQuerySpec($query)->querySpecial());
 		 	
+	    	if (!isset($taxa->totalSize)) {
+		 		echo "ERROR! No taxa found for genus $genus\n";
+		 		continue;
+		 	}
+		 	
 		 	// Number of taxa
 		    $totalTaxa = $taxa->totalSize;
 		    
@@ -105,11 +110,6 @@
 		 	
 		 	// Regular query
 		 	$data = json_decode($client->specimen()->setQuerySpec($query)->query());
-		 	
-		 	if (!isset($data->totalSize)) {
-		 		echo "ERROR! No result for genus $genus\n";
-		 		continue;
-		 	}
 		 	
 		 	// Total number of specimens
 		 	$totalSpecimens = $data->totalSize;
