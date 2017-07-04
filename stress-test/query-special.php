@@ -55,7 +55,7 @@
     while ((microtime(true) - $scriptStart) < ($runningTime * 60)) {
     	
 	    // Loop over genera and emulate BP queries to retrieve data
-	    foreach ($genera as $genus => $count) {
+	    foreach ($genera as $genus => $nrTaxa) {
 	    	
 	    	$batch = [];
 		
@@ -131,6 +131,7 @@
 			// Fetch all specimens at once
 			if (isset($batch)) {
 				$data = $client->specimen()->batchQuery($batch);
+				$nrSpecimens = count($data);
 			}
 	
 			// End NBA timer here
@@ -140,7 +141,7 @@
 			$stats[] = $loopEnd;
 			
 			// Print query time
-			echo "$genus\t$count taxa\t$totalSpecimens specimens\t{$loopEnd}s\n";
+			echo "$genus\t$nrTaxa taxa\t$nrSpecimens specimens in batch\t{$loopEnd}s\n";
 	    }
 	
 		// Print statistics
