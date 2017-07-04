@@ -736,31 +736,81 @@
     	 * been set. The resiulting file name consists the service plus a date-time.
     	 * 
     	 * @throws \RuntimeException In case multiple clients are set
-    	 * @return string File name of created file
+    	 * @return string Path to created file
     	 */
     	public function dwcaQuery () {
  			$this->_bootstrap();
     		if (count($this->_clients) > 1) {
 				throw new \RuntimeException('Error: DwCA download accepts a single client only.');
 			}
+			// Only applicable for specimens and taxon
+    	    if (!in_array($this->_clients[0], ['specimen', 'taxon'])) {
+				throw new \RuntimeException('Error: DwCA download is available only for taxon ' . 
+					'and specimen services.');
+			}
 			// Set download directory if necessary
 			if (empty($this->_nbaDwcaDownloadDirectory)) {
 				$this->setNbaDwcaDownloadDirectory();
 			}
+			// Query url
 	   		$url  = $this->_nbaUrl . $this->_clients[0] . '/dwca/query/' .
 				'?_querySpec=' . $this->_querySpec->getQuerySpec(true);
-	    	$fileName = $this->setNbaDwcaDownloadDirectory() . '/' .
+	   		// Save file to...
+	    	$fileName = $this->_nbaDwcaDownloadDirectory . 
 	    		$this->_clients[0] . '-' . date("Ymd-Gi") . '.dwca.zip';
-		    $fp = fopen($file, 'w');
-		    $ch = curl_init($url);
-			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0); 
-			curl_setopt($ch, CURLOPT_TIMEOUT, 0);
-		    curl_setopt($ch, CURLOPT_FILE, $fp);
-		    curl_exec($ch);
-		    curl_close($ch);
-		    fclose($fp);
-			return $fileName;
+	    	return $this->_download($url, $fileName);
 		}
+		
+		/**
+		 * Download DwCA archive for specific data set
+		 * 
+		 * @param string $set Data set
+		 * @throws \InvalidArgumentException If set is not given or non-existing
+		 * @return string Path to created file
+		 */
+		public function dwcaGetDataSet ($set = false) {
+			if ($set) {
+				// Check if set exists
+				$sets = json_decode($this->dwcaGetDataSetNames(), true);
+				if (in_array($set, $sets)) {
+					// Set download directory if necessary
+					if (empty($this->_nbaDwcaDownloadDirectory)) {
+						$this->setNbaDwcaDownloadDirectory();
+					}
+					// Query url
+			   		$url  = $this->_nbaUrl . $this->_clients[0] . '/dwca/dataset/' . $set;
+			   		// Save file to...
+			    	$fileName = $this->_nbaDwcaDownloadDirectory . $set . 
+			    		'-' . date("Ymd") . '.dwca.zip';
+			    	return $this->_download($url, $fileName);
+				}
+			}
+			throw new \InvalidArgumentException('Error: DwCA download is available only for taxon ' . 
+				'and specimen services.');
+		}
+		
+         /**
+		 * Perform a dwcaGetDataSetNames NBA query
+		 * 
+		 * Uses the NBA query dwcaGetDataSetNames to return predefined data sets.
+		 * 
+		 * @throws \RuntimeException In case of multiple services or service that
+		 * is not specimen or taxon
+		 * @return string DwCA data sets as json-encoded string
+		 */
+		public function dwcaGetDataSetNames () {
+		    if (count($this->_clients) > 1) {
+				throw new \RuntimeException('Error: DwCA download accepts a single client only.');
+			}
+			// Only applicable for specimens and taxon
+    	    if (!in_array($this->_clients[0], ['specimen', 'taxon'])) {
+				throw new \RuntimeException('Error: DwCA download is available only for taxon ' . 
+					'and specimen services.');
+			}
+			return $this->_getNativeNbaEndpoint($this->_clients[0] . '/dwca/getDataSetNames');
+		}
+		
+		
 		
 		/**
 		 * Get all publicly available clients
@@ -931,11 +981,11 @@
 		 * This is not a required setting, unlike the other settings in client.ini.
 		 * 
 		 * 1. Reads client.ini and sets $_config if this hasn't been set prior
-		 * 2. Validates if directory is writable
+		 * 2. Validates if directory is not empty and is writable
 		 * 3. Overrides client.ini setting if it has been set previously
 		 *
 		 * @param string $directory
-		 * @throws \InvalidArgumentException In case directry is not writable
+		 * @throws \InvalidArgumentException In case directry is empty or not writable
 		 * @return \nl\naturalis\bioportal\Client
 		 */
 		public function setNbaDwcaDownloadDirectory ($directory = false) {
@@ -944,11 +994,15 @@
 			}
 			$nbaDownloadDirectory = $directory ? 
 				$directory : $this->config['nba_dwca_download_dir'];
-			if (!is_writable($nbaDownloadDirectory)) {
-				throw new \InvalidArgumentException('Error: directory ' . $nbaDownloadDirectory . 
-					' for DwCA files is not writable!');
+			if (empty($nbaDownloadDirectory)) {
+				throw new \InvalidArgumentException('Error: no directory provided!');
 			}
-			$this->_nbaDwcaDownloadDirectory = $nbaDownloadDirectory;
+			if (!is_writable($nbaDownloadDirectory)) {
+				throw new \InvalidArgumentException('Error: download directory ' . 
+					$nbaDownloadDirectory . ' is not writable!');
+			}
+			$this->_nbaDwcaDownloadDirectory = substr($nbaDownloadDirectory, -1) != '/' ? 
+				$nbaDownloadDirectory . '/' : $nbaDownloadDirectory;
 			return $this;
 		}
 
@@ -960,8 +1014,6 @@
 		public function getNbaDwcaDownloadDirectory () {
 			return $this->_nbaDwcaDownloadDirectory;
 		}
-		
-		
 		
 		
 		/**
@@ -1136,6 +1188,21 @@
 			curl_multi_close($mh);
 			return $this->_remoteData;
 		}
+		
+		/*
+		 * Downloads file to predefined directory
+		 */
+		private function _download ($url, $fileName) {
+		    $fp = fopen($fileName, 'w');
+		    $ch = curl_init($url);
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0); 
+			curl_setopt($ch, CURLOPT_TIMEOUT, 0);
+		    curl_setopt($ch, CURLOPT_FILE, $fp);
+		    curl_exec($ch);
+		    curl_close($ch);
+		    fclose($fp);
+			return $fileName;
+		}
 
 		/*
 		 * Parse client.ini file and sets $_config parameters.
@@ -1169,7 +1236,4 @@
 			$this->_query();
 			return $this->_remoteData[0];
 		}
-		
-		
- 
  	}
