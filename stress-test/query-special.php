@@ -106,6 +106,11 @@
 		 	// Regular query
 		 	$data = json_decode($client->specimen()->setQuerySpec($query)->query());
 		 	
+		 	if (!isset($data->totalSize)) {
+		 		echo "ERROR! No result for genus $genus\n";
+		 		continue;
+		 	}
+		 	
 		 	// Total number of specimens
 		 	$totalSpecimens = $data->totalSize;
 		 	
