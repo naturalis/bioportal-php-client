@@ -1,6 +1,9 @@
 <?php
     namespace nl\naturalis\bioportal;
  	
+	/*
+	 * Extends QuerySpec to provide dedicated methods for groupByScientificName query
+	 */
     final class ScientificNameGroupQuerySpec extends QuerySpec
  	{
 		private $_specimensSize;
@@ -8,15 +11,15 @@
 		private $_specimensSortFields;
 		private $_noTaxa = false;
 
- 	    public function __construct() {
+ 	    public function __construct () {
             parent::__construct();
         }
         
         /**
-         * Set from offset parameter for specimens in names service
+         * Set from offset parameter for specimens in groupByScientificName query
          * 
-         * Sets the offset within an aggregation of specimens in the names service.
-         * So e.g. if there are 150 specimens for a particular scientific name, this
+         * Sets the offset within an aggregation of specimens in the groupByScientificName 
+         * query. So e.g. if there are 150 specimens for a particular scientific name, this
          * method in combination with setSpecimensSize() allows the user to cycle 
          * through these specimens.
          * 
@@ -35,12 +38,12 @@
         }
         
         /**
-         * Set result size parameter for specimens in names service
+         * Set result size parameter for specimens in groupByScientificName query
          *
-         * Sets the result size within an aggregation of specimens in the names service.
-         * So e.g. if there are 150 specimens for a particular scientific name, this
-         * method in combination with setSpecimensFrom() allows the user to cycle 
-         * through these specimens.
+         * Sets the result size within an aggregation of specimens in the 
+         * groupByScientificName query. So e.g. if there are 150 specimens for a 
+         * particular scientific name, this method in combination with 
+         * setSpecimensFrom() allows the user to cycle through these specimens.
          *
          * @param integer|string $size
          * @throws \InvalidArgumentException In case $size is not a valid integer
@@ -57,12 +60,13 @@
         }
         
         /**
-         * Set sort criterium for specimens in names service
+         * Set sort criterium for specimens in groupByScientificName query
          * 
-         * Sort specimens within the aggregation by scientific name in names service.
-         * Only a single criterium can be set; use setSpecimenSortFields() to set 
-         * multiple criteria. Defaults to ascending direction. Throws an exception 
-         * (using private bootstrap method) if either path or direction are invalid.
+         * Sort specimens within the aggregation by scientific name in the 
+         * groupByScientificName query. Only a single criterium can be set; 
+         * use setSpecimenSortFields() to set multiple criteria. Defaults to 
+         * ascending direction. Throws an exception (using private bootstrap method) 
+         * if either path or direction are invalid.
          * 
          * @param string $path
          * @param string $direction
@@ -79,7 +83,7 @@
         }
         
         /**
-        * Set multiple sort criteria for specimens in names service
+        * Set multiple sort criteria for specimens in groupByScientificName query
         * 
         * Sets sort based on array of sort criteria. Note that input differs:
         * setSortFields() takes an array with one or more array in which the first value
@@ -103,11 +107,11 @@
         }
         
         /**
-         * Exclude taxa from names service query
+         * Exclude taxa from groupByScientificName query
          * 
-         * Response from names service includes both specimens and taxa. This method
-         * provides the option to exclude taxa. The opposite can be achieve by setting
-         * setSpecimensSize(0).
+         * Response from groupByScientificName query includes both specimens and taxa. 
+         * This method provides the option to exclude taxa. The opposite can be achieve 
+         * by setting setSpecimensSize(0).
          * 
          * @param bool $noTaxa
          * @throws \InvalidArgumentException In case $noTaxa is invalid
@@ -162,5 +166,4 @@
         public function isNoTaxa () {
         	return $this->_noTaxa;
         }
-
  	}

@@ -3,8 +3,7 @@
 
     class Common
     {
-        public function __construct () {
-        }
+        public function __construct () {}
 
         /**
          * Valid NBA operators

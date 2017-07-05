@@ -80,40 +80,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		} catch (\Exception $e) {}
 		$this->assertEquals('InvalidArgumentException', get_class($e));
 	}
-	
-	public function testNamesServiceMisusesRegularQuerySpec () {
-		$c = new Condition('specimens.identifications.scientificName.genusOrMonomial', 'EQUALS_IC', 'larus');
-		$query = new QuerySpec();
-		$query
-			->addCondition($c);
-		$e = new \stdClass();
-		try {
-			$client = new Client();
-			$client
-				->names()
-				->setQuerySpec($query)
-				->query();
-		} catch (\Exception $e) {}
-		$this->assertEquals('RuntimeException', get_class($e));
-	}
-	
-	public function testSpecimenServiceMisusesScientificNameGroupQuerySpec () {
-		$c = new Condition('identifications.scientificName.genusOrMonomial', 'EQUALS_IC', 'larus');
-		$query = new ScientificNameGroupQuerySpec();
-		$query
-			->addCondition($c);
-		$e = new \stdClass();
-		try {
-			$client = new Client();
-			$client
-				->specimen()
-				->setQuerySpec($query)
-				->query();
-		} catch (\Exception $e) {}
-		$this->assertEquals('RuntimeException', get_class($e));
-	}
-	
-	
+		
 	/*
 	 * Batch query
 	 */

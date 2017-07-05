@@ -20,9 +20,30 @@
 		protected $_logicalOperator;
 		protected $_constantScore = false;
 		
- 	    public function __construct() {
+ 	    public function __construct () {
             parent::__construct();
         }
+        
+        
+        /**
+         * Is the correct method called?
+         * 
+         * Verifies that QuerySpec is not called with methods reserved to
+         * ScientificNameGroupQuerySpec.
+         * 
+         * @param string $method Method name
+         * @param string|array $arguments (Irrelevant in this case)
+         * @throws \BadMethodCallException In case QuertSpec is called with method 
+         * exclusive to ScientificNameGroupQuerySpec
+         */
+     	public function __call ($method, $arguments = false) {
+     		$currentClass = str_replace(__NAMESPACE__ . '\\', '', __CLASS__);
+     		if ($currentClass == 'QuerySpec' && 
+     			in_array($method, $this->getExclusiveScientificNameGroupMethods())) {
+				throw new \BadMethodCallException('Error: method ' . $method . 
+					' can only be used with ScientificNameGroupQuerySpec!');
+     		}
+     	}       
         
 		/**
 		 * Add Condition object to QuerySpec
@@ -62,7 +83,7 @@
             ];
             $this->_querySpec['sortFields'] = $this->_sortFields;
             return $this;
-        }
+        } 
         
 		/**
 		 * Set multiple sort criteria
@@ -266,7 +287,19 @@
         public function isConstantScore () {
         	return $this->_constantScore;
         }
-        
+             
+        /**
+         * Get methods that can only be used with ScientificNameGroupQuerySpec
+         * 
+         * @return array Exclusive methods for ScientificNameGroupQuerySpec
+         */
+        public function getExclusiveScientificNameGroupMethods () {
+        	return array_diff(
+        		get_class_methods(new ScientificNameGroupQuerySpec()), 
+        		get_class_methods(new QuerySpec())
+        	);
+        }
+       
         private function _bootstrapSort ($path, $direction) {
         	if (!$path || !is_string($path)) {
         		throw new \InvalidArgumentException('Error: ' .

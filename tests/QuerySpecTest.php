@@ -249,4 +249,13 @@ class QuerySpecTest extends \PHPUnit_Framework_TestCase
 	}
 	
 	
+	public function testQuerySpecWithScientificNameGroupQuerySpecMethod () {
+		$query = new QuerySpec();
+		$e = new \stdClass();
+		try {
+			$query->setSpecimensSize(5);
+		} catch (\Exception $e) {}
+		$this->assertEquals('BadMethodCallException', get_class($e));
+	}
+	
 }

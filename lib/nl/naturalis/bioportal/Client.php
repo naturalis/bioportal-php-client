@@ -31,7 +31,6 @@
 			'taxon',
 			'multimedia',
 			'specimen',
-			'names',
 		    'geo',
 		];
 
@@ -94,19 +93,6 @@
 			return $this;
 		}
 		
-		/**
-		 * Set client to names
-		 *
-		 * Disables all previously set clients and resets to names
-		 * 
-		 * @return \nl\naturalis\bioportal\Client
-		 */
-		public function names () {
-			$this->_clients = [];
-			$this->_clients[] = 'names';
-			return $this;
-		}
-
  		/**
 		 * Set client to multimedia
 		 *
@@ -211,13 +197,9 @@
 		}
 		
         /**
-         * Perform a NBA querySpecial query using a QuerySpec object
+         * Perform a NBA groupByScientificName query using a QuerySpec object
          * 
-         * Identical to query(), but used only for ScientificNameGroup queries. 
-         * The NBA uses querySpecial to remove specimens not complying
-         * to the search terms from the result. If a regular query() is used, 
-         * complete ScientificNameGroup documents, including irrelevant results,
-         * are returned!
+         * Identical to query(), but used only for groupByScientificName queries. 
          * 
          * Please refer to NBA documentation for more information.
          *
@@ -229,27 +211,34 @@
 		 * (formatted as [client1 => json, client2 => json]).
 		 * @see \nl\naturalis\bioportal\Client::query()
 		 */
-		public function querySpecial ($usePost = false) {
+		public function groupByScientificName ($usePost = false) {
 			if (!$this->_querySpec || empty($this->_querySpec->getQuerySpec())) {
 				throw new \RuntimeException('Error: ScientificNameGroupQuerySpec empty or not set.');
 			}
-			// Set names client and reuse _bootstrap() to check for ScientificNameGroupQuerySpec
-			$this->names()->_bootstrap();
+			if (!($this->_querySpec instanceof ScientificNameGroupQuerySpec)) {
+				throw new \RuntimeException('Error: groupByScientificName requires a ' . 
+					'ScientificNameGroupQuerySpec instead of a QuerySpec!');
+			}
+			$this->_bootstrap();
 			$this->_channels = [];
-			if (!$usePost) {
-				$this->_channels[] =
-					[
-						'client' => 'names',
-						'url' => $this->_nbaUrl . 'names/querySpecial/' .
-							'?_querySpec=' . $this->_querySpec->getQuerySpec(true)
-					];
-			} else {
-				$this->_channels[] =
-					[
-						'client' => 'names',
-						'url' => $this->_nbaUrl . 'names/querySpecial/',
-						'post_fields' => $this->_querySpec->getQuerySpec(),
-					];
+			foreach ($this->_clients as $client) {
+				// Get
+				if (!$usePost) {
+					$this->_channels[] =
+						[
+							'client' => $client,
+							'url' => $this->_nbaUrl . $client . '/groupByScientificName/' .
+								'?_querySpec=' . $this->_querySpec->getQuerySpec(true)
+						];
+				// Post
+				} else {
+					$this->_channels[] =
+						[
+							'client' => $client,
+							'url' => $this->_nbaUrl . $client . '/groupByScientificName/?',
+							'post_fields' => $this->_querySpec->getQuerySpec(),
+						];
+				}
 			}
 			return $this->_performQueryAndReturnRemoteData();
 		}
@@ -713,7 +702,7 @@
 			}
 			$this->_reset();
 			foreach ($querySpecs as $key => $querySpec) {
-				if (!$querySpec instanceof QuerySpec) {
+				if (!($querySpec instanceof QuerySpec)) {
 					throw new \InvalidArgumentException('Error: ' .
 						'batch array should contain valid querySpec objects.');
 				}
@@ -742,11 +731,6 @@
  			$this->_bootstrap();
     		if (count($this->_clients) > 1) {
 				throw new \RuntimeException('Error: DwCA download accepts a single client only.');
-			}
-			// Only applicable for specimens and taxon
-    	    if (!in_array($this->_clients[0], ['specimen', 'taxon'])) {
-				throw new \RuntimeException('Error: DwCA download is available only for taxon ' . 
-					'and specimen services.');
 			}
 			// Set download directory if necessary
 			if (empty($this->_nbaDwcaDownloadDirectory)) {
@@ -802,11 +786,7 @@
 		    if (count($this->_clients) > 1) {
 				throw new \RuntimeException('Error: DwCA download accepts a single client only.');
 			}
-			// Only applicable for specimens and taxon
-    	    if (!in_array($this->_clients[0], ['specimen', 'taxon'])) {
-				throw new \RuntimeException('Error: DwCA download is available only for taxon ' . 
-					'and specimen services.');
-			}
+    	    $this->_bootstrapScientificNameGroupClients();
 			return $this->_getNativeNbaEndpoint($this->_clients[0] . '/dwca/getDataSetNames');
 		}
 		
@@ -1081,34 +1061,20 @@
 			return (int) $data->{'index.max_result_window'};
 		}
 		
-		
-		
 		/*
-		 * Check if clients have been set and if names service specific parameters
-		 * are not used for other service.
+		 * Check if clients have been set and if ScientificNameGroupQuerySpec is used
+		 * only for specimen and taxon
 		 */
 		private function _bootstrap () {
 			// Cannot proceed if no client has been set
 			if (empty($this->_clients)) {
 				throw new \RuntimeException('Error: client(s) not set.');
 			}
-			// Names service requires ScientificNameGroupQuerySpec
-			if (!empty($this->_querySpec) && 
-				!($this->_querySpec instanceof ScientificNameGroupQuerySpec) && 
-				in_array('names', $this->_clients)) {
-				throw new \RuntimeException('Error: names service requires ScientificNameGroupQuerySpec ' .
-					'instead of QuerySpec (offering dedicated methods for paginating and sorting).');
-			}
-			// ScientificNameGroupQuerySpec can only be used for names service
+			// ScientificNameGroupQuerySpec can only be used with specimen 
+			// and taxon service
 			if (!empty($this->_querySpec) && 
 				$this->_querySpec instanceof ScientificNameGroupQuerySpec) {
-				foreach ($this->_clients as $client) {
-					if ($client != 'names') {
-						throw new \RuntimeException('Error: ScientificNameGroupQuerySpec ' .
-							'used for ' . $client . ' service. ScientificNameGroupQuerySpec ' .
-							'is strictly used for names service.');
-					}
-				}
+    	    	$this->_checkScientificNameGroupClients();
 			}
 			return $this;
 		}
@@ -1236,4 +1202,14 @@
 			$this->_query();
 			return $this->_remoteData[0];
 		}
- 	}
+		
+		private function _checkScientificNameGroupClients () {
+			foreach ($this->_clients as $client) {
+	    	    if (!in_array($client, ['specimen', 'taxon'])) {
+					throw new \RuntimeException('Error: only taxon and specimen clients ' .
+						'can be used.');
+				}
+			}
+			return true;
+		}
+    }
