@@ -197,7 +197,7 @@
 		}
 		
         /**
-         * Perform a NBA groupByScientificName query using a QuerySpec object
+         * Perform a NBA groupByScientificName query using a ScientificNameGroupQuerySpec object
          * 
          * Identical to query(), but used only for groupByScientificName queries. 
          * 
@@ -762,7 +762,7 @@
 						$this->setNbaDwcaDownloadDirectory();
 					}
 					// Query url
-			   		$url  = $this->_nbaUrl . $this->_clients[0] . '/dwca/dataset/' . $set;
+			   		$url  = $this->_nbaUrl . $this->_clients[0] . '/dwca/getDataSet/' . $set;
 			   		// Save file to...
 			    	$fileName = $this->_nbaDwcaDownloadDirectory . $set . 
 			    		'-' . date("Ymd") . '.dwca.zip';
