@@ -54,6 +54,20 @@
 		    'ASC',
 		    'DESC',
 		];
+		
+		/**
+		 * Valid NBA groupSort directions
+		 *
+		 * Can be used to validate a given groupSort direction.
+		 *
+		 * @var array Valid NBA groupSort directions
+		 */
+		public static $_groupSortDirections = [
+			'COUNT_DESC', 
+			'COUNT_ASC', 
+			'NAME_ASC', 
+			'NAME_DESC',	
+		];
 
         /**
          * Validate integer input

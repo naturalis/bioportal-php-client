@@ -10,6 +10,8 @@
 		private $_specimensFrom;
 		private $_specimensSortFields;
 		private $_noTaxa = false;
+		private $_groupSort;
+		private $_groupFilter;
 
  	    public function __construct () {
             parent::__construct();
@@ -27,7 +29,7 @@
          * @throws \InvalidArgumentException In case $from is not a valid integer
          * @return \nl\naturalis\bioportal\QuerySpec
          */
-        public function setSpecimensFrom ($from) {
+        public function setSpecimensFrom ($from = 0) {
         	if (!$this->isInteger($from)) {
         		throw new \InvalidArgumentException('Error: setSpecimensFrom ' .
         			'parameter "' . $from . '" is not an integer.');
@@ -49,7 +51,7 @@
          * @throws \InvalidArgumentException In case $size is not a valid integer
          * @return \nl\naturalis\bioportal\QuerySpec
          */
-        public function setSpecimensSize ($size = false) {
+        public function setSpecimensSize ($size = 10) {
         	if (!$this->isInteger($size)) {
         		throw new \InvalidArgumentException('Error: setSpecimensSize ' .
         			'parameter "' . $size . '" is not an integer.');
@@ -82,7 +84,9 @@
         	return $this;
         }
         
-        /**
+       /**
+        * DEPRECATED! Ignored in groupByScientificName; use setGroupSort instead
+        * 
         * Set multiple sort criteria for specimens in groupByScientificName query
         * 
         * Sets sort based on array of sort criteria. Note that input differs:
@@ -130,7 +134,41 @@
         	}
          	return $this;
         }
-               
+        
+        /**
+         * Set sort criterium for specimens in groupByScientificName query
+         * 
+         * @param string $sort One of values in $_groupSortDirections
+         * @throws \InvalidArgumentException In case not in $_groupSortDirections
+         * @return \nl\naturalis\bioportal\ScientificNameGroupQuerySpec
+         */
+        public function setGroupSort ($sort = '') {
+        	$sort = strtoupper((string) $sort);
+        	if (!in_array($sort, $this::$_groupSortDirections)) {
+        		throw new \InvalidArgumentException('Error: groupSort ' .
+        			'parameter must be one of: ' . implode(', ', 
+        			$this::$_groupSortDirections) . '.');
+        	}
+        	$this->_groupSort = $sort;
+        	$this->_querySpec['groupSort'] = $this->_groupSort;
+        	return $this;
+        }
+            
+        /**
+         * 
+         * @param array $filter
+         * @return \nl\naturalis\bioportal\ScientificNameGroupQuerySpec
+         */
+        public function setGroupFilter ($filter = []) {
+        	// Automatically cast to array
+        	if (!is_array($filter)) {
+        		$filter = [(string) $filter];
+        	}
+        	$this->_groupFilter = $filter;
+        	$this->_querySpec['groupFilter'] = $this->_groupFilter;
+        	return $this;
+        }
+        
         /**
          * Get QuerySpec specimens from
          *
@@ -157,8 +195,8 @@
         public function getSpecimensSortFields () {
         	return json_encode($this->_specimensSortFields);
         }
-
-        /**
+        
+         /**
          * Get QuerySpec specimens return taxa in NBA response?
          *
          * @return bool
@@ -166,4 +204,23 @@
         public function isNoTaxa () {
         	return $this->_noTaxa;
         }
- 	}
+        
+        /**
+         * Get QuerySpec specimens groupSort
+         *
+         * @return string QuerySpec groupSort as json-encoded string
+         */
+        public function getGroupSort () {
+        	return json_encode($this->_groupSort);
+        }
+
+        /**
+         * Get QuerySpec specimens groupSort
+         *
+         * @return string QuerySpec groupSort as json-encoded string
+         */
+        public function getGroupFilter () {
+        	return json_encode($this->_groupFilter);
+        }
+        
+    }
