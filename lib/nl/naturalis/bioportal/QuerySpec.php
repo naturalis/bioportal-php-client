@@ -37,8 +37,7 @@
          * exclusive to ScientificNameGroupQuerySpec
          */
      	public function __call ($method, $arguments = false) {
-     		$currentClass = str_replace(__NAMESPACE__ . '\\', '', __CLASS__);
-     		if ($currentClass == 'QuerySpec' && 
+     		if ($this->getQuerySpecType() == 'QuerySpec' && 
      			in_array($method, $this->getExclusiveScientificNameGroupMethods())) {
 				throw new \BadMethodCallException('Error: method ' . $method . 
 					' can only be used with ScientificNameGroupQuerySpec!');
@@ -298,6 +297,10 @@
         		get_class_methods(new ScientificNameGroupQuerySpec()), 
         		get_class_methods(new QuerySpec())
         	);
+        }
+        
+        public function getQuerySpecType () {
+        	return str_replace(__NAMESPACE__ . '\\', '', get_class($this));
         }
        
         private function _bootstrapSort ($path, $direction) {
