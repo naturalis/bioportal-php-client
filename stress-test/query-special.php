@@ -12,8 +12,8 @@
 	require_once '../lib/nl/naturalis/bioportal/Loader.php';
 
 	// NBA server 
-	$nbaTestServer = 'http://145.136.240.125:32065/v2';
-
+	$nbaTestServer = 'http://145.136.240.125:31932/v2';
+	
 	// Running time (in mins); set to 0.1 for just one loop
     $runningTime = 120;
 	
@@ -26,20 +26,20 @@
     // Default ini settings can be modified if necessary
     $client
     	->setNbaUrl($nbaTestServer)
-    	->setNbaTimeout(30);
+    	->setNbaTimeout(60);
     
    	// We're interested in genera with at least two specimens
-   	$condition = new Condition('specimenCount', 'GT', 1);
+   	$condition = new Condition('identifications.scientificName.genusOrMonomial', 'NOT_EQUALS');
     $query = new ScientificNameGroupQuerySpec();
     $query
     	->addCondition($condition)
-    	->sortBy('specimenCount', 'desc')
-    	->setSize(1000);
-    // Get the genera only
+    	->groupSort('count_desc');
+ 
+   	// Get the genera only
     $data = $client
-    	->names()
+    	->specimen()
     	->setQuerySpec($query)
-    	->getDistinctValues('specimens.matchingIdentifications.scientificName.genusOrMonomial');
+    	->getDistinctValues('identifications.scientificName.genusOrMonomial');
     
     $genera = array_slice(json_decode($data, true), 0, $nrTaxa);
     
@@ -59,12 +59,12 @@
 	    	
 	    	$batch = [];
 		
-		    $condition = new Condition('specimens.matchingIdentifications.defaultClassification.genus', 
+		    $condition = new Condition('identifications.defaultClassification.genus', 
 		    	'LIKE', "{$genus}");
-		    $condition->setOr('specimens.matchingIdentifications.scientificName.genusOrMonomial', 
+		    $condition->setOr('identifications.scientificName.genusOrMonomial', 
 		    	'LIKE', "{$genus}");
 		    
-		 	// Names query requires a ScientificNameGroup
+		 	// Query requires a ScientificNameGroup
 		 	$query = new ScientificNameGroupQuerySpec();
 		 	
 		 	// Get 100 taxa; default sort order is by name	
@@ -73,18 +73,48 @@
 		 		->setLogicalOperator('and')
 		 		->setSize(100)
 		 		->setSpecimensSize(10)
-		 		->setSortFields([
-		 			['specimens.matchingIdentifications.scientificName.genusOrMonomial', 'asc'],
-		 			['specimens.matchingIdentifications.scientificName.specificEpithet', 'asc'],
-		 			['specimens.matchingIdentifications.scientificName.infraspecificEpithet', 'asc'],
-		 		]
-		 	);
+		 		->setGroupSort('name_asc')
+   				->setFields([
+		    		"gatheringEvent.siteCoordinates.geoShape",
+			        "identifications.defaultClassification.className",
+			        "collectorsFieldNumber",
+			        "gatheringEvent.gatheringPersons.fullName",
+			        "gatheringEvent.gatheringOrganizations.name",
+			        "identifications.defaultClassification.family",
+			        "identifications.defaultClassification.genus",
+			        "identifications.scientificName.genusOrMonomial",
+			        "identifications.defaultClassification.kingdom",
+			        "gatheringEvent.localityText",
+			        "identifications.defaultClassification.order",
+			        "identifications.defaultClassification.phylum",
+			        "unitID",
+			        "sourceSystem.code",
+			        "identifications.scientificName.fullScientificName",
+			        "identifications.defaultClassification.specificEpithet",
+			        "identifications.scientificName.specificEpithet",
+			        "identifications.defaultClassification.infraspecificEpithet",
+			        "identifications.scientificName.infraspecificEpithet",
+			        "identifications.defaultClassification.subgenus",
+			        "identifications.scientificName.subgenus",
+			        "identifications.vernacularNames.name",
+			        "identifications.typeStatus",
+			        "collectionType",
+			        "theme",
+			        "sourceSystemId",
+			        "recordBasis",
+			        "kindOfUnit",
+			        "preparationType",
+			        "assemblageID",
+			        "identifications.scientificName.scientificNameGroup"
+   				]);
 				
 		   	// Start loop timer
 		    $loopStart = microtime(true);
 		    
 		    // QuerySpecial is used to filter only matching results
-		 	$taxa = json_decode($client->names()->setQuerySpec($query)->querySpecial());
+		 	$taxa = json_decode(
+		 		$client->specimen()->setQuerySpec($query)->groupByScientificName()
+		 	);
 		 	
 	    	if (!isset($taxa->totalSize)) {
 		 		echo "ERROR! No taxa found for genus $genus\n";
@@ -95,8 +125,10 @@
 		    $totalTaxa = $taxa->totalSize;
 		    
 		 	// Get total number of specimens
-		    $condition = new Condition('identifications.defaultClassification.genus', 'LIKE', 'bombus');
-		    $condition->setOr('identifications.scientificName.genusOrMonomial', 'LIKE', 'bombus');
+		    $condition = new Condition('identifications.defaultClassification.genus', 
+		    	'LIKE', "{$genus}");
+		    $condition->setOr('identifications.scientificName.genusOrMonomial', 
+		    	'LIKE', "{$genus}");
 		    
 		 	// Regular QuerySpec, as we're querying specimen
 		 	$query = new QuerySpec();
@@ -108,32 +140,12 @@
 		 		->setSize(1)
 		 		->setConstantScore();
 		 	
-		 	// Regular query
+		 	// Get specimens
 		 	$data = json_decode($client->specimen()->setQuerySpec($query)->query());
 		 	
 		 	// Total number of specimens
 		 	$totalSpecimens = $data->totalSize;
-		 	
-		 	// Append specimen details to $taxa; use batch query
-			// First aggregate queries for all specimens
-			foreach ($taxa->resultSet as $row) {
-				foreach ($row->item->specimens as $item) {
-					$condition = new Condition('unitID', 'EQUALS', $item->unitID);
-					$query = new QuerySpec();
-					$query
-						->addCondition($condition)
-						->setConstantScore()
-						->setSize(1);
-					$batch[$item->unitID] = $query;
-				}
-			}
-			
-			// Fetch all specimens at once
-			if (isset($batch)) {
-				$data = $client->specimen()->batchQuery($batch);
-				$nrSpecimens = count($data);
-			}
-	
+		 		
 			// End NBA timer here
 			$loopEnd = round(microtime(true) - $loopStart, 2);
 			
@@ -141,7 +153,7 @@
 			$stats[] = $loopEnd;
 			
 			// Print query time
-			echo "$genus\t$nrTaxa taxa\t$nrSpecimens specimens in batch\t{$loopEnd}s\n";
+			echo "$genus\t$nrTaxa taxa\t{$loopEnd}s\n";
 	    }
 	
 		// Print statistics
