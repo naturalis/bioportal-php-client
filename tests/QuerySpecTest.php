@@ -249,7 +249,7 @@ class QuerySpecTest extends \PHPUnit_Framework_TestCase
 	}
 	
 	
-	public function testQuerySpecWithScientificNameGroupQuerySpecMethod () {
+	public function testQuerySpecWithGroupByScientificNameQuerySpecMethod () {
 		$query = new QuerySpec();
 		$e = new \stdClass();
 		try {

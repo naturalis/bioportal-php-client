@@ -1,10 +1,11 @@
 <?php
     namespace nl\naturalis\bioportal;
- 	
+	use nl\naturalis\bioportal\Filter as Filter;
+    
 	/*
 	 * Extends QuerySpec to provide dedicated methods for groupByScientificName query
 	 */
-    final class ScientificNameGroupQuerySpec extends QuerySpec
+    final class GroupByScientificNameQuerySpec extends QuerySpec
  	{
 		private $_specimensSize;
 		private $_specimensFrom;
@@ -140,7 +141,7 @@
          * 
          * @param string $sort One of values in $_groupSortDirections
          * @throws \InvalidArgumentException In case not in $_groupSortDirections
-         * @return \nl\naturalis\bioportal\ScientificNameGroupQuerySpec
+         * @return \nl\naturalis\bioportal\GroupByScientificNameQuerySpec
          */
         public function setGroupSort ($sort = '') {
         	$sort = strtoupper((string) $sort);
@@ -154,23 +155,25 @@
         	return $this;
         }
             
-        /**
-         * 
-         * @param array $filter
-         * @return \nl\naturalis\bioportal\ScientificNameGroupQuerySpec
-         */
-        public function setGroupFilter ($filter = []) {
-        	// Automatically cast to array
-        	if (!is_array($filter)) {
-        		$filter = [(string) $filter];
-        	}
-        	$this->_groupFilter = $filter;
+     	/**
+		 * Set groupFilter to GroupByScientificNameQuerySpec
+		 * 
+		 * @param object $filter
+		 * @throws \InvalidArgumentException In case of invalid Filter object
+		 * @return \nl\naturalis\bioportal\GroupByScientificNameQuerySpec
+		 */
+        public function setGroupFilter ($filter = false) {
+            if (!($filter instanceof Filter)) {
+                throw new \InvalidArgumentException('Error: invalid filter, ' .
+                	'should be created using the Filter class.');
+            }
+        	$this->_groupFilter = json_decode($filter->getFilter());
         	$this->_querySpec['groupFilter'] = $this->_groupFilter;
         	return $this;
         }
         
         /**
-         * Get QuerySpec specimens from
+         * Get GroupByScientificNameQuerySpec specimens from
          *
          * @return integer
          */
@@ -179,7 +182,7 @@
         }
         
         /**
-         * Get QuerySpec specimens size
+         * Get GroupByScientificNameQuerySpec specimens size
          *
          * @return integer
          */
@@ -188,7 +191,7 @@
         }
         
         /**
-         * Get QuerySpec specimens sort fields
+         * Get GroupByScientificNameQuerySpec specimens sort fields
          *
          * @return string QuerySpec specimen sort fields as json-encoded string
          */
@@ -197,7 +200,7 @@
         }
         
          /**
-         * Get QuerySpec specimens return taxa in NBA response?
+         * Get GroupByScientificNameQuerySpec specimens return taxa in NBA response?
          *
          * @return bool
          */
@@ -206,7 +209,7 @@
         }
         
         /**
-         * Get QuerySpec specimens groupSort
+         * Get GroupByScientificNameQuerySpec specimens groupSort
          *
          * @return string QuerySpec groupSort as json-encoded string
          */
@@ -215,9 +218,9 @@
         }
 
         /**
-         * Get QuerySpec specimens groupSort
+         * Get GroupByScientificNameQuerySpec specimens groupFilter
          *
-         * @return string QuerySpec groupSort as json-encoded string
+         * @return string QuerySpec groupFilter as json-encoded string
          */
         public function getGroupFilter () {
         	return json_encode($this->_groupFilter);

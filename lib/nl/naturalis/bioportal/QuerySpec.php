@@ -29,18 +29,18 @@
          * Is the correct method called?
          * 
          * Verifies that QuerySpec is not called with methods reserved to
-         * ScientificNameGroupQuerySpec.
+         * GroupByScientificNameQuerySpec.
          * 
          * @param string $method Method name
          * @param string|array $arguments (Irrelevant in this case)
          * @throws \BadMethodCallException In case QuertSpec is called with method 
-         * exclusive to ScientificNameGroupQuerySpec
+         * exclusive to GroupByScientificNameQuerySpec
          */
      	public function __call ($method, $arguments = false) {
      		if ($this->getQuerySpecType() == 'QuerySpec' && 
      			in_array($method, $this->getExclusiveScientificNameGroupMethods())) {
 				throw new \BadMethodCallException('Error: method ' . $method . 
-					' can only be used with ScientificNameGroupQuerySpec!');
+					' can only be used with GroupByScientificNameQuerySpec!');
      		}
      	}       
         
@@ -288,13 +288,13 @@
         }
              
         /**
-         * Get methods that can only be used with ScientificNameGroupQuerySpec
+         * Get methods that can only be used with GroupByScientificNameQuerySpec
          * 
-         * @return array Exclusive methods for ScientificNameGroupQuerySpec
+         * @return array Exclusive methods for GroupByScientificNameQuerySpec
          */
         public function getExclusiveScientificNameGroupMethods () {
         	return array_diff(
-        		get_class_methods(new ScientificNameGroupQuerySpec()), 
+        		get_class_methods(new GroupByScientificNameQuerySpec()), 
         		get_class_methods(new QuerySpec())
         	);
         }

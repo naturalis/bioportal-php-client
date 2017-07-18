@@ -1,7 +1,7 @@
 <?php
 	namespace nl\naturalis\bioportal;
 	use nl\naturalis\bioportal\QuerySpec as QuerySpec;
-	use nl\naturalis\bioportal\ScientificNameGroupQuerySpec as ScientificNameGroupQuerySpec;
+	use nl\naturalis\bioportal\GroupByScientificNameQuerySpec as GroupByScientificNameQuerySpec;
 	use JMS\Serializer\Tests\Fixtures\GetSetObject;
 	use phpDocumentor\Plugin\Core\Descriptor\Validator\Constraints\Functions\IsArgumentInDocBlock;
 	use Symfony\Component\Finder\Iterator\SizeRangeFilterIterator;
@@ -141,7 +141,7 @@
 		public function setQuerySpec ($querySpec) {
 		    if (!$querySpec || !($querySpec instanceof QuerySpec)) {
                 throw new \InvalidArgumentException('Error: invalid querySpec, ' .
-                	'should be created using the QuerySpec or ScientificNameGroupQuerySpec class.');
+                	'should be created using the QuerySpec or GroupByScientificNameQuerySpec class.');
 		    }
             $this->_querySpec = $querySpec;
             return $this;
@@ -197,14 +197,14 @@
 		}
 		
         /**
-         * Perform a NBA groupByScientificName query using a ScientificNameGroupQuerySpec object
+         * Perform a NBA groupByScientificName query using a GroupByScientificNameQuerySpec object
          * 
          * Identical to query(), but used only for groupByScientificName queries. 
          * 
          * Please refer to NBA documentation for more information.
          *
 		 * @param string $usePost Use post instead of get (which is the default)
-		 * @throws \RuntimeException In case ScientificNameGroupQuerySpec is not set or 
+		 * @throws \RuntimeException In case GroupByScientificNameQuerySpec is not set or 
 		 * a regular QuerySpec is used.
 		 * @return string|string[] NBA response as json if a single client has been
 		 * set, or as an array of responses in case of multiple clients 
@@ -213,11 +213,11 @@
 		 */
 		public function groupByScientificName ($usePost = false) {
 			if (!$this->_querySpec || empty($this->_querySpec->getQuerySpec())) {
-				throw new \RuntimeException('Error: ScientificNameGroupQuerySpec empty or not set.');
+				throw new \RuntimeException('Error: GroupByScientificNameQuerySpec empty or not set.');
 			}
-			if (!($this->_querySpec instanceof ScientificNameGroupQuerySpec)) {
+			if (!($this->_querySpec instanceof GroupByScientificNameQuerySpec)) {
 				throw new \RuntimeException('Error: groupByScientificName requires a ' . 
-					'ScientificNameGroupQuerySpec instead of a QuerySpec!');
+					'GroupByScientificNameQuerySpec instead of a QuerySpec!');
 			}
 			$this->_bootstrap();
 			$this->_channels = [];
@@ -1062,7 +1062,7 @@
 		}
 		
 		/*
-		 * Check if clients have been set and if ScientificNameGroupQuerySpec is used
+		 * Check if clients have been set and if GroupByScientificNameQuerySpec is used
 		 * only for specimen and taxon
 		 */
 		private function _bootstrap () {
@@ -1070,10 +1070,10 @@
 			if (empty($this->_clients)) {
 				throw new \RuntimeException('Error: client(s) not set.');
 			}
-			// ScientificNameGroupQuerySpec can only be used with specimen 
+			// GroupByScientificNameQuerySpec can only be used with specimen 
 			// and taxon service
 			if (!empty($this->_querySpec) && 
-				$this->_querySpec instanceof ScientificNameGroupQuerySpec) {
+				$this->_querySpec instanceof GroupByScientificNameQuerySpec) {
     	    	$this->_checkScientificNameGroupClients();
 			}
 			return $this;

@@ -30,7 +30,7 @@
     
    	// We're interested in genera with at least two specimens
    	$condition = new Condition('identifications.scientificName.genusOrMonomial', 'NOT_EQUALS');
-    $query = new ScientificNameGroupQuerySpec();
+    $query = new GroupByScientificNameQuerySpec();
     $query
     	->addCondition($condition)
     	->groupSort('count_desc');
@@ -65,7 +65,7 @@
 		    	'LIKE', "{$genus}");
 		    
 		 	// Query requires a ScientificNameGroup
-		 	$query = new ScientificNameGroupQuerySpec();
+		 	$query = new GroupByScientificNameQuerySpec();
 		 	
 		 	// Get 100 taxa; default sort order is by name	
 		 	$query

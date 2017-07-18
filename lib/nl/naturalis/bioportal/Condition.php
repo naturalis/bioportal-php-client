@@ -222,7 +222,7 @@
 		/**
 		 * Get current complete condition
 		 * 
-		 * @return string Condition as json-formatted string
+		 * @return string Condition as json-encoded string
 		 */
  	    public function getCondition () {
  	    	return json_encode($this->_condition);
@@ -231,7 +231,7 @@
   	    /**
   	     * Get AND section of condition
   	     *
-  	     * @return string Condition as json-formatted string
+  	     * @return string Condition as json-encoded string
   	     */
   	     public function getAnd () {
  	    	if (isset($this->_condition['and'])) {
@@ -243,7 +243,7 @@
  	    /**
  	     * Get OR section of condition
  	     *
- 	     * @return string Condition as json-formatted string
+ 	     * @return string Condition as json-encoded string
  	     */
  	    public function getOr () {
  	    	if (isset($this->_condition['or'])) {

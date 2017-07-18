@@ -21,8 +21,8 @@
     $condition = new Condition('specimens.matchingIdentifications.defaultClassification.genus', 'LIKE', 'taraxacum');
     $condition->setOr('specimens.matchingIdentifications.scientificName.genusOrMonomial', 'LIKE', 'taraxacum');
 
-    // A ScientificNameGroupQuerySpec is used for the names service!
-    $query = new ScientificNameGroupQuerySpec();
+    // A GroupByScientificNameQuerySpec is used for the names service!
+    $query = new GroupByScientificNameQuerySpec();
     $query
     	->addCondition($condition)
 	    ->setFrom(0) // From and size are used to navigate through result sets

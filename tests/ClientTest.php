@@ -2,7 +2,7 @@
 namespace nl\naturalis\bioportal\Test;
 use nl\naturalis\bioportal\Condition as Condition;
 use nl\naturalis\bioportal\QuerySpec as QuerySpec;
-use nl\naturalis\bioportal\ScientificNameGroupQuerySpec as ScientificNameGroupQuerySpec;
+use nl\naturalis\bioportal\GroupByScientificNameQuerySpec as GroupByScientificNameQuerySpec;
 use nl\naturalis\bioportal\Client as Client;
 
 class ClientTest extends \PHPUnit_Framework_TestCase
