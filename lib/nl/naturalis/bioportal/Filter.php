@@ -4,10 +4,10 @@
     
  	final class Filter extends Common
  	{
-        private $acceptRegexp;
-        private $rejectRegexp;
-        private $acceptValues;
-        private $rejectValues;
+        private $_acceptRegexp;
+        private $_rejectRegexp;
+        private $_acceptValues;
+        private $_rejectValues;
        
         
         public function construct () {
@@ -28,7 +28,7 @@
             if (!is_array($values)) {
             	$values = [$values];
             }
-  	    	$this->acceptValues = $values;
+  	    	$this->_acceptValues = $values;
  	    	return $this;
         }
  
@@ -46,7 +46,7 @@
             if (!is_array($values)) {
             	$values = [$values];
             }
-            $this->rejectValues = $values;
+            $this->_rejectValues = $values;
  	    	return $this;
  	    }
 
@@ -62,7 +62,7 @@
                 throw new \InvalidArgumentException('Error: filter accept regex is empty ' . 
                 	' or incorrectly set.');
             }
- 	    	$this->acceptRegexp = $regex;
+ 	    	$this->_acceptRegexp = $regex;
  	    	return $this;
  	    }
  
@@ -78,12 +78,12 @@
                 throw new \InvalidArgumentException('Error: filter reject regex is empty ' . 
                 	' or incorrectly set.');
  	        }
- 	    	$this->rejectRegexp = $regex;
+ 	    	$this->_rejectRegexp = $regex;
  	    	return $this;
  	    }
  	    
  	    /**
- 	     * Get "clean" Filter object with just the filters that have been set 
+ 	     * Get "clean/anonymous" Filter object with just the filters that have been set 
  	     * 
  	     * @return string Filter as json-encoded string
  	     */
@@ -92,9 +92,10 @@
 	        $properties = $reflection->getProperties(\ReflectionProperty::IS_PRIVATE);
 	        $filter = new \stdClass();
 	 	    foreach ($properties as $property) {
-	 	    	$method = 'get' . ucfirst($property->getName());
+	 	    	$name = str_replace('_', '', $property->getName());
+	 	    	$method = 'get' . ucfirst($name);
 	 	    	if (!empty(json_decode($this->{$method}(), true))) {
-	 	    		$filter->{$property->getName()} = json_decode($this->{$method}(), true);
+	 	    		$filter->{$name} = json_decode($this->{$method}(), true);
 	 	    	}
 	 	    }
 	 	    return json_encode($filter);
@@ -106,7 +107,7 @@
          * @return string Accept values as json-encoded string
          */
  	    public function getAcceptValues () {
-        	return json_encode($this->acceptValues);
+        	return json_encode($this->_acceptValues);
         }
  
         /**
@@ -115,7 +116,7 @@
          * @return string Accept values as json-encoded string
          */
         public function getRejectValues () {
-        	return json_encode($this->rejectValues);
+        	return json_encode($this->_rejectValues);
         }
 
         /**
@@ -124,7 +125,7 @@
          * @return string Regular expression as json-encoded string
          */
         public function getAcceptRegexp () {
-        	return json_encode($this->acceptRegexp);
+        	return json_encode($this->_acceptRegexp);
         }
  
         /**
@@ -133,7 +134,7 @@
          * @return string Regular expression as json-encoded string
          */
         public function getRejectRegexp () {
-        	return json_encode($this->rejectRegexp);
+        	return json_encode($this->_rejectRegexp);
         }
         
  	}
