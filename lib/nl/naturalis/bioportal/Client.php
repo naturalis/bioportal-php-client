@@ -777,12 +777,12 @@
 					throw new \InvalidArgumentException('Error: ' .
 						"no querySpec provided for $client in multiClientBatchQuery.");
 				}
-				try {
+				if (!is_class($q['querySpec']) || !method_exists($q['querySpec'], 'getQuerySpecType')) {
 					$className =  __NAMESPACE__ . '\\' . $q['querySpec']->getQuerySpecType();
 					$class = new $className();
 					$checkClassName = __NAMESPACE__ . '\\' . $this::$nbaQueryTypes[$q['queryType']];
 					$checkClass = new $checkClassName();
-				} catch (\Exception $e) {
+				} else  {
 					throw new \InvalidArgumentException('Error: ' .
 						"invalid querySpec provided for $client in multiClientBatchQuery.");
 				}
