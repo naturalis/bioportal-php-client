@@ -23,8 +23,6 @@
 		/**
 		 * NBA clients
 		 * 
-		 * Currently available clients.
-		 * 
 		 * @var array
 		 */
 		public static $nbaClients = [
@@ -33,6 +31,19 @@
 			'specimen',
 		    'geo',
 		];
+		
+		/**
+		 * NBA query types 
+		 * 
+		 * Query types plus the required QuerySpec type
+		 * 
+		 * @var array
+		 */
+		public static $nbaQueryTypes = [
+			'query' => 'QuerySpec',
+			'groupByScientificName' => 'GroupByScientificNameQuerySpec',
+		];
+		
 
 		/**
 		 * Constructor
@@ -671,8 +682,8 @@
 			return $this->_performQueryAndReturnRemoteData();
 		}
 		
-		/**
-		 * Perform NBA queries in batch
+    	/**
+		 * Perform NBA queries in batch for a single client
 		 * 
 		 * Takes an array of QuerySpecs and simultaneously queries the NBA. The
 		 * maximum number of queries is capped by $_maxBatchSize. The more
@@ -687,29 +698,103 @@
 		 * @return string[] NBA response as an array of responses 
 		 * (formatted as [key1 => json, key2 => json]).
 		 */
-		public function batchQuery ($querySpecs = []) {
+		public function singleClientBatchQuery ($querySpecs = []) {
 			if (empty($this->_clients)) {
-				throw new \RuntimeException('Error: batch client not set.');
+				throw new \RuntimeException('Error: singleClientBatchQuery client not set.');
 			}
 			if (count($this->_clients) > 1) {
-				throw new \RuntimeException('Error: batch accepts a single client only.');
+				throw new \RuntimeException('Error: singleClientBatchQuery accepts ' .
+					'a single client only.');
 			}
 			// Warn for batch size limit if test runs successfully
 			// This is merely an indication -- successs not guaranteed!
 			if (count($querySpecs) > $this->getMaxBatchSize()) {
-				throw new \RangeException('Error: batch size too large, maximum exceeds ' . 
-					$this->getMaxBatchSize() . '.');
+				throw new \RangeException('Error: singleClientBatchQuery size too large, ' . 
+					'maximum exceeds ' . $this->getMaxBatchSize() . '.');
 			}
 			$this->_reset();
 			foreach ($querySpecs as $key => $querySpec) {
 				if (!($querySpec instanceof QuerySpec)) {
 					throw new \InvalidArgumentException('Error: ' .
-						'batch array should contain valid querySpec objects.');
+						'singleClientBatchQuery should contain valid querySpec objects.');
 				}
 				$this->_channels[$key] =
 					[
 						'url' => $this->_nbaUrl . $this->_clients[0] . '/query/' .
 							'?_querySpec=' . $querySpec->getQuerySpec(true)
+					];
+			}
+			$this->_query();
+			return $this->_remoteData;
+		}
+		
+		/**
+		 * Perform NBA queries in batch for multiple clients
+		 * 
+		 * Takes an array of QuerySpecs and simultaneously queries the NBA. 
+		 * This batch service performs a maximum of four simultaneous queries 
+		 * (one for each client). To query up to $_maxBatchSize (default = 1000) queries, 
+		 * use singleClientBatchQuery.
+		 * 
+		 * @example Input array is:
+		 * [client1 => 
+		 * 	  [
+		 *    	'queryType' => queryType1,
+		 *    	'querySpec' => querySpec1
+		 *    ]
+		 * ], 
+		 * [client2 => 
+		 * 	  [
+		 *    	('queryType' => queryType2,)
+		 *    	'querySpec' => querySpec2
+		 *    ]
+		 * ], where
+		 * _client_ *must* be value in $CLient::$nbaCLients; 
+		 * _queryType_ *must* be in key in $Client::$nbaQueryTypes;
+		 * _querySpec_ *must* match associated value for key in $Client::$nbaQueryTypes
+		 * @param array $querySpecs Array of QuerySpec objects with client(s) as key
+		 * @throws \RuntimeException In case multiple clients are provided
+		 * @throws \RangeException In case batch size exceeds $_maxBatchSize
+		 * @throws \InvalidArgumentException In case of invalid QuerySpec object
+		 * @return string[] NBA response as an array of responses 
+		 * (formatted as [client1 => json, client2 => json]).
+		 * @see \nl\naturalis\bioportal\Client::singleClientBatchQuery()
+		 */
+		public function multiClientBatchQuery ($querySpecs = []) {
+			$this->_clients = [];
+			$this->_reset();
+			foreach ($querySpecs as $client => $q) {
+				if (!in_array($client, $this::$nbaClients)) {
+					throw new \InvalidArgumentException('Error: ' .
+						'invalid client set for multiClientBatchQuery.');
+				}
+				if (!isset($q['queryType']) || 
+					!array_key_exists($q['queryType'], $this::$nbaQueryTypes)) {
+					throw new \InvalidArgumentException('Error: ' .
+						"no or valid queryType provided for $client in multiClientBatchQuery.");
+				}
+				if (!isset($q['querySpec'])) {
+					throw new \InvalidArgumentException('Error: ' .
+						"no querySpec provided for $client in multiClientBatchQuery.");
+				}
+				try {
+					$className =  __NAMESPACE__ . '\\' . $q['querySpec']->getQuerySpecType();
+					$class = new $className();
+					$checkClassName = __NAMESPACE__ . '\\' . $this::$nbaQueryTypes[$q['queryType']];
+					$checkClass = new $checkClassName();
+				} catch (\Exception $e) {
+					throw new \InvalidArgumentException('Error: ' .
+						"invalid querySpec provided for $client in multiClientBatchQuery.");
+				}
+				if (get_class($class) !== get_class($checkClass)) {
+					throw new \InvalidArgumentException('Error: ' .
+						"$client multiClientBatchQuery QuerySpec should match query type " .
+						$this::$nbaQueryTypes[$q['queryType']] . ".");
+				}
+				$this->_channels[$client] =
+					[
+						'url' => $this->_nbaUrl . $client . '/' . $q['queryType'] . '/' .
+							'?_querySpec=' . $q['querySpec']->getQuerySpec(true)
 					];
 			}
 			$this->_query();

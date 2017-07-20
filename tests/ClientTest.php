@@ -84,7 +84,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 	/*
 	 * Batch query
 	 */
-	public function testBatchQuerySizeExceedsMaxBatchSize () {
+	public function testSingleClientBatchQuerySizeExceedsMaxBatchSize () {
 		$query = new QuerySpec();
 		$client = new Client();
 		for ($i = 0; $i < $client->getMaxBatchSize() + 1; $i++) {
@@ -92,7 +92,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 		}
 		$e = new \stdClass();
 		try {
-			$result = $client->taxon()->batchQuery($batch);
+			$result = $client->taxon()->singleClientBatchQuery($batch);
 		} catch (\Exception $e) {}
 		$this->assertEquals('RangeException', get_class($e));
 	}
