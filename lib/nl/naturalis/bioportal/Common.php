@@ -29,6 +29,10 @@
             'NOT_LIKE',
 		    'MATCHES',
 		    'NOT_MATCHES',
+			'STARTS_WITH',
+			'NOT_STARTS_WITH',
+			'STARTS_WITH_IC',
+			'NOT_STARTS_WITH_IC'
 		];
 
 		/**
