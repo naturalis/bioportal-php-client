@@ -749,7 +749,7 @@
 		 *    	'querySpec' => querySpec2
 		 *    ]
 		 * ], where
-		 * _client_ *must* be value in $CLient::$nbaCLients; 
+		 * _client_ *must* be value in $Client::$nbaCLients; 
 		 * _queryType_ *must* be in key in $Client::$nbaQueryTypes;
 		 * _querySpec_ *must* match associated value for key in $Client::$nbaQueryTypes
 		 * @param array $querySpecs Array of QuerySpec objects with client(s) as key
@@ -777,7 +777,7 @@
 					throw new \InvalidArgumentException('Error: ' .
 						"no querySpec provided for $client in multiClientBatchQuery.");
 				}
-				if (!is_class($q['querySpec']) || !method_exists($q['querySpec'], 'getQuerySpecType')) {
+				if ($q['querySpec'] instanceof QuerySpec) {
 					$className =  __NAMESPACE__ . '\\' . $q['querySpec']->getQuerySpecType();
 					$class = new $className();
 					$checkClassName = __NAMESPACE__ . '\\' . $this::$nbaQueryTypes[$q['queryType']];
