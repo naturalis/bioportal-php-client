@@ -227,9 +227,9 @@ class QuerySpecTest extends \PHPUnit_Framework_TestCase
 		$expected = '{"conditions":[{"field":"sourceSystem.name","operator":"EQUALS",' . 
 			'"value":"Naturalis - Nederlands Soortenregister"},{"field":"defaultClassification.genus",' . 
 			'"operator":"EQUALS_IC","value":"larus","or":[{"field":"acceptedName.genusOrMonomial",' . 
-			'"operator":"LIKE","value":"larus"}]}],"from":5,"logicalOperator":"AND","size":25}';
+			'"operator":"CONTAINS","value":"larus"}]}],"from":5,"logicalOperator":"AND","size":25}';
 		$c = new Condition('defaultClassification.genus', 'EQUALS_IC', 'larus');
-		$c->setOr('acceptedName.genusOrMonomial', 'LIKE', 'larus');		
+		$c->setOr('acceptedName.genusOrMonomial', 'CONTAINS', 'larus');		
 		$d = new Condition('sourceSystem.name', 'EQUALS', 'Naturalis - Nederlands Soortenregister');
 		$query = new QuerySpec();
 		$query

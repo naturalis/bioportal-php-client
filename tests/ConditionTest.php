@@ -195,7 +195,7 @@ class ConditionTest extends \PHPUnit_Framework_TestCase
 	public function testConditionWithIncorrectlyConstructedEmptyValue () {
 		$e = new \stdClass();
 		try {
-			$condition = new Condition('acceptedName.genusOrMonomial', 'NOT_LIKE');
+			$condition = new Condition('acceptedName.genusOrMonomial', 'NOT_CONTAINS');
 		} catch (\Exception $e) {}
 		$this->assertEquals('InvalidArgumentException', get_class($e));
 	}
@@ -210,7 +210,7 @@ class ConditionTest extends \PHPUnit_Framework_TestCase
 	public function testSetIncorrectBoost () {
 		$e = new \stdClass();
 		try {
-			$condition = new Condition('acceptedName.genusOrMonomial', 'NOT_LIKE');
+			$condition = new Condition('acceptedName.genusOrMonomial', 'NOT_CONTAINS');
 			$condition->setBoost('a lot');
 		} catch (\Exception $e) {}
 		$this->assertEquals('InvalidArgumentException', get_class($e));

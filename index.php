@@ -15,7 +15,7 @@
     // Cannot replicate ->and and ->or methods of Java client
     // as these are reserved terms; use ->setAnd and ->setOr instead
     $condition
-	  	->setAnd('acceptedName.specificEpithet', 'LIKE', 'fus');
+	  	->setAnd('acceptedName.specificEpithet', 'CONTAINS', 'fus');
     
 	// Second condition
 	$secondCondition = new Condition('sourceSystem.code', 'EQUALS', 'COL');

@@ -18,8 +18,8 @@
 		->setNbaTimeout(10);
     
     // Query names for Taraxacum
-    $condition = new Condition('specimens.matchingIdentifications.defaultClassification.genus', 'LIKE', 'taraxacum');
-    $condition->setOr('specimens.matchingIdentifications.scientificName.genusOrMonomial', 'LIKE', 'taraxacum');
+    $condition = new Condition('specimens.matchingIdentifications.defaultClassification.genus', 'CONTAINS', 'taraxacum');
+    $condition->setOr('specimens.matchingIdentifications.scientificName.genusOrMonomial', 'CONTAINS', 'taraxacum');
 
     // A GroupByScientificNameQuerySpec is used for the names service!
     $query = new GroupByScientificNameQuerySpec();

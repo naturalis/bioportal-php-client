@@ -391,7 +391,7 @@
 		/**
 		 * Checks if a operator is allowed for an NBA field
 		 * 
-		 * Useful to check if e.g. LIKE operator can be used for a specific field.
+		 * Useful to check if e.g. CONTAINS operator can be used for a specific field.
 		 * Only works with a single service.
 		 * 
 		 * @param string $field NBA field
@@ -1082,43 +1082,43 @@
 		
 		
 		/**
-		 * Returns the Elastic "min_gram" setting of the LIKE analyser
+		 * Returns the Elastic "min_gram" setting of the CONTAINS analyser
 		 * 
-		 * This setting can be used in dynamic applications to determine if the LIKE
+		 * This setting can be used in dynamic applications to determine if the CONTAINS
 		 * operator can be used in a condition. If the number of characters in a search term 
-		 * is smaller than this setting and a LIKE operator is used, 
+		 * is smaller than this setting and a CONTAINS operator is used, 
 		 * the NBA will return an error.
 		 * 
 		 * @throws \RuntimeException If setting does not exist
-		 * @return int Minimum term length for LIKE condition
+		 * @return int Minimum term length for CONTAINS condition
 		 */
-		public function getOperatorLikeMinTermLength () {
+		public function getOperatorContainsMinTermLength () {
 			$data = json_decode($this->_getNativeNbaEndpoint('metadata/getSettings'));
-			if (!isset($data->{'operator.LIKE.min_term_length'})) {
-				throw new \RuntimeException('Error: cannot fetch operator.LIKE.min_term_length.');
+			if (!isset($data->{'operator.CONTAINS.min_term_length'})) {
+				throw new \RuntimeException('Error: cannot fetch operator.CONTAINS.min_term_length.');
 			}
-			return (int) $data->{'operator.LIKE.min_term_length'};
+			return (int) $data->{'operator.CONTAINS.min_term_length'};
 		}
 		
     		
 		
 		/**
-		 * Returns the Elastic "max_gram" setting of the LIKE analyser
+		 * Returns the Elastic "max_gram" setting of the CONTAINS analyser
 		 * 
-		 * This setting can be used in dynamic applications to determine if the LIKE
+		 * This setting can be used in dynamic applications to determine if the CONTAINS
 		 * operator can be used in a condition. If the number of characters in a search term 
-		 * is larger than this setting and a LIKE operator is used, 
+		 * is larger than this setting and a CONTAINS operator is used, 
 		 * the NBA will return an error. 
 		 * 
 		 * @throws \RuntimeException If setting does not exist
-		 * @return int Maximum term length for LIKE condition
+		 * @return int Maximum term length for CONTAINS condition
 		 */
-		public function getOperatorLikeMaxTermLength () {
+		public function getOperatorContainsMaxTermLength () {
 			$data = json_decode($this->_getNativeNbaEndpoint('metadata/getSettings'));
-			if (!isset($data->{'operator.LIKE.max_term_length'})) {
-				throw new \RuntimeException('Error: cannot fetch operator.LIKE.max_term_length.');
+			if (!isset($data->{'operator.CONTAINS.max_term_length'})) {
+				throw new \RuntimeException('Error: cannot fetch operator.CONTAINS.max_term_length.');
 			}
-			return (int) $data->{'operator.LIKE.max_term_length'};
+			return (int) $data->{'operator.CONTAINS.max_term_length'};
 		}
 		
     	

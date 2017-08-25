@@ -60,9 +60,9 @@
 	    	$batch = [];
 		
 		    $condition = new Condition('identifications.defaultClassification.genus', 
-		    	'LIKE', "{$genus}");
+		    	'CONTAINS', "{$genus}");
 		    $condition->setOr('identifications.scientificName.genusOrMonomial', 
-		    	'LIKE', "{$genus}");
+		    	'CONTAINS', "{$genus}");
 		    
 		 	// Query requires a ScientificNameGroup
 		 	$query = new GroupByScientificNameQuerySpec();
@@ -126,9 +126,9 @@
 		    
 		 	// Get total number of specimens
 		    $condition = new Condition('identifications.defaultClassification.genus', 
-		    	'LIKE', "{$genus}");
+		    	'CONTAINS', "{$genus}");
 		    $condition->setOr('identifications.scientificName.genusOrMonomial', 
-		    	'LIKE', "{$genus}");
+		    	'CONTAINS', "{$genus}");
 		    
 		 	// Regular QuerySpec, as we're querying specimen
 		 	$query = new QuerySpec();
