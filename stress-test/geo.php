@@ -11,7 +11,7 @@
 	require_once '../lib/nl/naturalis/bioportal/Loader.php';
 
 	// NBA server 
-	$nbaTestServer = 'http://145.136.240.125:32065/v2';
+	$nbaTestServer = 'http://145.136.242.167:8080/v2';
 
 	// Running time (in mins); set to 0.1 for just one loop
     $runningTime = 120;
@@ -27,7 +27,7 @@
     // Use the shorthand method to fetch all predefined geo areas
     $areas = json_decode($client->getGeoAreas());
     if (empty($areas)) {
-    	die('No areas found?!');
+    	die("No areas found?!\n\n");
     }
 
     $scriptStart = microtime(true);
@@ -59,7 +59,7 @@
 		    }
 		    
 		    // Do the batch query
-		    $result = $client->specimen()->batchQuery($batch);
+		    $result = $client->specimen()->singleClientBatchQuery($batch);
 		    
 		    // Print the request time
 		    echo 'Query took ' . round((microtime(true) - $start), 2) . " seconds\n\n";

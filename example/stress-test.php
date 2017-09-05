@@ -45,7 +45,7 @@
 	    }
 	    
 	    // Do the batch query
-	    $result = $client->specimen()->batchQuery($batch);
+	    $result = $client->specimen()->singleClientBatchQuery($batch);
 	    
 	    // Print the request time
 	    echo 'Query took ' . round((microtime(true) - $start), 2) . " seconds\n\n";
