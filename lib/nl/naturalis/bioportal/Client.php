@@ -1198,7 +1198,8 @@
 			$mh = curl_multi_init();
 			foreach ($this->_channels as $key => $channel) {
 				$ch[$key] = curl_init();
-				curl_setopt($ch[$key], CURLOPT_URL, $this->_channels[$key]['url']);
+				curl_setopt($ch[$key], CURLOPT_URL, 
+					str_replace(' ', '%20', $this->_channels[$key]['url']));
                 curl_setopt($ch[$key], CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch[$key], CURLOPT_HEADER, false);
                 // Handle post request if set
