@@ -1080,7 +1080,6 @@
 			return $this->_nbaDwcaDownloadDirectory;
 		}
 		
-		
 		/**
 		 * Returns the Elastic "min_gram" setting of the CONTAINS analyser
 		 * 
@@ -1094,13 +1093,11 @@
 		 */
 		public function getOperatorContainsMinTermLength () {
 			$data = json_decode($this->_getNativeNbaEndpoint('metadata/getSettings'));
-			if (!isset($data->{'operator.CONTAINS.min_term_length'})) {
-				throw new \RuntimeException('Error: cannot fetch operator.CONTAINS.min_term_length.');
+			if (!isset($data->{'operator.contains.min_term_length'})) {
+				throw new \RuntimeException('Error: cannot fetch operator.contains.min_term_length.');
 			}
-			return (int) $data->{'operator.CONTAINS.min_term_length'};
+			return (int) $data->{'operator.contains.min_term_length'};
 		}
-		
-    		
 		
 		/**
 		 * Returns the Elastic "max_gram" setting of the CONTAINS analyser
@@ -1115,12 +1112,11 @@
 		 */
 		public function getOperatorContainsMaxTermLength () {
 			$data = json_decode($this->_getNativeNbaEndpoint('metadata/getSettings'));
-			if (!isset($data->{'operator.CONTAINS.max_term_length'})) {
-				throw new \RuntimeException('Error: cannot fetch operator.CONTAINS.max_term_length.');
+			if (!isset($data->{'operator.contains.max_term_length'})) {
+				throw new \RuntimeException('Error: cannot fetch operator.contains.max_term_length.');
 			}
-			return (int) $data->{'operator.CONTAINS.max_term_length'};
+			return (int) $data->{'operator.contains.max_term_length'};
 		}
-		
     	
     	/**
     	 * Maximum number of results NBA can handle
@@ -1145,6 +1141,23 @@
 			}
 			return (int) $data->{'index.max_result_window'};
 		}
+		
+		/**
+		 * Test if NBA server is available.
+		 * 
+		 * @return boolean
+		 */
+		public function ping () {
+			$result = false;
+			$timeout = $this->getNbaTimeout();
+			$this->setNbaTimeout(1);
+			if ($this->_getNativeNbaEndpoint('ping') == 'Hello NBA client!') {
+				$result = true;
+			}
+			$this->setNbaTimeout($timeout);
+			return $result;
+		}
+		
 		
 		/*
 		 * Check if clients have been set and if GroupByScientificNameQuerySpec is used
