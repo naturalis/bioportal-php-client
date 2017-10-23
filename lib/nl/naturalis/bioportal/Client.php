@@ -1142,6 +1142,31 @@
 			return (int) $data->{'index.max_result_window'};
 		}
 		
+       	/**
+    	 * Maximum number of bucketed results NBA can handle
+    	 * 
+		 * @throws \RuntimeException In case no or multiple clients are set, or if 
+		 * setting does not exist
+    	 * @return int Maximum number of bucketed results NBA can handle
+    	 */
+    	public function getGroupByScientificNameMaxNumBuckets () {
+    	    if (empty($this->_clients)) {
+				throw new \RuntimeException('Error: client not set.');
+			}
+			if (count($this->_clients) > 1) {
+				throw new \RuntimeException('Error: getGroupByScientificNameMaxNumBuckets accepts a ' .
+					'single client only.');
+			}
+    		$data = json_decode($this->_getNativeNbaEndpoint($this->_clients[0] .
+    				'/metadata/getSettings'));
+			if (!isset($data->{$this->_clients[0] . '.group_by_scientific_name.max_num_buckets'})) {
+				throw new \RuntimeException('Error: cannot fetch ' . $this->_clients[0] . 
+					'.group_by_scientific_name.max_num_buckets' . '".');
+			}
+			return (int) $data->{$this->_clients[0] . '.group_by_scientific_name.max_num_buckets'};
+		}
+		
+		
 		/**
 		 * Test if NBA server is available.
 		 * 
