@@ -174,13 +174,12 @@
          * Depending on the number of clients, the result is returned
          * either as json or an array of json responses.
          *
-		 * @param string $usePost Use post instead of get (which is the default)
 		 * @throws \RuntimeException In case QuerySpec is not set
 		 * @return string|string[] NBA response as json if a single client has been
 		 * set, or as an array of responses in case of multiple clients 
 		 * (formatted as [client1 => json, client2 => json]).
 		 */
-		public function query ($usePost = false) {
+		public function query () {
 			$this->_bootstrap();
 			if (!$this->_querySpec || empty($this->_querySpec->getQuerySpec())) {
 				throw new \RuntimeException('Error: QuerySpec empty or not set.');
@@ -188,7 +187,7 @@
 			$this->_channels = [];
 			foreach ($this->_clients as $client) {
 				// Get
-				if (!$usePost || !$this->_usePost) {
+				if (!$this->_usePost) {
 					$this->_channels[] =
 						[
 							'client' => $client,
@@ -792,11 +791,19 @@
 						"$client multiClientBatchQuery QuerySpec should match query type " .
 						$this::$nbaQueryTypes[$q['queryType']] . ".");
 				}
-				$this->_channels[$client] =
-					[
-						'url' => $this->_nbaUrl . $client . '/' . $q['queryType'] . '/' .
-							'?_querySpec=' . $q['querySpec']->getQuerySpec(true)
-					];
+				if (!$this->_usePost) {
+					$this->_channels[$client] =
+						[
+							'url' => $this->_nbaUrl . $client . '/' . $q['queryType'] . '/' .
+								'?_querySpec=' . $q['querySpec']->getQuerySpec(true)
+						];
+				} else {
+					$this->_channels[$client] =
+						[
+							'url' => $this->_nbaUrl . $client . '/' . $q['queryType'] . '/?',
+							'post_fields' => $q['querySpec']->getQuerySpec(),
+						];
+				}
 			}
 			$this->_query();
 			return $this->_remoteData;
