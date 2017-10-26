@@ -19,6 +19,7 @@
 		private $_remoteData;
 		private $_clients;
 		private $_curlErrors;
+		private $_usePost = false;
 		
 		/**
 		 * NBA clients
@@ -187,7 +188,7 @@
 			$this->_channels = [];
 			foreach ($this->_clients as $client) {
 				// Get
-				if (!$usePost) {
+				if (!$usePost || !$this->_usePost) {
 					$this->_channels[] =
 						[
 							'client' => $client,
@@ -1183,6 +1184,23 @@
 			return $result;
 		}
 		
+		/**
+		 * Set HTTP request type to POST
+		 * 
+		 * By default GET is used
+		 */
+		public function setPostHttpRequestType () {
+			$this->_usePost = true;
+		}
+		
+    	/**
+		 * Set HTTP request type to GET
+		 * 
+		 * By default GET is used
+		 */
+		public function setGetHttpRequestType () {
+			$this->_usePost = false;
+		}
 		
 		/*
 		 * Check if clients have been set and if GroupByScientificNameQuerySpec is used
