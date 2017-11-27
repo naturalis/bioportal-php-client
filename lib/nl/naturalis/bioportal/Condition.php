@@ -397,13 +397,13 @@
             return $this->_operator;
         }
 
- 	 	/*
- 	 	 * Value can be null but not an empty string
- 	 	 */
- 	 	private function _setValue ($value) {
+  	 	private function _setValue ($value) {
+  	 		/* Disabled check: originally one could query with null but not with an empty string.
+  	 		 * This is a workaround for NBAVTWO-497
  	 		if (!is_null($value) && empty($value) && !is_numeric($value)) {
  	 			throw new \InvalidArgumentException('Error: condition value is empty.');
             }
+            */
             $this->_value = $value;
             return $this->_value;
  	 	}
