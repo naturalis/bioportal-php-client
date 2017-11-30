@@ -6,7 +6,8 @@
     $client = new Client();
     
     // Default ini settings can be modified if necessary
-    $client->setNbaUrl('http://145.136.242.164:8080/v2/');
+    //$client->setNbaUrl('http://145.136.242.164:8080/v2/');
+    $client->setNbaUrl('http://api.biodiversitydata.nl/v2/');
 
     // First condition
     // Condition should be initialized with triplet, as per Java client
