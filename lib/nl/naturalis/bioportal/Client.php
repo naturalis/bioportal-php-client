@@ -879,7 +879,7 @@
 		    if (count($this->_clients) > 1) {
 				throw new \RuntimeException('Error: DwCA download accepts a single client only.');
 			}
-    	    $this->_bootstrapScientificNameGroupClients();
+    	    $this->_checkScientificNameGroupClients();
 			return $this->_getNativeNbaEndpoint($this->_clients[0] . '/dwca/getDataSetNames');
 		}
 		
