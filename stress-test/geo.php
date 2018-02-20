@@ -44,8 +44,8 @@
 	    	// Start timer
 	    	$start = microtime(true);
 	    	
-	    	// Initialise batch and error
-	    	$batch = $errors = [];
+	    	// Initialise batch
+	    	$batch = [];
 	    	
 		    echo 'Querying ' . count((array)$areas->{$type}) . " areas of type $type for specimens...\n";
 		    foreach ($areas->{$type} as $area) {
@@ -66,6 +66,9 @@
 	
 		    // Print result (only on first iteration)
 		    if ($loopNr == 1) {
+		    	
+		    	$errors = [];
+		    	
 			   	foreach ($result as $area => $json) {
 			    	$data = json_decode($json);
 			    	
