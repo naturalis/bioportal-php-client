@@ -28,7 +28,7 @@
     // Default ini settings can be modified if necessary
     $client
     	->setNbaUrl($nbaTestServer)
-    	->setNbaTimeout(30)
+    	->setNbaTimeout($runningTime * 60)
     	->setNbaDwcaDownloadDirectory('/tmp');
 	
 	// Time based loop
