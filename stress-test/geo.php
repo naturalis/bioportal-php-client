@@ -11,10 +11,10 @@
 	require_once '../lib/nl/naturalis/bioportal/Loader.php';
 
 	// NBA server 
-	$nbaTestServer = 'http://145.136.242.167:8080/v2';
+	$nbaTestServer = 'http://145.136.242.164:8080/v2';
 
 	// Running time (in mins); set to 0.1 for just one loop
-    $runningTime = 120;
+    $runningTime = 60;
 	
 	// Initialise Client
     $client = new Client();
@@ -22,7 +22,7 @@
     // Default ini settings can be modified if necessary
     $client
     	->setNbaUrl($nbaTestServer)
-    	->setNbaTimeout(30);
+    	->setNbaTimeout(500);
 
     // Use the shorthand method to fetch all predefined geo areas
     $areas = json_decode($client->getGeoAreas());
@@ -44,8 +44,8 @@
 	    	// Start timer
 	    	$start = microtime(true);
 	    	
-	    	// Initialise batch
-	    	$batch = [];
+	    	// Initialise batch and error
+	    	$batch = $errors = [];
 	    	
 		    echo 'Querying ' . count((array)$areas->{$type}) . " areas of type $type for specimens...\n";
 		    foreach ($areas->{$type} as $area) {
@@ -89,8 +89,6 @@
 			    }
 			    echo "\n\n";
 		    }
-		    
-		    $printResults = false;
 	    }	
 	    
 	    echo "Loop number: $loopNr\n";

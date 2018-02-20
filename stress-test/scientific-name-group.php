@@ -12,10 +12,10 @@
 	require_once '../lib/nl/naturalis/bioportal/Loader.php';
 
 	// NBA server 
-	$nbaTestServer = 'http://145.136.240.125:31932/v2';
+	$nbaTestServer = 'http://145.136.242.164:8080/v2';
 	
 	// Running time (in mins); set to 0.1 for just one loop
-    $runningTime = 120;
+    $runningTime = 60;
 	
     // Number of taxa to query
     $nrTaxa = 1000;
@@ -26,7 +26,7 @@
     // Default ini settings can be modified if necessary
     $client
     	->setNbaUrl($nbaTestServer)
-    	->setNbaTimeout(60);
+    	->setNbaTimeout(500);
     
    	// We're interested in genera with at least two specimens
    	$condition = new Condition('identifications.scientificName.genusOrMonomial', 'NOT_EQUALS');

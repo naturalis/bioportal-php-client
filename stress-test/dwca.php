@@ -8,13 +8,13 @@
 	require_once '../lib/nl/naturalis/bioportal/Loader.php';
 	
 	// NBA server
-	$nbaTestServer = 'http://145.136.240.125:32065/v2';
+	$nbaTestServer = 'http://145.136.242.164:8080/v2';
 
     // Collection name
     $collection = 'botany';
     
 	// Running time (in mins); set to 1 for just one loop
-    $runningTime = 120;
+    $runningTime = 60;
     	
    	// Start script timer
     $scriptStart = microtime(true);
