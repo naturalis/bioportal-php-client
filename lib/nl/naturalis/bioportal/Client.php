@@ -1180,15 +1180,11 @@
 		 * 
 		 * @return boolean
 		 */
-		public function ping () {
-			$result = false;
-			$timeout = $this->getNbaTimeout();
-			$this->setNbaTimeout(1);
-			if ($this->_getNativeNbaEndpoint('ping') == 'Hello NBA client!') {
-				$result = true;
+    	public function ping () {
+			if ($this->_getNativeNbaEndpoint('ping') == 'NBA Service is up and running!') {
+				return true;
 			}
-			$this->setNbaTimeout($timeout);
-			return $result;
+			return false;
 		}
 		
 		/**
