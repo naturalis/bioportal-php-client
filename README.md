@@ -19,8 +19,8 @@ Composer can be used to install both PHPDoc and PHPUnit.
 
 1. Download and install Composer
 2. cd path/to/bioportal-php-client
-2. php composer.phar install
-3. A vendor library will appear in your repository containing the following:
+3. php composer.phar install
+4. A vendor library will appear in your repository containing the following:
 
     autoload.php
     bin
