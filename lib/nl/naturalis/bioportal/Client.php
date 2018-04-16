@@ -332,7 +332,8 @@
 				if ($service && isset($this->_channels[$service])) {
 					return $this->_channels[$service];
 				}
-				return array_column($this->_channels, 'url');
+				// Return url from last element
+				return array_values(array_slice($this->_channels, -1))[0]['url'];
 			}
 			return false;
 		}
@@ -1181,10 +1182,13 @@
 		 * @return boolean
 		 */
     	public function ping () {
+    		$ping = false;
 			if ($this->_getNativeNbaEndpoint('ping') == 'NBA Service is up and running!') {
-				return true;
+				$ping = true;
 			}
-			return false;
+			// Clear channels
+			$this->_channels = [];
+			return $ping;
 		}
 		
 		/**
