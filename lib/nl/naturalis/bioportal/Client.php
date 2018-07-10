@@ -332,7 +332,8 @@
 				if ($service && isset($this->_channels[$service])) {
 					return $this->_channels[$service];
 				}
-				return array_column($this->_channels, 'url');
+				// Return url from last element
+				return array_values(array_slice($this->_channels, -1))[0]['url'];
 			}
 			return false;
 		}
@@ -596,26 +597,28 @@
 		 * 
 		 * Uses NBA getDistinctValues method to get distinct values for a specific field.
 		 * Supports multiple clients in case the same fields occurs in multiple services. 
-		 * Can be used with or without setting a QuerySpec. The QuerySpec must be set 
-		 * _before_ calling getDistinctValues. Depending on the number of clients, 
-		 * the result is returned either as json or an array of json responses.
+		 * Can be used with or without setting a size (default is 10) or QuerySpec. 
+		 * The QuerySpec must be set _before_ calling getDistinctValues. Depending on the 
+		 * number of clients, the result is returned either as json or an array of json responses.
 		 *
 		 * @param string $field
+		 * @param string $size
 		 * @example $client->multimedia()->setQuerySpec($query)->getDistinctValues('creator');
 		 * @return string|string[] NBA response as json if a single client has been
 		 * set, or as an array of responses in case of multiple clients
 		 * (formatted as [client1 => json, client2 => json]).
 		 */
-		public function getDistinctValues ($field = false) {
+		public function getDistinctValues ($field = false, $size = 10) {
 			$this->_bootstrap();
 			if (!$field) {
 				throw new \InvalidArgumentException('Error: no field provided for ' .
 					'getDistinctValues.');
 			}
 			foreach ($this->_clients as $client) {
-				$url = $this->_nbaUrl . $client . '/getDistinctValues/' . $field;
+				$url = $this->_nbaUrl . $client . '/getDistinctValues/' . $field . 
+				    '?_size=' . (int)$size;
 				if ($this->_querySpec) {
-					$url .= '?_querySpec=' . $this->_querySpec->getQuerySpec(true);
+					$url .= '&_querySpec=' . $this->_querySpec->getQuerySpec(true);
 				}
 				$this->_channels[] =
 					[
@@ -1180,15 +1183,14 @@
 		 * 
 		 * @return boolean
 		 */
-		public function ping () {
-			$result = false;
-			$timeout = $this->getNbaTimeout();
-			$this->setNbaTimeout(1);
-			if ($this->_getNativeNbaEndpoint('ping') == 'Hello NBA client!') {
-				$result = true;
+    	public function ping () {
+    		$ping = false;
+			if ($this->_getNativeNbaEndpoint('ping') == 'NBA Service is up and running!') {
+				$ping = true;
 			}
-			$this->setNbaTimeout($timeout);
-			return $result;
+			// Clear channels
+			$this->_channels = [];
+			return $ping;
 		}
 		
 		/**
