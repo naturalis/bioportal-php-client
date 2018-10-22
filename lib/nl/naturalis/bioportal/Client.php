@@ -615,10 +615,11 @@
 					'getDistinctValues.');
 			}
 			foreach ($this->_clients as $client) {
-				$url = $this->_nbaUrl . $client . '/getDistinctValues/' . $field . 
-				    '?_size=' . (int)$size;
+				$url = $this->_nbaUrl . $client . '/getDistinctValues/' . $field;
 				if ($this->_querySpec) {
-					$url .= '&_querySpec=' . $this->_querySpec->getQuerySpec(true);
+					$url .= '?_querySpec=' . $this->_querySpec->getQuerySpec(true);
+				} else {
+				    $url .= '?_size=' . (int)$size;
 				}
 				$this->_channels[] =
 					[
