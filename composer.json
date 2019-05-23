@@ -1,4 +1,5 @@
 {
+    "name": "naturalis/bioportal-php-client",
     "require-dev": {
         "phpunit/phpunit": "4.5.*",
         "phpdocumentor/phpdocumentor": "2.*"
